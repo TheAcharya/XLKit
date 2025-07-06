@@ -1,23 +1,30 @@
-name: Build
+name: build
 
 on:
   push:
     branches: [main]
     paths-ignore:
-      - 'Docs/**'
-      - '**/*.md'
-      - '**/LICENSE'
-      - '**/.gitignore'
+      - '**/*.md'           # .md files anywhere in the repo
+      - '**/LICENSE'        # LICENSE files anywhere in the repo
+      - '**/.gitignore'     # .gitignore files anywhere in the repo
+      - '**/*.png'          # .png image files anywhere in the repo
+      - '**/*.pdf'          # .pdf files anywhere in the repo
+      - '**/*..cursorrules' # .cursorrules files anywhere in the repo
+      
   pull_request:
     branches: [main]
     paths-ignore:
-      - 'Docs/**'
-      - '**/*.md'
-      - '**/LICENSE'
-      - '**/.gitignore'
+      - '**/*.md'           # .md files anywhere in the repo
+      - '**/LICENSE'        # LICENSE files anywhere in the repo
+      - '**/.gitignore'     # .gitignore files anywhere in the repo
+      - '**/*.png'          # .png image files anywhere in the repo
+      - '**/*.pdf'          # .pdf files anywhere in the repo
+      - '**/*..cursorrules' # .cursorrules files anywhere in the repo
+      
   workflow_dispatch:
+    
   schedule:
-    - cron: '40 11 * * *'
+    - cron: '0 0 * * 6'     # Runs at 8 AM Singapore time (00:00 UTC) every Saturday
 
 env:
   SCHEME: "XLKit"

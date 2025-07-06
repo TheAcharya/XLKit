@@ -21,9 +21,10 @@ A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) f
 - [Performance Considerations](#performance-considerations)
 - [Code Style & Formatting](#code-style--formatting)
 - [Testing](#testing)
-- [Contributing](#contributing)
-- [Support](#support)
-- [License](#license)
+- [Credits](#credits)
+- [License](#License)
+- [Reporting Bugs](#reporting-bugs)
+- [Contribution](#contribution)
 
 ## Features
 
@@ -411,14 +412,18 @@ All code must be formatted and pass CI before merging. See `.cursorrules` for mo
 - **Comprehensive test suite** covering all public APIs
 - **CI/CD ready** with automated testing
 
-## Contributing
+## Credits
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Support
-
-If you encounter any issues or have questions, please open an issue on GitHub.
+Created by [Vigneswaran Rajkumar](https://bsky.app/profile/vigneswaranrajkumar.com)
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Licensed under the MIT license. See [LICENSE](https://github.com/TheAcharya/XLKit/blob/main/LICENSE) for details.
+
+## Reporting Bugs
+
+For bug reports, feature requests and suggestions you can create a new [issue](https://github.com/TheAcharya/XLKit/issues) to discuss.
+
+## Contribution
+
+Community contributions are welcome and appreciated. Developers are encouraged to fork the repository and submit pull requests to enhance functionality or introduce thoughtful improvements. However, a key requirement is that nothing should break—all existing features, behaviours theme and styling must remain fully functional and unchanged. Once reviewed and approved, updates will be merged into the main branch.

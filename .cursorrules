@@ -50,6 +50,12 @@ require_image_and_column_sizing_tests = true
 # CI must pass before merge
 require_ci_pass = true
 
+# CSV/TSV import/export must use XLKit static methods (not direct CSVUtils)
+require_csv_api = "XLKit static methods only"
+
+# All documentation and tests must use and reflect the modular API
+require_modular_api_docs = true
+
 # Code Style & Formatting
 # All code must be formatted using the .swift-format file in the repo.
 # Use 4-space indentation, trailing commas, grouped/reordered imports, and modern Swift idioms.
