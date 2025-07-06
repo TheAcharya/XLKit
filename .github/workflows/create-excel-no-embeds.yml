@@ -1,10 +1,10 @@
-name: Create Excel Test File without Images
+name: Create Excel No Embeds
 
 on:
   workflow_dispatch:
 
 jobs:
-  generate-excel:
+  build:
     runs-on: macos-15
     steps:
       - name: Checkout repository
@@ -16,11 +16,11 @@ jobs:
           swift-version: '6.0'
 
       - name: Build XLKit package
-        run: swift build
+        run: swift build | xcbeautify
 
       - name: Run Excel Generation Script
         run: |
-          swift run XLKitTestRunner no-embeds
+          swift run XLKitTestRunner no-embeds | xcbeautify
 
       - name: Zip Excel file
         run: |

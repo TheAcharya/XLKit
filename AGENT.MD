@@ -17,12 +17,119 @@ The library is organized into the following SPM modules:
 ### Module Dependencies
 
 ```
-XLKit (main)
-├── XLKitCore (core types)
-├── XLKitFormatters (CSV/TSV)
-├── XLKitImages (image utilities)
-└── XLKitXLSX (XLSX engine)
+XLKit (main API)
+├── XLKitCore (core types & utilities)
+├── XLKitFormatters (CSV/TSV import/export)
+├── XLKitImages (image processing & embedding)
+└── XLKitXLSX (XLSX generation engine)
+
+XLKitFormatters
+└── XLKitCore
+
+XLKitImages
+└── XLKitCore
+
+XLKitXLSX
+├── XLKitCore
+├── XLKitFormatters
+└── XLKitImages
 ```
+
+### Executable Target
+
+```
+XLKitTestRunner (executable)
+└── XLKit
+```
+
+## XLKitTestRunner
+
+### Overview
+
+XLKitTestRunner is a modular command-line tool for generating Excel files for testing and demonstration purposes. It provides a structured way to create various types of Excel files to test XLKit functionality.
+
+### Architecture
+
+**File Structure**:
+```
+Sources/XLKitTestRunner/
+├── main.swift                    # Entry point with CLI
+├── ExcelGenerators.swift         # Excel generation functions
+├── Templates/                    # Template files
+│   └── TestGeneratorTemplate.swift
+└── README.md                     # Documentation
+```
+
+**Key Components**:
+
+1. **main.swift**: Command-line interface that routes to different test functions
+2. **ExcelGenerators.swift**: Contains the actual Excel generation logic
+3. **Templates/**: Reusable templates for creating new tests
+4. **README.md**: Comprehensive documentation
+
+### Usage
+
+**Basic Commands**:
+```bash
+# Run default test (no-embeds)
+swift run XLKitTestRunner
+
+# Run specific test
+swift run XLKitTestRunner no-embeds
+
+# Show help
+swift run XLKitTestRunner help
+```
+
+**Available Test Types**:
+- `no-embeds` / `no-images`: Generate Excel from CSV without images
+- `with-embeds` / `with-images`: Generate Excel with image embeds (future)
+- `csv-import`: Test CSV import functionality (future)
+- `formatting`: Test cell formatting features (future)
+
+### Development Workflow
+
+**Adding New Tests**:
+
+1. **Use Template**: Copy the template file
+   ```bash
+   cp Sources/XLKitTestRunner/Templates/TestGeneratorTemplate.swift Sources/XLKitTestRunner/YourTestName.swift
+   ```
+
+2. **Modify Template**: Update function name, configuration, and logic
+
+3. **Register Test**: Add to main.swift switch statement
+   ```swift
+   case "your-test-name":
+       print("Executing: Your Test Description")
+       yourTestName()
+   ```
+
+4. **Update Help**: Add to help function in main.swift
+
+5. **Create Workflow**: Add GitHub Actions workflow if needed
+
+**Naming Conventions**:
+- **Function Names**: camelCase (e.g., `generateExcelWithImages()`)
+- **Test Types**: kebab-case (e.g., `with-images`, `csv-import`)
+- **File Names**: PascalCase (e.g., `ExcelGenerators.swift`)
+
+### Output Management
+
+**Generated Files**: All Excel files are saved to `Test-Workflows/` directory
+- `Embed-Test.xlsx`: From no-embeds test
+- `[Your-Test].xlsx`: From custom tests
+
+**Error Handling**: All functions use consistent error handling with descriptive messages and appropriate exit codes.
+
+### Integration
+
+**GitHub Actions**: The test runner is integrated into CI/CD workflows
+- `.github/workflows/create-excel-test-file-no-images.yml`: Runs `no-embeds` test
+- Uses `xcbeautify` for clean output
+- Generates artifacts for download
+
+**Testing Strategy**: Provides a way to test XLKit functionality in real-world scenarios by generating actual Excel files.
 
 ## Detailed Module Breakdown
 
@@ -807,14 +914,14 @@ This comprehensive guide provides all the information an AI agent needs to under
 
 When making significant changes to the codebase, ensure this AGENT.MD file is updated to include:
 
-- [ ] **New Features**: Document all new functionality, APIs, and capabilities
-- [ ] **Architecture Changes**: Update module structure and dependencies
-- [ ] **API Changes**: Document new methods, parameters, and usage patterns
-- [ ] **Testing Updates**: Include new test patterns and coverage requirements
-- [ ] **Performance Notes**: Document performance considerations and optimizations
-- [ ] **Error Handling**: Update error types and handling patterns
-- [ ] **Examples**: Provide code examples for new features
-- [ ] **Integration Notes**: Document any new integration requirements
+- **New Features**: Document all new functionality, APIs, and capabilities
+- **Architecture Changes**: Update module structure and dependencies
+- **API Changes**: Document new methods, parameters, and usage patterns
+- **Testing Updates**: Include new test patterns and coverage requirements
+- **Performance Notes**: Document performance considerations and optimizations
+- **Error Handling**: Update error types and handling patterns
+- **Examples**: Provide code examples for new features
+- **Integration Notes**: Document any new integration requirements
 
 ### Version Tracking
 
@@ -826,10 +933,10 @@ Keep track of major updates to this documentation:
 ### Cross-Reference with .cursorrules
 
 Ensure consistency between AGENT.MD and .cursorrules files:
-- [ ] Architecture descriptions match between files
-- [ ] Coding standards are consistent
-- [ ] Testing requirements are aligned
-- [ ] Platform constraints are synchronized
-- [ ] File organization rules are consistent
+- Architecture descriptions match between files
+- Coding standards are consistent
+- Testing requirements are aligned
+- Platform constraints are synchronized
+- File organization rules are consistent
 
 This ensures that both documentation files remain accurate and useful for AI agents working with the codebase. 

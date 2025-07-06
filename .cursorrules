@@ -15,11 +15,81 @@ Built with Swift 6.0, targeting macOS 14+, using modular SPM architecture.
 
 ### Module Dependencies
 ```
-XLKit (main)
-├── XLKitCore (core types)
-├── XLKitFormatters (CSV/TSV)
-├── XLKitImages (image utilities)
-└── XLKitXLSX (XLSX engine)
+XLKit (main API)
+├── XLKitCore (core types & utilities)
+├── XLKitFormatters (CSV/TSV import/export)
+├── XLKitImages (image processing & embedding)
+└── XLKitXLSX (XLSX generation engine)
+
+XLKitFormatters
+└── XLKitCore
+
+XLKitImages
+└── XLKitCore
+
+XLKitXLSX
+├── XLKitCore
+├── XLKitFormatters
+└── XLKitImages
+```
+
+### Executable Target
+```
+XLKitTestRunner (executable)
+└── XLKit
+```
+
+### XLKitTestRunner Overview
+
+**Purpose**: Modular test runner for generating Excel files for testing and demonstration purposes.
+
+**Structure**:
+```
+Sources/XLKitTestRunner/
+├── main.swift                    # Entry point with command-line interface
+├── ExcelGenerators.swift         # Excel generation functions
+├── Templates/                    # Template files for new tests
+│   └── TestGeneratorTemplate.swift
+└── README.md                     # Documentation
+```
+
+**Usage**:
+```bash
+# Run default test (no-embeds)
+swift run XLKitTestRunner
+
+# Run specific test types
+swift run XLKitTestRunner no-embeds
+swift run XLKitTestRunner with-images
+swift run XLKitTestRunner help
+
+# Show help
+swift run XLKitTestRunner help
+```
+
+**Available Test Types**:
+- `no-embeds` / `no-images` - Generate Excel from CSV without images
+- `with-embeds` / `with-images` - Generate Excel with image embeds (future)
+- `csv-import` - Test CSV import functionality (future)
+- `formatting` - Test cell formatting features (future)
+
+**Adding New Tests**:
+1. Copy template: `cp Sources/XLKitTestRunner/Templates/TestGeneratorTemplate.swift Sources/XLKitTestRunner/YourTestName.swift`
+2. Modify function name and logic
+3. Register in main.swift switch statement
+4. Update help text
+5. Create GitHub Actions workflow if needed
+
+**Naming Conventions**:
+- Function names: camelCase (e.g., `generateExcelWithImages()`)
+- Test types: kebab-case (e.g., `with-images`, `csv-import`)
+- File names: PascalCase (e.g., `ExcelGenerators.swift`)
+
+**Output Structure**:
+```
+Test-Workflows/
+├── Embed-Test.xlsx          # From no-embeds test
+└── [Your-Test].xlsx         # From custom tests
 ```
 
 ## File Organization & Paths
@@ -230,13 +300,13 @@ func testFeatureNameWithInvalidInput() {
 5. Ensure CI passes
 
 ### Code Review Checklist
-- [ ] Code follows Swift 6.0 standards
-- [ ] All public APIs documented
-- [ ] Tests cover new functionality
-- [ ] No force-unwraps in public API
-- [ ] Proper error handling
-- [ ] Code is formatted correctly
-- [ ] CI tests pass
+- Code follows Swift 6.0 standards
+- All public APIs documented
+- Tests cover new functionality
+- No force-unwraps in public API
+- Proper error handling
+- Code is formatted correctly
+- CI tests pass
 
 ### Commit Standards
 - Use descriptive commit messages
@@ -361,28 +431,28 @@ This comprehensive .cursorrules file provides all the guidelines and standards f
 
 When making significant changes to the codebase, ensure this .cursorrules file is updated to include:
 
-- [ ] **New Features**: Add rules for new functionality and APIs
-- [ ] **Architecture Changes**: Update module structure and dependencies
-- [ ] **API Guidelines**: Add guidelines for new API patterns
-- [ ] **Testing Requirements**: Update testing standards and coverage requirements
-- [ ] **Performance Guidelines**: Add performance considerations for new features
-- [ ] **Error Handling**: Update error types and handling requirements
-- [ ] **Code Standards**: Update coding standards for new patterns
-- [ ] **File Organization**: Update allowed/disallowed paths if needed
-- [ ] **Platform Constraints**: Update platform requirements if changed
-- [ ] **Integration Rules**: Add rules for new integrations or dependencies
+- **New Features**: Add rules for new functionality and APIs
+- **Architecture Changes**: Update module structure and dependencies
+- **API Guidelines**: Add guidelines for new API patterns
+- **Testing Requirements**: Update testing standards and coverage requirements
+- **Performance Guidelines**: Add performance considerations for new features
+- **Error Handling**: Update error types and handling requirements
+- **Code Standards**: Update coding standards for new patterns
+- **File Organization**: Update allowed/disallowed paths if needed
+- **Platform Constraints**: Update platform requirements if changed
+- **Integration Rules**: Add rules for new integrations or dependencies
 
 ### Synchronization with AGENT.MD
 
 Ensure consistency between .cursorrules and AGENT.MD files:
-- [ ] Architecture descriptions match between files
-- [ ] Coding standards are consistent
-- [ ] Testing requirements are aligned
-- [ ] Platform constraints are synchronized
-- [ ] File organization rules are consistent
-- [ ] API design guidelines are synchronized
-- [ ] Error handling patterns match
-- [ ] Performance considerations are consistent
+- Architecture descriptions match between files
+- Coding standards are consistent
+- Testing requirements are aligned
+- Platform constraints are synchronized
+- File organization rules are consistent
+- API design guidelines are synchronized
+- Error handling patterns match
+- Performance considerations are consistent
 
 ### Version Tracking
 
