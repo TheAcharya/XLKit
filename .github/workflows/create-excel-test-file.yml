@@ -1,0 +1,35 @@
+name: Create Excel Test File
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-excel:
+    runs-on: macos-13
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.0'
+
+      - name: Run Excel Embed Script
+        run: |
+          chmod +x Test-Workflows/generate_excel_with_embeds.swift
+          swift Test-Workflows/generate_excel_with_embeds.swift
+
+      - name: Zip Excel file
+        run: |
+          if [ -f Embed-Test.xlsx ]; then
+            zip Embed-Test.zip Embed-Test.xlsx
+          else
+            echo "Excel file not found!" && exit 1
+          fi
+
+      - name: Upload Excel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Excel Test File
+          path: Embed-Test.zip 

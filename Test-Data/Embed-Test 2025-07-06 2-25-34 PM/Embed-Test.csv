@@ -1,0 +1,5 @@
+Marker ID,Marker Name,Marker Type,Checked,Status,Notes,Reel,Scene,Take,Marker Position,Clip Type,Clip Name,Clip In,Clip Out,Clip Duration,Clip Keywords,Video Role & Subrole,Audio Role & Subrole,Event Name,Project Name,Library Name,Image Filename
+Embed-Test_00:00:08:06,Marker 1,To Do,false,In Progress,,,,,00:00:08:06,Video,Atom,00:00:00:00,00:00:15:18,00:00:15:18,,Video,Not Assigned,Demo 1,Embed-Test,Markers,Embed-Test_00-00-08-06.png
+Embed-Test_00:00:22:07,Marker 2,To Do,true,Done,,,,,00:00:22:07,Video,Atom,00:00:15:18,00:00:38:18,00:00:23:00,,Video,Not Assigned,Demo 1,Embed-Test,Markers,Embed-Test_00-00-22-07.png
+Embed-Test_00:00:50:08,Chapter 2,Chapter,false,Not Started,,,,,00:00:50:08,Video,Atom,00:00:38:18,00:01:00:14,00:00:21:20,,Video,Not Assigned,Demo 1,Embed-Test,Markers,Embed-Test_00-00-50-08.png
+Embed-Test_00:01:09:10,Marker 4,Standard,false,Not Started,,,,,00:01:09:10,Video,Atom,00:01:00:14,00:01:31:18,00:00:31:04,,Video,Not Assigned,Demo 1,Embed-Test,Markers,Embed-Test_00-01-09-10.png
