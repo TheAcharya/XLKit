@@ -1,5 +1,5 @@
 import XCTest
-@testable import XLKit
+import XLKit
 
 final class XLKitTests: XCTestCase {
     
@@ -198,35 +198,35 @@ final class XLKitTests: XCTestCase {
     }
     
     func testColumnConversion() {
-        XCTAssertEqual(XLKitUtils.columnLetter(from: 1), "A")
-        XCTAssertEqual(XLKitUtils.columnLetter(from: 2), "B")
-        XCTAssertEqual(XLKitUtils.columnLetter(from: 26), "Z")
-        XCTAssertEqual(XLKitUtils.columnLetter(from: 27), "AA")
-        XCTAssertEqual(XLKitUtils.columnLetter(from: 28), "AB")
+        XCTAssertEqual(CoreUtils.columnLetter(from: 1), "A")
+        XCTAssertEqual(CoreUtils.columnLetter(from: 2), "B")
+        XCTAssertEqual(CoreUtils.columnLetter(from: 26), "Z")
+        XCTAssertEqual(CoreUtils.columnLetter(from: 27), "AA")
+        XCTAssertEqual(CoreUtils.columnLetter(from: 28), "AB")
         
-        XCTAssertEqual(XLKitUtils.columnNumber(from: "A"), 1)
-        XCTAssertEqual(XLKitUtils.columnNumber(from: "B"), 2)
-        XCTAssertEqual(XLKitUtils.columnNumber(from: "Z"), 26)
-        XCTAssertEqual(XLKitUtils.columnNumber(from: "AA"), 27)
-        XCTAssertEqual(XLKitUtils.columnNumber(from: "AB"), 28)
+        XCTAssertEqual(CoreUtils.columnNumber(from: "A"), 1)
+        XCTAssertEqual(CoreUtils.columnNumber(from: "B"), 2)
+        XCTAssertEqual(CoreUtils.columnNumber(from: "Z"), 26)
+        XCTAssertEqual(CoreUtils.columnNumber(from: "AA"), 27)
+        XCTAssertEqual(CoreUtils.columnNumber(from: "AB"), 28)
     }
     
     func testDateConversion() {
         let date = Date()
-        let excelNumber = XLKitUtils.excelNumberFromDate(date)
-        let convertedDate = XLKitUtils.dateFromExcelNumber(excelNumber)
+        let excelNumber = CoreUtils.excelNumberFromDate(date)
+        let convertedDate = CoreUtils.dateFromExcelNumber(excelNumber)
         
         // Allow for small precision differences
         XCTAssertEqual(date.timeIntervalSince1970, convertedDate.timeIntervalSince1970, accuracy: 1.0)
     }
     
     func testXMLEscaping() {
-        XCTAssertEqual(XLKitUtils.escapeXML("&"), "&amp;")
-        XCTAssertEqual(XLKitUtils.escapeXML("<"), "&lt;")
-        XCTAssertEqual(XLKitUtils.escapeXML(">"), "&gt;")
-        XCTAssertEqual(XLKitUtils.escapeXML("\""), "&quot;")
-        XCTAssertEqual(XLKitUtils.escapeXML("'"), "&apos;")
-        XCTAssertEqual(XLKitUtils.escapeXML("Hello & World"), "Hello &amp; World")
+        XCTAssertEqual(CoreUtils.escapeXML("&"), "&amp;")
+        XCTAssertEqual(CoreUtils.escapeXML("<"), "&lt;")
+        XCTAssertEqual(CoreUtils.escapeXML(">"), "&gt;")
+        XCTAssertEqual(CoreUtils.escapeXML("\""), "&quot;")
+        XCTAssertEqual(CoreUtils.escapeXML("'"), "&apos;")
+        XCTAssertEqual(CoreUtils.escapeXML("Hello & World"), "Hello &amp; World")
     }
     
     func testSaveWorkbook() async throws {
@@ -313,31 +313,31 @@ final class XLKitTests: XCTestCase {
     func testImageFormatDetection() {
         // Test GIF format detection
         let gifData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00, 0x10, 0x00])
-        XCTAssertEqual(XLKitUtils.detectImageFormat(from: gifData), .gif)
+        XCTAssertEqual(ImageUtils.detectImageFormat(from: gifData), .gif)
         
         // Test PNG format detection
         let pngData = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
-        XCTAssertEqual(XLKitUtils.detectImageFormat(from: pngData), .png)
+        XCTAssertEqual(ImageUtils.detectImageFormat(from: pngData), .png)
         
         // Test JPEG format detection
         let jpegData = Data([0xFF, 0xD8, 0xFF, 0xE0])
-        XCTAssertEqual(XLKitUtils.detectImageFormat(from: jpegData), .jpeg)
+        XCTAssertEqual(ImageUtils.detectImageFormat(from: jpegData), .jpeg)
         
         // Test invalid data
         let invalidData = Data([0x00, 0x00, 0x00, 0x00])
-        XCTAssertNil(XLKitUtils.detectImageFormat(from: invalidData))
+        XCTAssertNil(ImageUtils.detectImageFormat(from: invalidData))
     }
     
     func testImageSizeDetection() {
         // Test GIF size detection
         let gifData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00, 0x20, 0x00])
-        let gifSize = XLKitUtils.getImageSize(from: gifData, format: .gif)
+        let gifSize = ImageUtils.getImageSize(from: gifData, format: .gif)
         XCTAssertEqual(gifSize?.width, 16)
         XCTAssertEqual(gifSize?.height, 32)
         
         // Test PNG size detection
         let pngData = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x30])
-        let pngSize = XLKitUtils.getImageSize(from: pngData, format: .png)
+        let pngSize = ImageUtils.getImageSize(from: pngData, format: .png)
         XCTAssertEqual(pngSize?.width, 64)
         XCTAssertEqual(pngSize?.height, 48)
     }
@@ -346,14 +346,14 @@ final class XLKitTests: XCTestCase {
         let imageData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00, 0x20, 0x00])
         
         // Test creation from data
-        let image = ExcelImage.from(data: imageData, format: .gif)
+        let image = ImageUtils.createExcelImage(from: imageData, format: .gif)
         XCTAssertNotNil(image)
         XCTAssertEqual(image?.format, .gif)
         XCTAssertEqual(image?.originalSize.width, 16)
         XCTAssertEqual(image?.originalSize.height, 32)
         
         // Test creation with display size
-        let imageWithSize = ExcelImage.from(data: imageData, format: .gif, displaySize: CGSize(width: 100, height: 200))
+        let imageWithSize = ImageUtils.createExcelImage(from: imageData, format: .gif, displaySize: CGSize(width: 100, height: 200))
         XCTAssertNotNil(imageWithSize)
         XCTAssertEqual(imageWithSize?.displaySize?.width, 100)
         XCTAssertEqual(imageWithSize?.displaySize?.height, 200)
@@ -380,7 +380,7 @@ final class XLKitTests: XCTestCase {
         let workbook = XLKit.createWorkbook()
         
         let imageData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00, 0x20, 0x00])
-        let image = ExcelImage.from(data: imageData, format: .gif)!
+        let image = ImageUtils.createExcelImage(from: imageData, format: .gif)!
         
         // Test adding image to workbook
         workbook.addImage(image)
@@ -718,21 +718,21 @@ final class XLKitTests: XCTestCase {
         let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
         let sheet = workbook.getSheets().first!
         
-        // Verify imported data
-        XCTAssertEqual(sheet.getCell("A1"), .string("John Doe"))
-        XCTAssertEqual(sheet.getCell("B1"), .integer(30))
-        XCTAssertEqual(sheet.getCell("C1"), .number(50000.50))
-        XCTAssertEqual(sheet.getCell("D1"), .boolean(true))
+        // Verify imported data (first data row is row 2)
+        XCTAssertEqual(sheet.getCell("A2"), .string("John Doe"))
+        XCTAssertEqual(sheet.getCell("B2"), .integer(30))
+        XCTAssertEqual(sheet.getCell("C2"), .number(50000.50))
+        XCTAssertEqual(sheet.getCell("D2"), .boolean(true))
         
-        XCTAssertEqual(sheet.getCell("A2"), .string("Jane Smith"))
-        XCTAssertEqual(sheet.getCell("B2"), .integer(25))
-        XCTAssertEqual(sheet.getCell("C2"), .number(45000.75))
-        XCTAssertEqual(sheet.getCell("D2"), .boolean(false))
+        XCTAssertEqual(sheet.getCell("A3"), .string("Jane Smith"))
+        XCTAssertEqual(sheet.getCell("B3"), .integer(25))
+        XCTAssertEqual(sheet.getCell("C3"), .number(45000.75))
+        XCTAssertEqual(sheet.getCell("D3"), .boolean(false))
         
-        XCTAssertEqual(sheet.getCell("A3"), .string("Bob Johnson"))
-        XCTAssertEqual(sheet.getCell("B3"), .integer(35))
-        XCTAssertEqual(sheet.getCell("C3"), .number(60000.00))
-        XCTAssertEqual(sheet.getCell("D3"), .boolean(true))
+        XCTAssertEqual(sheet.getCell("A4"), .string("Bob Johnson"))
+        XCTAssertEqual(sheet.getCell("B4"), .integer(35))
+        XCTAssertEqual(sheet.getCell("C4"), .number(60000.00))
+        XCTAssertEqual(sheet.getCell("D4"), .boolean(true))
     }
     
     func testTSVImport() {
@@ -747,18 +747,18 @@ final class XLKitTests: XCTestCase {
         let workbook = XLKit.createWorkbookFromTSV(tsvData: tsvData, hasHeader: true)
         let sheet = workbook.getSheets().first!
         
-        // Verify imported data
-        XCTAssertEqual(sheet.getCell("A1"), .string("Apple"))
-        XCTAssertEqual(sheet.getCell("B1"), .number(1.99))
-        XCTAssertEqual(sheet.getCell("C1"), .boolean(true))
+        // Verify imported data (first data row is row 2)
+        XCTAssertEqual(sheet.getCell("A2"), .string("Apple"))
+        XCTAssertEqual(sheet.getCell("B2"), .number(1.99))
+        XCTAssertEqual(sheet.getCell("C2"), .boolean(true))
         
-        XCTAssertEqual(sheet.getCell("A2"), .string("Banana"))
-        XCTAssertEqual(sheet.getCell("B2"), .number(0.99))
-        XCTAssertEqual(sheet.getCell("C2"), .boolean(false))
+        XCTAssertEqual(sheet.getCell("A3"), .string("Banana"))
+        XCTAssertEqual(sheet.getCell("B3"), .number(0.99))
+        XCTAssertEqual(sheet.getCell("C3"), .boolean(false))
         
-        XCTAssertEqual(sheet.getCell("A3"), .string("Orange"))
-        XCTAssertEqual(sheet.getCell("B3"), .number(2.49))
-        XCTAssertEqual(sheet.getCell("C3"), .boolean(true))
+        XCTAssertEqual(sheet.getCell("A4"), .string("Orange"))
+        XCTAssertEqual(sheet.getCell("B4"), .number(2.49))
+        XCTAssertEqual(sheet.getCell("C4"), .boolean(true))
     }
     
     func testCSVImportWithQuotes() {
@@ -773,18 +773,18 @@ final class XLKitTests: XCTestCase {
         let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
         let sheet = workbook.getSheets().first!
         
-        // Verify imported data with quotes and commas
-        XCTAssertEqual(sheet.getCell("A1"), .string("John Doe"))
-        XCTAssertEqual(sheet.getCell("B1"), .string("Software Engineer, Senior"))
-        XCTAssertEqual(sheet.getCell("C1"), .integer(50000))
+        // Verify imported data with quotes and commas (first data row is row 2)
+        XCTAssertEqual(sheet.getCell("A2"), .string("John Doe"))
+        XCTAssertEqual(sheet.getCell("B2"), .string("Software Engineer, Senior"))
+        XCTAssertEqual(sheet.getCell("C2"), .integer(50000))
         
-        XCTAssertEqual(sheet.getCell("A2"), .string("Jane Smith"))
-        XCTAssertEqual(sheet.getCell("B2"), .string("Product Manager"))
-        XCTAssertEqual(sheet.getCell("C2"), .integer(45000))
+        XCTAssertEqual(sheet.getCell("A3"), .string("Jane Smith"))
+        XCTAssertEqual(sheet.getCell("B3"), .string("Product Manager"))
+        XCTAssertEqual(sheet.getCell("C3"), .integer(45000))
         
-        XCTAssertEqual(sheet.getCell("A3"), .string("Bob Johnson"))
-        XCTAssertEqual(sheet.getCell("B3"), .string("Data Scientist, PhD"))
-        XCTAssertEqual(sheet.getCell("C3"), .integer(60000))
+        XCTAssertEqual(sheet.getCell("A4"), .string("Bob Johnson"))
+        XCTAssertEqual(sheet.getCell("B4"), .string("Data Scientist, PhD"))
+        XCTAssertEqual(sheet.getCell("C4"), .integer(60000))
     }
     
     func testCSVImportWithDates() {
@@ -798,11 +798,11 @@ final class XLKitTests: XCTestCase {
         let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
         let sheet = workbook.getSheets().first!
         
-        // Verify imported data with dates
-        XCTAssertEqual(sheet.getCell("A1"), .string("John Doe"))
+        // Verify imported data with dates (first data row is row 2)
+        XCTAssertEqual(sheet.getCell("A2"), .string("John Doe"))
         
         // Check that dates are parsed correctly
-        let birthDate1 = sheet.getCell("B1")
+        let birthDate1 = sheet.getCell("B2")
         if case .date(let date) = birthDate1 {
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
@@ -811,7 +811,7 @@ final class XLKitTests: XCTestCase {
             XCTFail("Expected date value for birth date")
         }
         
-        let hireDate1 = sheet.getCell("C1")
+        let hireDate1 = sheet.getCell("C2")
         if case .date(let date) = hireDate1 {
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
@@ -842,7 +842,7 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(sheet.getCell("A1"), .string("Existing Data"))
         XCTAssertEqual(sheet.getCell("B1"), .number(100))
         
-        // Verify new data is added
+        // Verify new data is added (first data row is row 2)
         XCTAssertEqual(sheet.getCell("A2"), .string("New Item 1"))
         XCTAssertEqual(sheet.getCell("B2"), .integer(200))
         XCTAssertEqual(sheet.getCell("A3"), .string("New Item 2"))

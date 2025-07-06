@@ -1,0 +1,5 @@
+# CSV/TSV import/export must use XLKit static methods (not direct CSVUtils)
+require_csv_api = "XLKit static methods only"
+
+# All documentation and tests must use and reflect the modular API
+require_modular_api_docs = true 

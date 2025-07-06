@@ -338,3 +338,41 @@ swift-format format -i .
 Or use Xcode's built-in formatter for most style rules.
 
 All code must be formatted and pass CI before merging. See `.cursorrules` for more details.
+
+## CSV/TSV Import & Export
+
+XLKit provides simple static methods for importing and exporting CSV/TSV data:
+
+```swift
+// Create a workbook from CSV
+let csvData = """
+Name,Age,Salary
+John,30,50000.5
+Jane,25,45000.75
+"""
+let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
+let sheet = workbook.getSheets().first!
+
+// Export a sheet to CSV
+let csv = XLKit.exportSheetToCSV(sheet: sheet)
+
+// Import CSV into an existing sheet
+XLKit.importCSVIntoSheet(sheet: sheet, csvData: csvData, hasHeader: true)
+
+// Create a workbook from TSV
+let tsvData = """
+Product\tPrice\tIn Stock
+Apple\t1.99\ttrue
+Banana\t0.99\tfalse
+"""
+let tsvWorkbook = XLKit.createWorkbookFromTSV(tsvData: tsvData, hasHeader: true)
+let tsvSheet = tsvWorkbook.getSheets().first!
+
+// Export a sheet to TSV
+let tsv = XLKit.exportSheetToTSV(sheet: tsvSheet)
+
+// Import TSV into an existing sheet
+XLKit.importTSVIntoSheet(sheet: tsvSheet, tsvData: tsvData, hasHeader: true)
+```
+
+All CSV/TSV helpers are available as static methods on `XLKit` for convenience, and are powered by the `XLKitFormatters` module under the hood.

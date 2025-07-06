@@ -65,4 +65,26 @@ There is no UI—this is a backend/data library only.
 - All public APIs must have doc comments.
 - Code must be formatted before PRs are merged.
 - Run `swift-format format -i .` to auto-format the codebase.
-- See README and `.cursorrules` for more details. 
+- See README and `.cursorrules` for more details.
+
+## Modular Structure
+
+- **XLKitCore**: Core types (Workbook, Sheet, Cell, CellValue, CellFormat, etc.)
+- **XLKitFormatters**: CSV/TSV import/export utilities (CSVUtils)
+- **XLKitImages**: Image utilities (ImageUtils, ExcelImage, ImageFormat)
+- **XLKitXLSX**: XLSX/ZIP/XML engine
+- **XLKit**: Main API, re-exporting all modules and providing static convenience methods
+
+## CSV/TSV Import/Export
+- Use `XLKit.createWorkbookFromCSV`, `XLKit.createWorkbookFromTSV`, `XLKit.exportSheetToCSV`, `XLKit.exportSheetToTSV`, `XLKit.importCSVIntoSheet`, and `XLKit.importTSVIntoSheet` for all CSV/TSV operations.
+- These methods are powered by the `XLKitFormatters` module, but are exposed on `XLKit` for ease of use.
+
+## Image Utilities
+- Use `ImageUtils` for image format detection, size, and Excel image creation.
+- All image-related types (ExcelImage, ImageFormat) are defined in `XLKitCore` and `XLKitImages`.
+
+## Dependency Rules
+- `XLKitCore` has no dependencies on other modules.
+- `XLKitImages` and `XLKitFormatters` depend on `XLKitCore`.
+- `XLKitXLSX` depends on all lower modules.
+- `XLKit` re-exports all modules and provides the main API. 
