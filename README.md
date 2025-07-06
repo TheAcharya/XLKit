@@ -81,13 +81,6 @@ sheet.autoSizeColumn(2, forImageAt: "B2") // Auto-size to fit image
 ## Testing
 - 100% tested, including image and column sizing features
 
-## License
-MIT
-
----
-
-**XLKit: The easiest way to create Excel files in Swift.**
-
 ## Core Concepts
 
 ### Workbook

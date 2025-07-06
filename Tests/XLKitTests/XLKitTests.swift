@@ -20,7 +20,7 @@ final class XLKitTests: XCTestCase {
     
     func testGetSheetByName() {
         let workbook = XLKit.createWorkbook()
-yes        let sheet1 = workbook.addSheet(name: "Sheet1")
+        let sheet1 = workbook.addSheet(name: "Sheet1")
         let sheet2 = workbook.addSheet(name: "Sheet2")
         
         XCTAssertEqual(workbook.getSheet(name: "Sheet1"), sheet1)

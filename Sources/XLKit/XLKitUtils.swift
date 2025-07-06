@@ -60,36 +60,29 @@ public struct XLKitUtils {
     
     /// Detects image format from data
     public static func detectImageFormat(from data: Data) -> ImageFormat? {
-        guard data.count >= 8 else { return nil }
-        
         let bytes = [UInt8](data.prefix(8))
         
-        // GIF
+        // GIF (needs 6 bytes)
         if bytes.count >= 6 && bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46 {
             return .gif
         }
-        
-        // PNG
+        // PNG (needs 8 bytes)
         if bytes.count >= 8 && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47 {
             return .png
         }
-        
-        // JPEG
+        // JPEG (needs 2 bytes)
         if bytes.count >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8 {
             return .jpeg
         }
-        
-        // BMP
+        // BMP (needs 2 bytes)
         if bytes.count >= 2 && bytes[0] == 0x42 && bytes[1] == 0x4D {
             return .bmp
         }
-        
-        // TIFF
+        // TIFF (needs 4 bytes)
         if bytes.count >= 4 && ((bytes[0] == 0x49 && bytes[1] == 0x49 && bytes[2] == 0x2A && bytes[3] == 0x00) ||
                                 (bytes[0] == 0x4D && bytes[1] == 0x4D && bytes[2] == 0x00 && bytes[3] == 0x2A)) {
             return .tiff
         }
-        
         return nil
     }
     
