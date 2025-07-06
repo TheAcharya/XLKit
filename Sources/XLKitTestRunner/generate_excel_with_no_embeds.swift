@@ -13,8 +13,8 @@ import XLKit
 let csvFileName = "Embed-Test.csv"
 let outputExcelFile = "Test-Workflows/Embed-Test.xlsx"
 
-// Dynamically find the test data folder
-func findTestDataPath() -> String? {
+// Dynamically find the test data folder and CSV file
+func findCSVFile() -> String? {
     let currentDir = FileManager.default.currentDirectoryPath
     let possiblePaths = [
         "Test-Data",
@@ -26,7 +26,20 @@ func findTestDataPath() -> String? {
     for path in possiblePaths {
         let fullPath = "\(currentDir)/\(path)"
         if FileManager.default.fileExists(atPath: fullPath) {
-            return fullPath
+            // Search for CSV file in this directory and subdirectories
+            let fileManager = FileManager.default
+            do {
+                let enumerator = fileManager.enumerator(atPath: fullPath)
+                while let filePath = enumerator?.nextObject() as? String {
+                    if filePath.hasSuffix(".csv") && filePath.contains(csvFileName) {
+                        let csvPath = "\(fullPath)/\(filePath)"
+                        print("[INFO] Found CSV file: \(csvPath)")
+                        return csvPath
+                    }
+                }
+            } catch {
+                print("[WARNING] Error searching in \(fullPath): \(error)")
+            }
         }
     }
     
@@ -35,29 +48,34 @@ func findTestDataPath() -> String? {
     for path in possiblePaths {
         let fullPath = "\(parentDir)/\(path)"
         if FileManager.default.fileExists(atPath: fullPath) {
-            return fullPath
+            // Search for CSV file in this directory and subdirectories
+            let fileManager = FileManager.default
+            do {
+                let enumerator = fileManager.enumerator(atPath: fullPath)
+                while let filePath = enumerator?.nextObject() as? String {
+                    if filePath.hasSuffix(".csv") && filePath.contains(csvFileName) {
+                        let csvPath = "\(fullPath)/\(filePath)"
+                        print("[INFO] Found CSV file: \(csvPath)")
+                        return csvPath
+                    }
+                }
+            } catch {
+                print("[WARNING] Error searching in \(fullPath): \(error)")
+            }
         }
     }
     
     return nil
 }
 
-// Find test data path
-guard let testDataPath = findTestDataPath() else {
-    print("[ERROR] Test data folder not found. Looked in:")
-    print("  - Test-Data")
-    print("  - test-data")
-    print("  - TestData")
-    print("  - testdata")
+// Find CSV file
+guard let csvFilePath = findCSVFile() else {
+    print("[ERROR] CSV file '\(csvFileName)' not found. Searched in:")
+    print("  - Test-Data (and subdirectories)")
+    print("  - test-data (and subdirectories)")
+    print("  - TestData (and subdirectories)")
+    print("  - testdata (and subdirectories)")
     print("  - And parent directories")
-    exit(1)
-}
-
-print("[INFO] Found test data at: \(testDataPath)")
-
-let csvFilePath = "\(testDataPath)/\(csvFileName)"
-if !FileManager.default.fileExists(atPath: csvFilePath) {
-    print("[ERROR] CSV file not found: \(csvFilePath)")
     exit(1)
 }
 
