@@ -62,7 +62,7 @@ public final class Workbook {
 }
 
 /// Represents a worksheet in an Excel workbook
-public final class Sheet {
+public final class Sheet: Equatable {
     public let name: String
     public let id: Int
     private var cells: [String: CellValue] = [:]
@@ -123,6 +123,10 @@ public final class Sheet {
     public func clear() {
         cells.removeAll()
         mergedRanges.removeAll()
+    }
+    
+    public static func == (lhs: Sheet, rhs: Sheet) -> Bool {
+        return lhs === rhs // Reference equality
     }
 }
 
