@@ -1,378 +1,289 @@
 # XLKit
 
-**Excel spreadsheet (XLSX) format writer on pure SWIFT.**
+A universal, generic Swift library for creating and manipulating Excel (.xlsx) files on macOS.
 
-XLKit is a library focused creating Excel spreadsheet (XLSX) files directly on mobile devices.
+## Features
 
-
-## Generation example XLSX file
-
-```swift
-    // library generate huge XLSX file with three sheets.
-    XWorkBook.test()
-``` 
-
-## NEWS
-
-- Add support inserting images into cells.
-
-```swift
-    //new kind value of XValue for icons/images 
-    XValue.icon(XImageCell)
-```
- 
-### example of inserting image
-
-```swift
-   let cell = sheet.AddCell(XCoords(row: 1, col: 1))
-   let ImageCellValue:XImageCell = XImageCell(key: XImages.append(with: logoicon!)!, size: CGSize(width: 200, height: 75))
-   // CGSize(width: 200, height: 75) - size display image in pixel
-    cell.value = .icon(ImageCellValue)
-```
-
-- fix bug creating empty document
+- **Universal & Generic**: No font or icon dependencies - pure data manipulation
+- **Swift 6.0 Ready**: Modern Swift with async/await support
+- **Native ZIP**: Uses Foundation's Archive for ZIP creation
+- **Excel-Compatible**: Generates standard .xlsx files
+- **Type Safe**: Strong typing with enums and structs
+- **Memory Efficient**: Optimized for large datasets
 
 ## Requirements
 
-**Apple Platforms**
-
-- Xcode 11.3 or later
-- Swift 5.5 or later
-- iOS 10.0
+- macOS 13.0+
+- Swift 6.0+
+- Xcode 15.0+
 
 ## Installation
 
 ### Swift Package Manager
 
-[Swift Package Manager](https://swift.org/package-manager/) is a tool for
-managing the distribution of Swift code. It’s integrated with the Swift build
-system to automate the process of downloading, compiling, and linking
-dependencies on all platforms.
-
-Once you have your Swift package set up, adding `XLKit` as a dependency is as
-easy as adding it to the `dependencies` value of your `Package.swift`.
+Add XLKit to your project dependencies:
 
 ```swift
 dependencies: [
-  .package(url: "https://github.com/3973770/XLKit", .upToNextMajor(from: "0.1.0"))
+    .package(url: "https://github.com/yourusername/XLKit.git", from: "1.0.0")
 ]
 ```
 
-If you're using XLKit in an app built with Xcode, you can also add it as a direct
-dependency [using Xcode's
-GUI](https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app).
-
-### Dependency
-
-**SSZipArchive**
-ZipArchive is a simple utility class for zipping and unzipping files on iOS, macOS and tvOS.
-https://github.com/ZipArchive/ZipArchive.git
-
-
-## Screenshots
-![screenshot of invoce](https://raw.githubusercontent.com/3973770/XLKit/main/Sources/Sample/screen1.png)
-
-![screenshot of icon test](https://raw.githubusercontent.com/3973770/XLKit/main/Sources/Sample/screen2.png)
-
-![screenshot of performance test](https://raw.githubusercontent.com/3973770/XLKit/main/Sources/Sample/screen3.png) 
-
-## Contributing
-
-### Sponsorship
-
-If this library saved you any amount of time or money, please consider [sponsoring
-the work of its maintainer](https://github.com/sponsors/3973770). 
-Any amount is appreciated and helps in maintaining the project.
-
-
-## Example for use
+## Quick Start
 
 ```swift
-   let book = XWorkBook()
+import XLKit
 
-   let color:[UIColor] = [.darkGray, .green, .lightGray, .orange, .systemPink, .cyan, .purple, .magenta, .blue]
-   let colortext:[UIColor] = [.darkGray, .black, .white, .darkText, .lightText]
+// Create a new workbook
+let workbook = XLKit.createWorkbook()
 
+// Add a sheet
+let sheet = workbook.addSheet(name: "Data")
 
-   func GetRandomFont() -> XFontName {
-       let cases = XFontName.allCases
-       return cases[Int.random(in: 0..<cases.count)]
-   }
+// Add data
+sheet.setCell("A1", value: .string("Name"))
+sheet.setCell("B1", value: .string("Age"))
+sheet.setCell("C1", value: .string("Salary"))
 
+sheet.setCell("A2", value: .string("John"))
+sheet.setCell("B2", value: .integer(30))
+sheet.setCell("C2", value: .number(50000.0))
 
-   var sheet = book.NewSheet("Invoice")
+// Save the workbook
+try await XLKit.saveWorkbook(workbook, to: fileURL)
+```
 
-   var cell = sheet.AddCell(XCoords(row: 2, col: 6))
-   cell.Cols(txt: .white, bg: .systemOrange)
-   cell.value = .text("INVOICE")
-   cell.Font = XFont(.TrebuchetMS, 16,true)
-   cell.alignmentHorizontal = .center
+## Core Concepts
 
-   cell = sheet.AddCell(XCoords(row: 3, col: 6))
-   cell.Cols(txt: .white, bg: .systemOrange)
-   cell.value = .text("#12345")
-   cell.Font = XFont(.TrebuchetMS, 12,true)
-   cell.alignmentHorizontal = .left
+### Workbook
+A workbook contains multiple sheets and represents the entire Excel file.
 
-   cell = sheet.AddCell(XCoords(row: 2, col: 1))
-   cell.value = .text("Your company name")
-   cell.Font = XFont(.TrebuchetMS, 16,true)
+```swift
+let workbook = XLKit.createWorkbook()
 
-   cell = sheet.AddCell(XCoords(row: 3, col: 1))
-   cell.value = .text("[Address Line 1]")
+// Add sheets
+let sheet1 = workbook.addSheet(name: "Sheet1")
+let sheet2 = workbook.addSheet(name: "Sheet2")
 
-   cell = sheet.AddCell(XCoords(row: 4, col: 1))
-   cell.value = .text("[Address Line 2]")
+// Get sheets
+let allSheets = workbook.getSheets()
+let specificSheet = workbook.getSheet(name: "Sheet1")
 
-   cell = sheet.AddCell(XCoords(row: 5, col: 1))
-   cell.value = .text("[Address Line 3]")
+// Remove sheets
+workbook.removeSheet(name: "Sheet1")
+```
 
-   cell = sheet.AddCell(XCoords(row: 7, col: 1))
-   cell.color = .systemOrange
-   cell.value = .text("Bill To:")
-   cell.Font = XFont(.TrebuchetMS, 12,true)
+### Sheet
+A sheet represents a worksheet within the workbook.
 
-   cell = sheet.AddCell(XCoords(row: 8, col: 1))
-   cell.value = .text("[Address Line 1]")
+```swift
+let sheet = workbook.addSheet(name: "Data")
 
-   cell = sheet.AddCell(XCoords(row: 9, col: 1))
-   cell.value = .text("[Address Line 2]")
+// Set cell values
+sheet.setCell("A1", value: .string("Hello"))
+sheet.setCell("B1", value: .number(42.5))
+sheet.setCell("C1", value: .integer(100))
+sheet.setCell("D1", value: .boolean(true))
+sheet.setCell("E1", value: .date(Date()))
+sheet.setCell("F1", value: .formula("=A1+B1"))
 
-   cell = sheet.AddCell(XCoords(row: 10, col: 1))
-   cell.value = .text("[Address Line 3]")
+// Get cell values
+let value = sheet.getCell("A1")
 
-   /// date
-   cell = sheet.AddCell(XCoords(row: 13, col: 1))
-   cell.color = .systemOrange
-   cell.value = .text("Invoice Date")
-   cell.Font = XFont(.TrebuchetMS, 12,true)
+// Set cells by row/column
+sheet.setCell(row: 1, column: 1, value: .string("A1"))
 
-   cell = sheet.AddCell(XCoords(row: 14, col: 1))
-   cell.value = .text("01/22/2022")
+// Set ranges
+sheet.setRange("A1:C3", value: .string("Range"))
 
-   /// term
-   cell = sheet.AddCell(XCoords(row: 13, col: 2))
+// Merge cells
+sheet.mergeCells("A1:C1")
 
-   cell.value = .text("Terms")
-   cell.Font = XFont(.TrebuchetMS, 12,true)
+// Get used cells
+let usedCells = sheet.getUsedCells()
 
-   cell = sheet.AddCell(XCoords(row: 14, col: 2))
-   cell.value = .text("30 days")
+// Clear all data
+sheet.clear()
+```
 
-   /// Due Date
-   cell = sheet.AddCell(XCoords(row: 13, col: 3))
-   cell.color = .systemOrange
-   cell.value = .text("Due Date")
-   cell.Font = XFont(.TrebuchetMS, 12,true)
+### Cell Values
 
-   cell = sheet.AddCell(XCoords(row: 14, col: 3))
-   cell.value = .text("02/20/2022")
+XLKit supports various cell value types:
 
-   /// table
-   /// title
-   var line = 16
-   cell = sheet.AddCell(XCoords(row: line, col: 1))
-   cell.Cols(txt: .white, bg: .systemOrange)
-   cell.Border = true
-   cell.value = .text("Description")
+```swift
+// String values
+.string("Hello World")
 
-   cell = sheet.AddCell(XCoords(row: line, col: 4))
-   cell.Cols(txt: .white, bg: .systemOrange)
-   cell.Border = true
-   cell.value = .text("Qty")
-   cell.Font = XFont(.TrebuchetMS, 10,true)
+// Numeric values
+.number(42.5)      // Double
+.integer(100)      // Int
 
-   cell = sheet.AddCell(XCoords(row: line, col: 5))
-   cell.Cols(txt: .white, bg: .systemOrange)
-   cell.Border = true
-   cell.value = .text("Unit Price")
-   cell.Font = XFont(.TrebuchetMS, 10,true)
+// Boolean values
+.boolean(true)
+.boolean(false)
 
-   cell = sheet.AddCell(XCoords(row: line, col: 6))
-   cell.Cols(txt: .white, bg: .systemOrange)
-   cell.Border = true
-   cell.value = .text("Amount")
-   cell.Font = XFont(.TrebuchetMS, 10,true)
+// Date values
+.date(Date())
 
-   /// line
-   line += 1
-   cell = sheet.AddCell(XCoords(row: line, col: 1))
-   cell.Border = true
-   cell.value = .text("item #1")
+// Formulas
+.formula("=A1+B1")
+.formula("=SUM(A1:A10)")
 
-   cell = sheet.AddCell(XCoords(row: line, col: 4))
-   cell.Border = true
-   cell.value = .double(3)
-   cell.alignmentHorizontal = .right
+// Empty cells
+.empty
+```
 
-   cell = sheet.AddCell(XCoords(row: line, col: 5))
-   cell.Border = true
-   cell.value = .double(50)
-   cell.alignmentHorizontal = .right
+### Cell Coordinates
 
-   cell = sheet.AddCell(XCoords(row: line, col: 6))
-   cell.Border = true
-   cell.value = .double(150)
-   cell.alignmentHorizontal = .right
+Work with Excel-style coordinates:
 
-   /// line
-   line += 1
-   cell = sheet.AddCell(XCoords(row: line, col: 1))
-   if #available(iOS 13.0, *) {
-       cell.Cols(txt: .black, bg: .systemGray6)
-   } else {
-       cell.Cols(txt: .black, bg: .lightGray)
-   }
-   cell.Border = true
-   cell.value = .text("item #2")
+```swift
+// Create coordinates
+let coord = CellCoordinate(row: 1, column: 1)
+print(coord.excelAddress) // "A1"
 
-   cell = sheet.AddCell(XCoords(row: line, col: 4))
-   if #available(iOS 13.0, *) {
-       cell.Cols(txt: .black, bg: .systemGray6)
-   } else {
-       cell.Cols(txt: .black, bg: .lightGray)
-   }
-   cell.Border = true
-   cell.value = .double(2)
-   cell.alignmentHorizontal = .right
+// Parse Excel addresses
+let coord2 = CellCoordinate(excelAddress: "B2")
+print(coord2?.row)    // 2
+print(coord2?.column) // 2
 
-   cell = sheet.AddCell(XCoords(row: line, col: 5))
-   if #available(iOS 13.0, *) {
-       cell.Cols(txt: .black, bg: .systemGray6)
-   } else {
-       cell.Cols(txt: .black, bg: .lightGray)
-   }
-   cell.Border = true
-   cell.value = .double(100)
-   cell.alignmentHorizontal = .right
+// Create ranges
+let range = CellRange(start: coord, end: CellCoordinate(row: 3, column: 3))
+print(range.excelRange) // "A1:C3"
 
-   cell = sheet.AddCell(XCoords(row: line, col: 6))
-   if #available(iOS 13.0, *) {
-       cell.Cols(txt: .black, bg: .systemGray6)
-   } else {
-       cell.Cols(txt: .black, bg: .lightGray)
-   }
-   cell.Border = true
-   cell.value = .double(200)
-   cell.alignmentHorizontal = .right
+// Parse Excel ranges
+let range2 = CellRange(excelRange: "A1:B5")
+```
 
-   /// line
-   line += 1
-   cell = sheet.AddCell(XCoords(row: line, col: 1))
-   cell.Border = true
-   cell.value = .text("item #3")
+## Advanced Usage
 
-   cell = sheet.AddCell(XCoords(row: line, col: 4))
-   cell.Border = true
-   cell.value = .double(4)
-   cell.alignmentHorizontal = .right
+### Multiple Sheets with Formulas
 
-   cell = sheet.AddCell(XCoords(row: line, col: 5))
-   cell.Border = true
-   cell.value = .double(200)
-   cell.alignmentHorizontal = .right
+```swift
+let workbook = XLKit.createWorkbook()
 
-   cell = sheet.AddCell(XCoords(row: line, col: 6))
-   cell.Border = true
-   cell.value = .double(800)
-   cell.alignmentHorizontal = .right
+// Data sheet
+let dataSheet = workbook.addSheet(name: "Data")
+dataSheet.setCell("A1", value: .string("Product"))
+dataSheet.setCell("B1", value: .string("Price"))
+dataSheet.setCell("C1", value: .string("Quantity"))
 
-   line += 2
+dataSheet.setCell("A2", value: .string("Apple"))
+dataSheet.setCell("B2", value: .number(1.99))
+dataSheet.setCell("C2", value: .integer(10))
 
-   cell = sheet.AddCell(XCoords(row: line, col: 1))
-   cell.value = .text("Thank you for your business!")
-   cell.Font = XFont(.TrebuchetMS, 10, false, true)
-   cell.alignmentHorizontal = .left
+dataSheet.setCell("A3", value: .string("Orange"))
+dataSheet.setCell("B3", value: .number(2.49))
+dataSheet.setCell("C3", value: .integer(5))
 
-   cell = sheet.AddCell(XCoords(row: line, col: 5))
-   cell.Cols(txt: .white, bg: .systemOrange)
-   cell.value = .text("Total")
-   cell.Font = XFont(.TrebuchetMS, 11, true)
-   cell.alignmentHorizontal = .left
+// Summary sheet with formulas
+let summarySheet = workbook.addSheet(name: "Summary")
+summarySheet.setCell("A1", value: .string("Total Items"))
+summarySheet.setCell("B1", value: .formula("=SUM(Data!C:C)"))
 
-   cell = sheet.AddCell(XCoords(row: line, col: 6))
-   cell.Cols(txt: .white, bg: .systemOrange)
-   cell.value = .double(1100)
-   cell.Font = XFont(.TrebuchetMS, 11, true)
-   cell.alignmentHorizontal = .right
+summarySheet.setCell("A2", value: .string("Total Revenue"))
+summarySheet.setCell("B2", value: .formula("=SUMPRODUCT(Data!B:B,Data!C:C)"))
 
-   line += 2
+summarySheet.setCell("A3", value: .string("Average Price"))
+summarySheet.setCell("B3", value: .formula("=AVERAGE(Data!B:B)"))
 
-   cell = sheet.AddCell(XCoords(row: line, col: 1))
-   cell.value = .text("Payment Options")
-   cell.Font = XFont(.TrebuchetMS, 12, true, false)
-   cell.alignmentHorizontal = .left
+// Merge headers
+dataSheet.mergeCells("A1:C1")
+summarySheet.mergeCells("A1:B1")
+```
 
-   line += 1
+### Working with Ranges
 
-   cell = sheet.AddCell(XCoords(row: line, col: 1))
-   cell.value = .text("Enter PayPal email address or bank account number here")
-   cell.Font = XFont(.TrebuchetMS, 10, false, true)
-   cell.alignmentHorizontal = .left
+```swift
+let sheet = workbook.addSheet(name: "Range Test")
 
-   sheet.buildindex()
+// Set values in a range
+sheet.setRange("A1:C3", value: .string("Range"))
 
-   sheet.MergeRect(XRect(2, 1, 5, 1))
-   sheet.MergeRect(XRect(3, 1, 5, 1))
-   sheet.MergeRect(XRect(4, 1, 5, 1))
-   sheet.MergeRect(XRect(5, 1, 5, 1))
+// Create and work with ranges
+let range = CellRange(excelRange: "A1:B5")!
+for coordinate in range.coordinates {
+    sheet.setCell(coordinate.excelAddress, value: .string("Cell \(coordinate.excelAddress)"))
+}
 
-   sheet.MergeRect(XRect(16, 1, 3, 1))
-   sheet.MergeRect(XRect(17, 1, 3, 1))
-   sheet.MergeRect(XRect(18, 1, 3, 1))
-   sheet.MergeRect(XRect(19, 1, 3, 1))
+// Merge multiple ranges
+sheet.mergeCells("A1:C1")
+sheet.mergeCells("A5:C5")
+```
 
-   sheet.MergeRect(XRect(23, 1, 3, 1))
-   sheet.MergeRect(XRect(24, 1, 3, 1))
+### Date Handling
 
+```swift
+let sheet = workbook.addSheet(name: "Dates")
 
-   sheet.ForColumnSetWidth(1, 100)
-   sheet.ForColumnSetWidth(2, 70)
-   sheet.ForColumnSetWidth(3, 60)
-   sheet.ForColumnSetWidth(4, 70)
-   sheet.ForColumnSetWidth(5, 70)
-   sheet.ForColumnSetWidth(6, 90)
+// Add dates
+let today = Date()
+sheet.setCell("A1", value: .date(today))
 
+// Convert between Excel dates and Swift dates
+let excelNumber = XLKitUtils.excelNumberFromDate(today)
+let convertedDate = XLKitUtils.dateFromExcelNumber(excelNumber)
 
-   sheet = book.NewSheet("Perfomance1 Sheet")
-   for col in 1...20 {
-       sheet.ForColumnSetWidth(col,Int.random(in: 50..<100))
-       for row in 1...1000 {
-           let cell = sheet.AddCell(XCoords(row: row, col: col))
-           cell.value = .integer(Int.random(in: 100..<200000))
-           cell.Font = XFont(GetRandomFont(), Int.random(in: 10..<20))
-           cell.color = colortext[Int.random(in: 0..<colortext.count)]
-           cell.colorbackground = color[Int.random(in: 0..<color.count)]
-           cell.Border = true
-           cell.alignmentHorizontal = .center
-           cell.alignmentVertical = .center
-       }
-   }
+// Format dates for display
+let formattedDate = XLKitUtils.formatDate(today)
+```
 
-   sheet = book.NewSheet("Perfomance2 Sheet")
-   for col in 1...20 {
-       sheet.ForColumnSetWidth(col,Int.random(in: 50..<100))
-       for row in 1...1000 {
-           let cell = sheet.AddCell(XCoords(row: row, col: col))
-           cell.value = .text("\(row):\(col)")
-           cell.Font = XFont(GetRandomFont(), Int.random(in: 10..<20))
-           cell.color = colortext[Int.random(in: 0..<colortext.count)]
-           cell.colorbackground = color[Int.random(in: 0..<color.count)]
-           cell.Border = true
-           cell.alignmentHorizontal = .center
-           cell.alignmentVertical = .center
-       }
-   }
+### Column/Row Utilities
 
-   let fileid = book.save("example.xlsx")
-   print("<<<File XLSX generated!>>>")
-   print("\(fileid)")
-``` 
+```swift
+// Convert column numbers to letters
+XLKitUtils.columnLetter(from: 1)  // "A"
+XLKitUtils.columnLetter(from: 26) // "Z"
+XLKitUtils.columnLetter(from: 27) // "AA"
+
+// Convert letters to numbers
+XLKitUtils.columnNumber(from: "A")  // 1
+XLKitUtils.columnNumber(from: "Z")  // 26
+XLKitUtils.columnNumber(from: "AA") // 27
+```
+
+## Error Handling
+
+XLKit provides comprehensive error handling:
+
+```swift
+do {
+    try await XLKit.saveWorkbook(workbook, to: fileURL)
+} catch XLKitError.invalidCoordinate(let coord) {
+    print("Invalid coordinate: \(coord)")
+} catch XLKitError.fileWriteError(let message) {
+    print("File write error: \(message)")
+} catch XLKitError.zipCreationError(let message) {
+    print("ZIP creation error: \(message)")
+} catch {
+    print("Unknown error: \(error)")
+}
+```
+
+## Performance Considerations
+
+- **Memory Usage**: XLKit is optimized for large datasets with efficient memory management
+- **Async Operations**: Use async/await for file operations to avoid blocking the main thread
+- **Batch Operations**: Set multiple cells in batches for better performance
+- **Range Operations**: Use `setRange()` for setting multiple cells with the same value
+
+## File Format
+
+XLKit generates standard Excel (.xlsx) files that are compatible with:
+- Microsoft Excel
+- Google Sheets
+- LibreOffice Calc
+- Numbers (macOS)
+- Any application that supports the OpenXML format
 
 ## License
 
-SSZipArchive is protected under the [MIT license](https://github.com/samsoffes/ssziparchive/raw/master/LICENSE) and our slightly modified version of [minizip-ng (formally minizip)](https://github.com/zlib-ng/minizip-ng) 3.0.2 is licensed under the [Zlib license](https://www.zlib.net/zlib_license.html).
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgments
+## Contributing
 
-* Big thanks to [ZipArchive](https://github.com/ZipArchive).
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Support
+
+If you encounter any issues or have questions, please open an issue on GitHub.
