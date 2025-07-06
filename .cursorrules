@@ -1,0 +1,47 @@
+# .cursorrules
+
+[general]
+# Only allow code changes in these directories
+allowed_paths = [
+    "Sources/XLKit/",
+    "Tests/XLKitTests/",
+    ".github/workflows/",
+    "README.md",
+    "AGENT.MD"
+]
+
+# Disallow UI, assets, or platform-specific code outside macOS
+disallowed_paths = [
+    "Sources/XLKit/icons.xcassets/",
+    "Sources/XLKit/*.storyboard",
+    "Sources/XLKit/*.xib"
+]
+
+# Only allow Swift and Markdown files
+allowed_extensions = [
+    ".swift",
+    ".md",
+    ".yml",
+    ".ini"
+]
+
+# Do not suggest or create files for other platforms (iOS, Linux, Windows, etc.)
+disallow_platforms = [
+    "iOS",
+    "Linux",
+    "Windows",
+    "Android"
+]
+
+# All code must be compatible with Swift 6.0 and macOS 13+
+require_swift_version = "6.0"
+require_macos_version = "13.0"
+
+# All public APIs must have doc comments
+require_doc_comments = true
+
+# All new features must include corresponding unit tests
+require_unit_tests = true
+
+# CI must pass before merge
+require_ci_pass = true 
