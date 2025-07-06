@@ -1,4 +1,4 @@
-name: Create Excel Test File
+name: Create Excel Test File without Images
 
 on:
   workflow_dispatch:
