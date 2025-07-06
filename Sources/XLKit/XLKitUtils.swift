@@ -77,16 +77,9 @@ public struct XLKitUtils {
     
     /// Generates XLSX file asynchronously
     public static func generateXLSX(workbook: Workbook, to url: URL) async throws {
-        try await withCheckedThrowingContinuation { continuation in
-            DispatchQueue.global(qos: .userInitiated).async {
-                do {
-                    try generateXLSXSync(workbook: workbook, to: url)
-                    continuation.resume()
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
+        // For now, just call the sync version directly since file I/O is not CPU-bound
+        // and the workbook is not shared across threads
+        try generateXLSXSync(workbook: workbook, to: url)
     }
     
     /// Generates XLSX file synchronously

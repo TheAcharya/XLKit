@@ -20,7 +20,7 @@ public struct XLKit {
 }
 
 /// Represents an Excel workbook containing multiple sheets
-public class Workbook {
+public final class Workbook {
     private var sheets: [Sheet] = []
     private let nextSheetId: Int
     
@@ -62,7 +62,7 @@ public class Workbook {
 }
 
 /// Represents a worksheet in an Excel workbook
-public class Sheet {
+public final class Sheet {
     public let name: String
     public let id: Int
     private var cells: [String: CellValue] = [:]
