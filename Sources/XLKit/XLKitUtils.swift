@@ -556,4 +556,186 @@ public struct XLKitUtils {
             throw XLKitError.zipCreationError("ZIP creation failed with status \(process.terminationStatus)")
         }
     }
+}
+
+// MARK: - CSV/TSV Import/Export
+
+/// CSV/TSV import/export utilities
+public struct CSVUtils {
+    
+    /// Exports a sheet to CSV format
+    public static func exportToCSV(sheet: Sheet, separator: String = ",") -> String {
+        var csv = ""
+        
+        // Get all used cells and determine the range
+        let usedCells = sheet.getUsedCells()
+        guard !usedCells.isEmpty else { return csv }
+        
+        // Parse coordinates to find max row and column
+        var maxRow = 0
+        var maxColumn = 0
+        
+        for cellAddress in usedCells {
+            if let coord = CellCoordinate(excelAddress: cellAddress) {
+                maxRow = max(maxRow, coord.row)
+                maxColumn = max(maxColumn, coord.column)
+            }
+        }
+        
+        // Generate CSV content
+        for row in 1...maxRow {
+            var rowData: [String] = []
+            
+            for column in 1...maxColumn {
+                let coord = CellCoordinate(row: row, column: column)
+                let cellAddress = coord.excelAddress
+                
+                if let cellValue = sheet.getCell(cellAddress) {
+                    let stringValue = formatCellValueForCSV(cellValue, separator: separator)
+                    rowData.append(stringValue)
+                } else {
+                    rowData.append("")
+                }
+            }
+            
+            csv += rowData.joined(separator: separator) + "\n"
+        }
+        
+        return csv
+    }
+    
+    /// Exports a sheet to TSV format
+    public static func exportToTSV(sheet: Sheet) -> String {
+        return exportToCSV(sheet: sheet, separator: "\t")
+    }
+    
+    /// Imports CSV data into a sheet
+    public static func importFromCSV(sheet: Sheet, csvData: String, separator: String = ",", hasHeader: Bool = false) {
+        let lines = csvData.components(separatedBy: .newlines)
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        
+        var startRow = 1
+        if hasHeader {
+            startRow = 2 // Skip header row
+        }
+        
+        for (lineIndex, line) in lines.enumerated() {
+            let row = startRow + lineIndex
+            let columns = parseCSVLine(line, separator: separator)
+            
+            for (columnIndex, value) in columns.enumerated() {
+                let column = columnIndex + 1
+                let coord = CellCoordinate(row: row, column: column)
+                let cellAddress = coord.excelAddress
+                
+                let cellValue = parseCSVValue(value)
+                sheet.setCell(cellAddress, value: cellValue)
+            }
+        }
+    }
+    
+    /// Imports TSV data into a sheet
+    public static func importFromTSV(sheet: Sheet, tsvData: String, hasHeader: Bool = false) {
+        importFromCSV(sheet: sheet, csvData: tsvData, separator: "\t", hasHeader: hasHeader)
+    }
+    
+    /// Creates a workbook from CSV data
+    public static func createWorkbookFromCSV(csvData: String, sheetName: String = "Sheet1", separator: String = ",", hasHeader: Bool = false) -> Workbook {
+        let workbook = XLKit.createWorkbook()
+        let sheet = workbook.addSheet(name: sheetName)
+        
+        importFromCSV(sheet: sheet, csvData: csvData, separator: separator, hasHeader: hasHeader)
+        
+        return workbook
+    }
+    
+    /// Creates a workbook from TSV data
+    public static func createWorkbookFromTSV(tsvData: String, sheetName: String = "Sheet1", hasHeader: Bool = false) -> Workbook {
+        return createWorkbookFromCSV(csvData: tsvData, sheetName: sheetName, separator: "\t", hasHeader: hasHeader)
+    }
+    
+    // MARK: - Private Helper Methods
+    
+    private static func formatCellValueForCSV(_ cellValue: CellValue, separator: String) -> String {
+        let stringValue = cellValue.stringValue
+        
+        // Escape quotes and wrap in quotes if needed
+        if stringValue.contains(separator) || stringValue.contains("\"") || stringValue.contains("\n") {
+            let escaped = stringValue.replacingOccurrences(of: "\"", with: "\"\"")
+            return "\"\(escaped)\""
+        }
+        
+        return stringValue
+    }
+    
+    private static func parseCSVLine(_ line: String, separator: String) -> [String] {
+        var result: [String] = []
+        var current = ""
+        var inQuotes = false
+        
+        for char in line {
+            if char == "\"" {
+                inQuotes.toggle()
+            } else if char == Character(separator) && !inQuotes {
+                result.append(current.trimmingCharacters(in: .whitespaces))
+                current = ""
+            } else {
+                current.append(char)
+            }
+        }
+        
+        result.append(current.trimmingCharacters(in: .whitespaces))
+        return result
+    }
+    
+    private static func parseCSVValue(_ value: String) -> CellValue {
+        let trimmed = value.trimmingCharacters(in: .whitespaces)
+        
+        if trimmed.isEmpty {
+            return .empty
+        }
+        
+        // Try to parse as number
+        if let doubleValue = Double(trimmed) {
+            // Check if it's an integer
+            if doubleValue.truncatingRemainder(dividingBy: 1) == 0 {
+                return .integer(Int(doubleValue))
+            }
+            return .number(doubleValue)
+        }
+        
+        // Try to parse as boolean
+        let lowercased = trimmed.lowercased()
+        if lowercased == "true" || lowercased == "false" {
+            return .boolean(lowercased == "true")
+        }
+        
+        // Try to parse as date (basic ISO format)
+        if let date = parseDate(trimmed) {
+            return .date(date)
+        }
+        
+        // Default to string
+        return .string(trimmed)
+    }
+    
+    private static func parseDate(_ value: String) -> Date? {
+        let formatters = [
+            "yyyy-MM-dd",
+            "MM/dd/yyyy",
+            "dd/MM/yyyy",
+            "yyyy-MM-dd HH:mm:ss",
+            "MM/dd/yyyy HH:mm:ss"
+        ]
+        
+        for format in formatters {
+            let formatter = DateFormatter()
+            formatter.dateFormat = format
+            if let date = formatter.date(from: value) {
+                return date
+            }
+        }
+        
+        return nil
+    }
 } 

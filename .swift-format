@@ -1,0 +1,27 @@
+{
+  // SwiftFormat configuration for XLKit
+  "version": 2,
+  "indentation": {
+    "spaces": 4
+  },
+  "lineLength": 120,
+  "tabWidth": 4,
+  "useTabs": false,
+  "trailingCommas": true,
+  "groupImports": true,
+  "reorderImports": true,
+  "lineBreakBeforeEachArgument": false,
+  "lineBreakBeforeEachParameter": false,
+  "spaceAroundOperators": true,
+  "blankLineBetweenMembers": true,
+  "blankLineAfterImports": true,
+  "blankLineBeforeReturn": true,
+  "elseOnSameLine": true,
+  "braceOnNextLine": false,
+  "selfRequired": false,
+  "markTypes": true,
+  "markFunctions": true,
+  "markExtensions": true,
+  "markProperties": true,
+  "markInitializers": true
+} 

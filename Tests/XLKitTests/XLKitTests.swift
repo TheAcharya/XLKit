@@ -86,7 +86,7 @@ final class XLKitTests: XCTestCase {
         let workbook = XLKit.createWorkbook()
         let sheet = workbook.addSheet(name: "Test")
         
-        sheet.setRange("A1:C3", value: .string("Range"))
+        sheet.setRange("A1:C3", string: "Range")
         
         XCTAssertEqual(sheet.getCell("A1"), .string("Range"))
         XCTAssertEqual(sheet.getCell("B2"), .string("Range"))
@@ -536,5 +536,337 @@ final class XLKitTests: XCTestCase {
             0xAE, 0x42, 0x60, 0x82  // IEND CRC
         ]
         return Data(pngBytes)
+    }
+    
+    // MARK: - Rich Cell Formatting Tests
+    
+    func testCellFormatting() {
+        let workbook = XLKit.createWorkbook()
+        let sheet = workbook.addSheet(name: "Formatting")
+        
+        // Test text formatting
+        let headerFormat = CellFormat.header(fontSize: 16.0, backgroundColor: "#CCCCCC")
+        sheet.setCell("A1", string: "Header", format: headerFormat)
+        
+        // Test currency formatting
+        let currencyFormat = CellFormat.currency(format: .currencyWithDecimals, color: "#006600")
+        sheet.setCell("B1", number: 1234.56, format: currencyFormat)
+        
+        // Test percentage formatting
+        let percentageFormat = CellFormat.percentage()
+        sheet.setCell("C1", number: 0.85, format: percentageFormat)
+        
+        // Test date formatting
+        let dateFormat = CellFormat.date()
+        let date = Date()
+        sheet.setCell("D1", date: date, format: dateFormat)
+        
+        // Test bordered formatting
+        let borderedFormat = CellFormat.bordered(style: .thin, color: "#000000")
+        sheet.setCell("E1", string: "Bordered", format: borderedFormat)
+        
+        // Verify formatting is stored
+        XCTAssertNotNil(sheet.getCellFormat("A1"))
+        XCTAssertNotNil(sheet.getCellFormat("B1"))
+        XCTAssertNotNil(sheet.getCellFormat("C1"))
+        XCTAssertNotNil(sheet.getCellFormat("D1"))
+        XCTAssertNotNil(sheet.getCellFormat("E1"))
+        
+        // Test getting cell with format
+        let cellWithFormat = sheet.getCellWithFormat("A1")
+        XCTAssertNotNil(cellWithFormat)
+        XCTAssertEqual(cellWithFormat?.value, .string("Header"))
+        XCTAssertNotNil(cellWithFormat?.format)
+    }
+    
+    func testCustomCellFormatting() {
+        let workbook = XLKit.createWorkbook()
+        let sheet = workbook.addSheet(name: "Custom Formatting")
+        
+        // Create custom format
+        var customFormat = CellFormat()
+        customFormat.fontName = "Arial"
+        customFormat.fontSize = 12.0
+        customFormat.fontWeight = .bold
+        customFormat.fontStyle = .italic
+        customFormat.textDecoration = .underline
+        customFormat.fontColor = "#FF0000"
+        customFormat.backgroundColor = "#FFFF00"
+        customFormat.horizontalAlignment = .center
+        customFormat.verticalAlignment = .center
+        customFormat.textWrapping = true
+        customFormat.textRotation = 45
+        customFormat.numberFormat = .custom("0.00%")
+        customFormat.customNumberFormat = "0.00%"
+        customFormat.borderTop = .thick
+        customFormat.borderBottom = .thick
+        customFormat.borderLeft = .thin
+        customFormat.borderRight = .thin
+        customFormat.borderColor = "#0000FF"
+        
+        sheet.setCell("A1", string: "Custom Formatted", format: customFormat)
+        
+        // Verify custom format is stored
+        let retrievedFormat = sheet.getCellFormat("A1")
+        XCTAssertNotNil(retrievedFormat)
+        XCTAssertEqual(retrievedFormat?.fontName, "Arial")
+        XCTAssertEqual(retrievedFormat?.fontSize, 12.0)
+        XCTAssertEqual(retrievedFormat?.fontWeight, .bold)
+        XCTAssertEqual(retrievedFormat?.fontStyle, .italic)
+        XCTAssertEqual(retrievedFormat?.textDecoration, .underline)
+        XCTAssertEqual(retrievedFormat?.fontColor, "#FF0000")
+        XCTAssertEqual(retrievedFormat?.backgroundColor, "#FFFF00")
+        XCTAssertEqual(retrievedFormat?.horizontalAlignment, .center)
+        XCTAssertEqual(retrievedFormat?.verticalAlignment, .center)
+        XCTAssertEqual(retrievedFormat?.textWrapping, true)
+        XCTAssertEqual(retrievedFormat?.textRotation, 45)
+        XCTAssertEqual(retrievedFormat?.numberFormat, .custom)
+        XCTAssertEqual(retrievedFormat?.customNumberFormat, "0.00%")
+        XCTAssertEqual(retrievedFormat?.borderTop, .thick)
+        XCTAssertEqual(retrievedFormat?.borderBottom, .thick)
+        XCTAssertEqual(retrievedFormat?.borderLeft, .thin)
+        XCTAssertEqual(retrievedFormat?.borderRight, .thin)
+        XCTAssertEqual(retrievedFormat?.borderColor, "#0000FF")
+    }
+    
+    func testRangeFormatting() {
+        let workbook = XLKit.createWorkbook()
+        let sheet = workbook.addSheet(name: "Range Formatting")
+        
+        // Format a range of cells
+        let headerFormat = CellFormat.header()
+        sheet.setRange("A1:C1", string: "Header", format: headerFormat)
+        
+        // Format another range with different formatting
+        let dataFormat = CellFormat.bordered(style: .thin)
+        sheet.setRange("A2:C5", number: 42, format: dataFormat)
+        
+        // Verify formatting is applied to all cells in range
+        for row in 1...1 {
+            for col in 1...3 {
+                let coord = CellCoordinate(row: row, column: col).excelAddress
+                XCTAssertNotNil(sheet.getCellFormat(coord))
+            }
+        }
+        
+        for row in 2...5 {
+            for col in 1...3 {
+                let coord = CellCoordinate(row: row, column: col).excelAddress
+                XCTAssertNotNil(sheet.getCellFormat(coord))
+            }
+        }
+    }
+    
+    // MARK: - CSV/TSV Import/Export Tests
+    
+    func testCSVExport() {
+        let workbook = XLKit.createWorkbook()
+        let sheet = workbook.addSheet(name: "CSV Test")
+        
+        // Add some data
+        sheet.setCell("A1", string: "Name", format: CellFormat.header())
+        sheet.setCell("B1", string: "Age", format: CellFormat.header())
+        sheet.setCell("C1", string: "Salary", format: CellFormat.header())
+        
+        sheet.setCell("A2", string: "John Doe")
+        sheet.setCell("B2", integer: 30)
+        sheet.setCell("C2", number: 50000.50, format: CellFormat.currency())
+        
+        sheet.setCell("A3", string: "Jane Smith")
+        sheet.setCell("B3", integer: 25)
+        sheet.setCell("C3", number: 45000.75, format: CellFormat.currency())
+        
+        // Export to CSV
+        let csv = XLKit.exportSheetToCSV(sheet: sheet)
+        
+        // Verify CSV content
+        XCTAssertTrue(csv.contains("Name,Age,Salary"))
+        XCTAssertTrue(csv.contains("John Doe,30,50000.5"))
+        XCTAssertTrue(csv.contains("Jane Smith,25,45000.75"))
+    }
+    
+    func testTSVExport() {
+        let workbook = XLKit.createWorkbook()
+        let sheet = workbook.addSheet(name: "TSV Test")
+        
+        // Add some data
+        sheet.setCell("A1", string: "Product")
+        sheet.setCell("B1", string: "Price")
+        sheet.setCell("A2", string: "Apple")
+        sheet.setCell("B2", number: 1.99)
+        sheet.setCell("A3", string: "Banana")
+        sheet.setCell("B3", number: 0.99)
+        
+        // Export to TSV
+        let tsv = XLKit.exportSheetToTSV(sheet: sheet)
+        
+        // Verify TSV content (tab-separated)
+        XCTAssertTrue(tsv.contains("Product\tPrice"))
+        XCTAssertTrue(tsv.contains("Apple\t1.99"))
+        XCTAssertTrue(tsv.contains("Banana\t0.99"))
+    }
+    
+    func testCSVImport() {
+        let csvData = """
+        Name,Age,Salary,Active
+        John Doe,30,50000.50,true
+        Jane Smith,25,45000.75,false
+        Bob Johnson,35,60000.00,true
+        """
+        
+        // Create workbook from CSV
+        let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
+        let sheet = workbook.getSheets().first!
+        
+        // Verify imported data
+        XCTAssertEqual(sheet.getCell("A1"), .string("John Doe"))
+        XCTAssertEqual(sheet.getCell("B1"), .integer(30))
+        XCTAssertEqual(sheet.getCell("C1"), .number(50000.50))
+        XCTAssertEqual(sheet.getCell("D1"), .boolean(true))
+        
+        XCTAssertEqual(sheet.getCell("A2"), .string("Jane Smith"))
+        XCTAssertEqual(sheet.getCell("B2"), .integer(25))
+        XCTAssertEqual(sheet.getCell("C2"), .number(45000.75))
+        XCTAssertEqual(sheet.getCell("D2"), .boolean(false))
+        
+        XCTAssertEqual(sheet.getCell("A3"), .string("Bob Johnson"))
+        XCTAssertEqual(sheet.getCell("B3"), .integer(35))
+        XCTAssertEqual(sheet.getCell("C3"), .number(60000.00))
+        XCTAssertEqual(sheet.getCell("D3"), .boolean(true))
+    }
+    
+    func testTSVImport() {
+        let tsvData = """
+        Product\tPrice\tIn Stock
+        Apple\t1.99\ttrue
+        Banana\t0.99\tfalse
+        Orange\t2.49\ttrue
+        """
+        
+        // Create workbook from TSV
+        let workbook = XLKit.createWorkbookFromTSV(tsvData: tsvData, hasHeader: true)
+        let sheet = workbook.getSheets().first!
+        
+        // Verify imported data
+        XCTAssertEqual(sheet.getCell("A1"), .string("Apple"))
+        XCTAssertEqual(sheet.getCell("B1"), .number(1.99))
+        XCTAssertEqual(sheet.getCell("C1"), .boolean(true))
+        
+        XCTAssertEqual(sheet.getCell("A2"), .string("Banana"))
+        XCTAssertEqual(sheet.getCell("B2"), .number(0.99))
+        XCTAssertEqual(sheet.getCell("C2"), .boolean(false))
+        
+        XCTAssertEqual(sheet.getCell("A3"), .string("Orange"))
+        XCTAssertEqual(sheet.getCell("B3"), .number(2.49))
+        XCTAssertEqual(sheet.getCell("C3"), .boolean(true))
+    }
+    
+    func testCSVImportWithQuotes() {
+        let csvData = """
+        Name,Description,Value
+        "John Doe","Software Engineer, Senior",50000
+        "Jane Smith","Product Manager",45000
+        "Bob Johnson","Data Scientist, PhD",60000
+        """
+        
+        // Create workbook from CSV
+        let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
+        let sheet = workbook.getSheets().first!
+        
+        // Verify imported data with quotes and commas
+        XCTAssertEqual(sheet.getCell("A1"), .string("John Doe"))
+        XCTAssertEqual(sheet.getCell("B1"), .string("Software Engineer, Senior"))
+        XCTAssertEqual(sheet.getCell("C1"), .integer(50000))
+        
+        XCTAssertEqual(sheet.getCell("A2"), .string("Jane Smith"))
+        XCTAssertEqual(sheet.getCell("B2"), .string("Product Manager"))
+        XCTAssertEqual(sheet.getCell("C2"), .integer(45000))
+        
+        XCTAssertEqual(sheet.getCell("A3"), .string("Bob Johnson"))
+        XCTAssertEqual(sheet.getCell("B3"), .string("Data Scientist, PhD"))
+        XCTAssertEqual(sheet.getCell("C3"), .integer(60000))
+    }
+    
+    func testCSVImportWithDates() {
+        let csvData = """
+        Name,Birth Date,Hire Date
+        John Doe,1990-05-15,2020-03-01
+        Jane Smith,1988-12-10,2019-07-15
+        """
+        
+        // Create workbook from CSV
+        let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
+        let sheet = workbook.getSheets().first!
+        
+        // Verify imported data with dates
+        XCTAssertEqual(sheet.getCell("A1"), .string("John Doe"))
+        
+        // Check that dates are parsed correctly
+        let birthDate1 = sheet.getCell("B1")
+        if case .date(let date) = birthDate1 {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            XCTAssertEqual(formatter.string(from: date), "1990-05-15")
+        } else {
+            XCTFail("Expected date value for birth date")
+        }
+        
+        let hireDate1 = sheet.getCell("C1")
+        if case .date(let date) = hireDate1 {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            XCTAssertEqual(formatter.string(from: date), "2020-03-01")
+        } else {
+            XCTFail("Expected date value for hire date")
+        }
+    }
+    
+    func testCSVImportIntoExistingSheet() {
+        let workbook = XLKit.createWorkbook()
+        let sheet = workbook.addSheet(name: "Import Test")
+        
+        // Add some existing data
+        sheet.setCell("A1", string: "Existing Data")
+        sheet.setCell("B1", number: 100)
+        
+        let csvData = """
+        Name,Value
+        New Item 1,200
+        New Item 2,300
+        """
+        
+        // Import CSV into existing sheet
+        XLKit.importCSVIntoSheet(sheet: sheet, csvData: csvData, hasHeader: true)
+        
+        // Verify existing data is preserved
+        XCTAssertEqual(sheet.getCell("A1"), .string("Existing Data"))
+        XCTAssertEqual(sheet.getCell("B1"), .number(100))
+        
+        // Verify new data is added
+        XCTAssertEqual(sheet.getCell("A2"), .string("New Item 1"))
+        XCTAssertEqual(sheet.getCell("B2"), .integer(200))
+        XCTAssertEqual(sheet.getCell("A3"), .string("New Item 2"))
+        XCTAssertEqual(sheet.getCell("B3"), .integer(300))
+    }
+    
+    func testCSVExportWithSpecialCharacters() {
+        let workbook = XLKit.createWorkbook()
+        let sheet = workbook.addSheet(name: "Special Chars")
+        
+        // Add data with special characters
+        sheet.setCell("A1", string: "Name")
+        sheet.setCell("B1", string: "Description")
+        sheet.setCell("A2", string: "John")
+        sheet.setCell("B2", string: "Contains \"quotes\" and, commas")
+        sheet.setCell("A3", string: "Jane")
+        sheet.setCell("B3", string: "Contains\nnewlines")
+        
+        // Export to CSV
+        let csv = XLKit.exportSheetToCSV(sheet: sheet)
+        
+        // Verify CSV content with proper escaping
+        XCTAssertTrue(csv.contains("Name,Description"))
+        XCTAssertTrue(csv.contains("John,\"Contains \"\"quotes\"\" and, commas\""))
+        XCTAssertTrue(csv.contains("Jane,\"Contains\nnewlines\""))
     }
 } 

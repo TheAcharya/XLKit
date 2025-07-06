@@ -48,4 +48,11 @@ require_easy_to_use_api = true
 require_image_and_column_sizing_tests = true
 
 # CI must pass before merge
-require_ci_pass = true 
+require_ci_pass = true
+
+# Code Style & Formatting
+# All code must be formatted using the .swift-format file in the repo.
+# Use 4-space indentation, trailing commas, grouped/reordered imports, and modern Swift idioms.
+# No force-unwraps or force-casts in public API.
+# All public APIs must have doc comments.
+# Code must be formatted and pass CI before merging. 

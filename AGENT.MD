@@ -55,4 +55,14 @@ There is no UI—this is a backend/data library only.
 
 - Always prefer clarity, safety, and **ease of use** over brevity.
 - If unsure, ask for clarification in a comment or PR.
-- Do not auto-merge breaking changes. 
+- Do not auto-merge breaking changes.
+
+## Code Style & Formatting Policy
+
+- All code must follow the style rules in `.swift-format`.
+- Use 4-space indentation, trailing commas, grouped imports, and modern Swift idioms.
+- No force-unwraps or force-casts in public API.
+- All public APIs must have doc comments.
+- Code must be formatted before PRs are merged.
+- Run `swift-format format -i .` to auto-format the codebase.
+- See README and `.cursorrules` for more details. 

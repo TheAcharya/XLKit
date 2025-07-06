@@ -315,3 +315,26 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Support
 
 If you encounter any issues or have questions, please open an issue on GitHub.
+
+## Code Style & Formatting
+
+XLKit enforces a modern, consistent Swift code style for all contributions:
+
+- 4-space indentation
+- Trailing commas
+- Grouped and reordered imports
+- 120 character line length
+- Consistent spacing and blank lines
+- No force-unwraps or force-casts in public API
+- All public APIs have doc comments
+- Follows Swift 6 idioms and best practices
+
+A `.swift-format` file is included in the repo. To format the codebase, run:
+
+```sh
+swift-format format -i .
+```
+
+Or use Xcode's built-in formatter for most style rules.
+
+All code must be formatted and pass CI before merging. See `.cursorrules` for more details.

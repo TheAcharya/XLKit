@@ -5,7 +5,7 @@ public struct XLKit {
     
     /// Creates a new workbook
     public static func createWorkbook() -> Workbook {
-        Workbook()
+        return Workbook()
     }
     
     /// Saves a workbook to a file asynchronously
@@ -16,6 +16,38 @@ public struct XLKit {
     /// Saves a workbook to a file synchronously
     public static func saveWorkbook(_ workbook: Workbook, to url: URL) throws {
         try workbook.saveSync(to: url)
+    }
+    
+    // MARK: - CSV/TSV Convenience Methods
+    
+    /// Creates a workbook from CSV data
+    public static func createWorkbookFromCSV(csvData: String, sheetName: String = "Sheet1", separator: String = ",", hasHeader: Bool = false) -> Workbook {
+        return CSVUtils.createWorkbookFromCSV(csvData: csvData, sheetName: sheetName, separator: separator, hasHeader: hasHeader)
+    }
+    
+    /// Creates a workbook from TSV data
+    public static func createWorkbookFromTSV(tsvData: String, sheetName: String = "Sheet1", hasHeader: Bool = false) -> Workbook {
+        return CSVUtils.createWorkbookFromTSV(tsvData: tsvData, sheetName: sheetName, hasHeader: hasHeader)
+    }
+    
+    /// Exports a sheet to CSV format
+    public static func exportSheetToCSV(sheet: Sheet, separator: String = ",") -> String {
+        return CSVUtils.exportToCSV(sheet: sheet, separator: separator)
+    }
+    
+    /// Exports a sheet to TSV format
+    public static func exportSheetToTSV(sheet: Sheet) -> String {
+        return CSVUtils.exportToTSV(sheet: sheet)
+    }
+    
+    /// Imports CSV data into a sheet
+    public static func importCSVIntoSheet(sheet: Sheet, csvData: String, separator: String = ",", hasHeader: Bool = false) {
+        CSVUtils.importFromCSV(sheet: sheet, csvData: csvData, separator: separator, hasHeader: hasHeader)
+    }
+    
+    /// Imports TSV data into a sheet
+    public static func importTSVIntoSheet(sheet: Sheet, tsvData: String, hasHeader: Bool = false) {
+        CSVUtils.importFromTSV(sheet: sheet, tsvData: tsvData, hasHeader: hasHeader)
     }
 }
 
@@ -145,6 +177,7 @@ public final class Sheet: Equatable {
     private var columnWidths: [Int: Double] = [:]
     private var rowHeights: [Int: Double] = [:]
     private var images: [String: ExcelImage] = [:] // coordinate -> image
+    private var cellFormats: [String: CellFormat] = [:] // coordinate -> format
     
     public init(name: String, id: Int) {
         self.name = name
@@ -163,6 +196,18 @@ public final class Sheet: Equatable {
         cells[coordinate.uppercased()]
     }
     
+    /// Gets a cell with formatting
+    public func getCellWithFormat(_ coordinate: String) -> Cell? {
+        guard let value = cells[coordinate.uppercased()] else { return nil }
+        let format = cellFormats[coordinate.uppercased()]
+        return Cell(value, format: format)
+    }
+    
+    /// Gets cell formatting
+    public func getCellFormat(_ coordinate: String) -> CellFormat? {
+        cellFormats[coordinate.uppercased()]
+    }
+    
     /// Sets a cell value by row and column
     @discardableResult
     public func setCell(row: Int, column: Int, value: CellValue) -> Self {
@@ -171,20 +216,116 @@ public final class Sheet: Equatable {
         return self
     }
     
-    /// Gets a cell value by row and column
-    public func getCell(row: Int, column: Int) -> CellValue? {
-        let coordinate = CellCoordinate(row: row, column: column).excelAddress
-        return getCell(coordinate)
-    }
-    
-    /// Sets a range of cells with the same value
+    /// Sets a cell with formatting
     @discardableResult
-    public func setRange(_ range: String, value: CellValue) -> Self {
-        guard let cellRange = CellRange(excelRange: range) else { return self }
-        for coordinate in cellRange.coordinates {
-            setCell(coordinate.excelAddress, value: value)
+    public func setCell(_ coordinate: String, cell: Cell) -> Self {
+        cells[coordinate.uppercased()] = cell.value
+        if let format = cell.format {
+            cellFormats[coordinate.uppercased()] = format
         }
         return self
+    }
+    
+    /// Sets a cell with formatting by row and column
+    @discardableResult
+    public func setCell(row: Int, column: Int, cell: Cell) -> Self {
+        let coordinate = CellCoordinate(row: row, column: column).excelAddress
+        setCell(coordinate, cell: cell)
+        return self
+    }
+    
+    /// Sets a cell with string value and formatting
+    @discardableResult
+    public func setCell(_ coordinate: String, string: String, format: CellFormat? = nil) -> Self {
+        let cell = Cell.string(string, format: format)
+        return setCell(coordinate, cell: cell)
+    }
+    
+    /// Sets a cell with number value and formatting
+    @discardableResult
+    public func setCell(_ coordinate: String, number: Double, format: CellFormat? = nil) -> Self {
+        let cell = Cell.number(number, format: format)
+        return setCell(coordinate, cell: cell)
+    }
+    
+    /// Sets a cell with integer value and formatting
+    @discardableResult
+    public func setCell(_ coordinate: String, integer: Int, format: CellFormat? = nil) -> Self {
+        let cell = Cell.integer(integer, format: format)
+        return setCell(coordinate, cell: cell)
+    }
+    
+    /// Sets a cell with boolean value and formatting
+    @discardableResult
+    public func setCell(_ coordinate: String, boolean: Bool, format: CellFormat? = nil) -> Self {
+        let cell = Cell.boolean(boolean, format: format)
+        return setCell(coordinate, cell: cell)
+    }
+    
+    /// Sets a cell with date value and formatting
+    @discardableResult
+    public func setCell(_ coordinate: String, date: Date, format: CellFormat? = nil) -> Self {
+        let cell = Cell.date(date, format: format)
+        return setCell(coordinate, cell: cell)
+    }
+    
+    /// Sets a cell with formula and formatting
+    @discardableResult
+    public func setCell(_ coordinate: String, formula: String, format: CellFormat? = nil) -> Self {
+        let cell = Cell.formula(formula, format: format)
+        return setCell(coordinate, cell: cell)
+    }
+    
+    /// Sets a range of cells with the same value and formatting
+    @discardableResult
+    public func setRange(_ range: String, cell: Cell) -> Self {
+        guard let cellRange = CellRange(excelRange: range) else { return self }
+        for coordinate in cellRange.coordinates {
+            setCell(coordinate.excelAddress, cell: cell)
+        }
+        return self
+    }
+    
+    /// Sets a range of cells with string value and formatting
+    @discardableResult
+    public func setRange(_ range: String, string: String, format: CellFormat? = nil) -> Self {
+        let cell = Cell.string(string, format: format)
+        return setRange(range, cell: cell)
+    }
+    
+    /// Sets a range of cells with number value and formatting
+    @discardableResult
+    public func setRange(_ range: String, number: Double, format: CellFormat? = nil) -> Self {
+        let cell = Cell.number(number, format: format)
+        return setRange(range, cell: cell)
+    }
+    
+    /// Sets a range of cells with integer value and formatting
+    @discardableResult
+    public func setRange(_ range: String, integer: Int, format: CellFormat? = nil) -> Self {
+        let cell = Cell.integer(integer, format: format)
+        return setRange(range, cell: cell)
+    }
+    
+    /// Sets a range of cells with boolean value and formatting
+    @discardableResult
+    public func setRange(_ range: String, boolean: Bool, format: CellFormat? = nil) -> Self {
+        let cell = Cell.boolean(boolean, format: format)
+        return setRange(range, cell: cell)
+    }
+    
+    /// Sets a range of cells with date value and formatting
+    @discardableResult
+    public func setRange(_ range: String, date: Date, format: CellFormat? = nil) -> Self {
+        let cell = Cell.date(date, format: format)
+        return setRange(range, cell: cell)
+    }
+    
+    /// Sets a range of cells with formula and formatting
+    @discardableResult
+    public func setRange(_ range: String, formula: String, format: CellFormat? = nil) -> Self {
+        let cell = Cell.formula(formula, format: format)
+        return setRange(range, cell: cell)
     }
     
     /// Merges a range of cells
@@ -283,6 +424,7 @@ public final class Sheet: Equatable {
         columnWidths.removeAll()
         rowHeights.removeAll()
         images.removeAll()
+        cellFormats.removeAll()
     }
     
     public static func == (lhs: Sheet, rhs: Sheet) -> Bool {
@@ -410,6 +552,47 @@ public enum CellValue: Equatable {
     }
 }
 
+/// Represents a cell with value and formatting
+public struct Cell {
+    public let value: CellValue
+    public let format: CellFormat?
+    
+    public init(_ value: CellValue, format: CellFormat? = nil) {
+        self.value = value
+        self.format = format
+    }
+    
+    /// Creates a cell with string value
+    public static func string(_ value: String, format: CellFormat? = nil) -> Cell {
+        return Cell(.string(value), format: format)
+    }
+    
+    /// Creates a cell with number value
+    public static func number(_ value: Double, format: CellFormat? = nil) -> Cell {
+        return Cell(.number(value), format: format)
+    }
+    
+    /// Creates a cell with integer value
+    public static func integer(_ value: Int, format: CellFormat? = nil) -> Cell {
+        return Cell(.integer(value), format: format)
+    }
+    
+    /// Creates a cell with boolean value
+    public static func boolean(_ value: Bool, format: CellFormat? = nil) -> Cell {
+        return Cell(.boolean(value), format: format)
+    }
+    
+    /// Creates a cell with date value
+    public static func date(_ value: Date, format: CellFormat? = nil) -> Cell {
+        return Cell(.date(value), format: format)
+    }
+    
+    /// Creates a cell with formula
+    public static func formula(_ value: String, format: CellFormat? = nil) -> Cell {
+        return Cell(.formula(value), format: format)
+    }
+}
+
 /// Error types for XLKit operations
 public enum XLKitError: Error, LocalizedError {
     case invalidCoordinate(String)
@@ -431,5 +614,181 @@ public enum XLKitError: Error, LocalizedError {
         case .xmlGenerationError(let message):
             return "XML generation error: \(message)"
         }
+    }
+}
+
+// MARK: - Cell Formatting
+
+/// Font weight for text formatting
+public enum FontWeight: String {
+    case normal = "normal"
+    case bold = "bold"
+}
+
+/// Font style for text formatting
+public enum FontStyle: String {
+    case normal = "normal"
+    case italic = "italic"
+}
+
+/// Text decoration for formatting
+public enum TextDecoration: String {
+    case none = "none"
+    case underline = "underline"
+    case strikethrough = "strikethrough"
+    case underlineStrikethrough = "underlineStrikethrough"
+}
+
+/// Horizontal alignment for cells
+public enum HorizontalAlignment: String {
+    case left = "left"
+    case center = "center"
+    case right = "right"
+    case justify = "justify"
+    case distributed = "distributed"
+}
+
+/// Vertical alignment for cells
+public enum VerticalAlignment: String {
+    case top = "top"
+    case center = "center"
+    case bottom = "bottom"
+    case justify = "justify"
+    case distributed = "distributed"
+}
+
+/// Border style for cells
+public enum BorderStyle: String {
+    case none = "none"
+    case thin = "thin"
+    case medium = "medium"
+    case thick = "thick"
+    case double = "double"
+    case hair = "hair"
+    case dotted = "dotted"
+    case dashed = "dashed"
+    case dashDot = "dashDot"
+    case dashDotDot = "dashDotDot"
+    case slantDashDot = "slantDashDot"
+}
+
+/// Number format types
+public enum NumberFormat: String {
+    case general = "General"
+    case number = "0"
+    case numberWithDecimals = "0.00"
+    case percentage = "0%"
+    case percentageWithDecimals = "0.00%"
+    case currency = "$#,##0"
+    case currencyWithDecimals = "$#,##0.00"
+    case date = "m/d/yyyy"
+    case dateTime = "m/d/yyyy h:mm"
+    case time = "h:mm:ss"
+    case text = "@"
+    case custom = "custom"
+    
+    /// Creates a custom number format
+    public static func custom(_ format: String) -> NumberFormat {
+        return .custom
+    }
+}
+
+/// Represents cell formatting options
+public struct CellFormat {
+    public var fontName: String?
+    public var fontSize: Double?
+    public var fontWeight: FontWeight?
+    public var fontStyle: FontStyle?
+    public var textDecoration: TextDecoration?
+    public var fontColor: String? // Hex color like "#FF0000"
+    public var backgroundColor: String? // Hex color like "#FFFF00"
+    
+    public var horizontalAlignment: HorizontalAlignment?
+    public var verticalAlignment: VerticalAlignment?
+    public var textWrapping: Bool?
+    public var textRotation: Int? // Degrees, 0-180
+    
+    public var numberFormat: NumberFormat?
+    public var customNumberFormat: String?
+    
+    public var borderTop: BorderStyle?
+    public var borderBottom: BorderStyle?
+    public var borderLeft: BorderStyle?
+    public var borderRight: BorderStyle?
+    public var borderColor: String? // Hex color
+    
+    public init() {}
+    
+    /// Creates a format with basic text styling
+    public static func text(
+        fontName: String? = nil,
+        fontSize: Double? = nil,
+        fontWeight: FontWeight? = nil,
+        fontStyle: FontStyle? = nil,
+        color: String? = nil
+    ) -> CellFormat {
+        var format = CellFormat()
+        format.fontName = fontName
+        format.fontSize = fontSize
+        format.fontWeight = fontWeight
+        format.fontStyle = fontStyle
+        format.fontColor = color
+        return format
+    }
+    
+    /// Creates a format for headers
+    public static func header(
+        fontSize: Double = 14.0,
+        backgroundColor: String = "#E6E6E6"
+    ) -> CellFormat {
+        var format = CellFormat()
+        format.fontWeight = .bold
+        format.fontSize = fontSize
+        format.backgroundColor = backgroundColor
+        format.horizontalAlignment = .center
+        return format
+    }
+    
+    /// Creates a format for currency
+    public static func currency(
+        format: NumberFormat = .currencyWithDecimals,
+        color: String? = nil
+    ) -> CellFormat {
+        var cellFormat = CellFormat()
+        cellFormat.numberFormat = format
+        cellFormat.fontColor = color
+        return cellFormat
+    }
+    
+    /// Creates a format for percentages
+    public static func percentage(
+        format: NumberFormat = .percentageWithDecimals
+    ) -> CellFormat {
+        var cellFormat = CellFormat()
+        cellFormat.numberFormat = format
+        return cellFormat
+    }
+    
+    /// Creates a format for dates
+    public static func date(
+        format: NumberFormat = .date
+    ) -> CellFormat {
+        var cellFormat = CellFormat()
+        cellFormat.numberFormat = format
+        return cellFormat
+    }
+    
+    /// Creates a format with borders
+    public static func bordered(
+        style: BorderStyle = .thin,
+        color: String? = nil
+    ) -> CellFormat {
+        var format = CellFormat()
+        format.borderTop = style
+        format.borderBottom = style
+        format.borderLeft = style
+        format.borderRight = style
+        format.borderColor = color
+        return format
     }
 }
