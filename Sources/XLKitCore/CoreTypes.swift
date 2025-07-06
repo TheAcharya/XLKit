@@ -14,7 +14,7 @@ import CoreGraphics
 // MARK: - Core Types for XLKit
 
 /// Represents an Excel workbook containing multiple sheets
-public final class Workbook: Sendable {
+public final class Workbook {
     private var sheets: [Sheet] = []
     private let nextSheetId: Int
     private var images: [ExcelImage] = []
@@ -58,7 +58,7 @@ public final class Workbook: Sendable {
 }
 
 /// Represents a worksheet in an Excel workbook
-public final class Sheet: Equatable, Sendable {
+public final class Sheet: Equatable {
     public let name: String
     public let id: Int
     private var cells: [String: CellValue] = [:]

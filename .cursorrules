@@ -1,63 +1,403 @@
-# .cursorrules
+# XLKit - Cursor Rules for AI Agents
 
-[general]
-# Only allow code changes in these directories
+## Project Overview
+XLKit is a modern Swift library for creating and manipulating Excel (.xlsx) files on macOS. 
+Built with Swift 6.0, targeting macOS 13+, using modular SPM architecture.
+
+## Architecture & Module Structure
+
+### Core Modules
+- **XLKitCore**: Core types, data structures, utilities (Workbook, Sheet, Cell, etc.)
+- **XLKitFormatters**: CSV/TSV import/export functionality
+- **XLKitImages**: Image processing and embedding utilities  
+- **XLKitXLSX**: XLSX file generation engine
+- **XLKit**: Main API that re-exports all submodules
+
+### Module Dependencies
+```
+XLKit (main)
+├── XLKitCore (core types)
+├── XLKitFormatters (CSV/TSV)
+├── XLKitImages (image utilities)
+└── XLKitXLSX (XLSX engine)
+```
+
+## File Organization & Paths
+
+### Allowed Paths for Code Changes
 allowed_paths = [
-    "Sources/XLKit/",
-    "Tests/XLKitTests/",
-    ".github/workflows/",
-    "README.md",
-    "AGENT.MD"
+    "Sources/XLKit/",           # Main API module
+    "Sources/XLKitCore/",       # Core types and utilities
+    "Sources/XLKitFormatters/", # CSV/TSV functionality
+    "Sources/XLKitImages/",     # Image processing
+    "Sources/XLKitXLSX/",       # XLSX generation
+    "Tests/XLKitTests/",        # Unit tests
+    ".github/workflows/",       # CI/CD workflows
+    "README.md",                # Documentation
+    "AGENT.MD",                 # AI agent guide
+    "Package.swift"             # Package configuration
 ]
 
-# Disallow UI, assets, or platform-specific code outside macOS
+### Disallowed Paths
 disallowed_paths = [
-    "Sources/XLKit/icons.xcassets/",
-    "Sources/XLKit/*.storyboard",
-    "Sources/XLKit/*.xib"
+    "Sources/XLKit/icons.xcassets/",  # No UI assets
+    "Sources/XLKit/*.storyboard",     # No storyboards
+    "Sources/XLKit/*.xib",            # No XIB files
+    "Sources/XLKit/*.plist",          # No property lists
+    "Sources/XLKit/*.json"            # No JSON configs
 ]
 
-# Only allow Swift and Markdown files
+### Allowed File Extensions
 allowed_extensions = [
-    ".swift",
-    ".md",
-    ".yml",
+    ".swift",    # Swift source files
+    ".md",       # Markdown documentation
+    ".yml",      # YAML configuration (CI/CD)
+    ".yaml"      # YAML configuration (CI/CD)
 ]
 
-# Do not suggest or create files for other platforms (iOS, Linux, Windows, etc.)
-disallow_platforms = [
-    "iOS",
-    "Linux",
-    "Windows",
-    "Android"
-]
+## Platform & Technology Constraints
 
-# All code must be compatible with Swift 6.0 and macOS 13+
+### Platform Requirements
 require_swift_version = "6.0"
 require_macos_version = "13.0"
 
-# All public APIs must have doc comments
+### Disallowed Platforms
+disallow_platforms = [
+    "iOS",
+    "Linux", 
+    "Windows",
+    "Android",
+    "tvOS",
+    "watchOS"
+]
+
+## Code Quality Standards
+
+### Documentation Requirements
 require_doc_comments = true
-
-# All new features must include corresponding unit tests and be easy to use
-require_unit_tests = true
-require_easy_to_use_api = true
-
-# All new features (especially image and column sizing) must be tested and documented
-require_image_and_column_sizing_tests = true
-
-# CI must pass before merge
-require_ci_pass = true
-
-# CSV/TSV import/export must use XLKit static methods (not direct CSVUtils)
-require_csv_api = "XLKit static methods only"
-
-# All documentation and tests must use and reflect the modular API
 require_modular_api_docs = true
 
-# Code Style & Formatting
-# All code must be formatted using the .swift-format file in the repo.
-# Use 4-space indentation, trailing commas, grouped/reordered imports, and modern Swift idioms.
-# No force-unwraps or force-casts in public API.
-# All public APIs must have doc comments.
-# Code must be formatted and pass CI before merging. 
+### Testing Requirements
+require_unit_tests = true
+require_image_and_column_sizing_tests = true
+require_ci_pass = true
+
+### API Design Requirements
+require_easy_to_use_api = true
+require_csv_api = "XLKit static methods only"
+
+## Coding Standards & Best Practices
+
+### Swift 6.0 Compliance
+- Use `@preconcurrency` imports for modules with Sendable types
+- Note: Workbook and Sheet classes are not Sendable due to mutable state requirements
+- Use modern Swift idioms and features
+- Avoid force-unwraps and force-casts in public APIs
+
+### Code Style & Formatting
+- Use 4-space indentation (no tabs)
+- Use trailing commas for better git diffs
+- Group and reorder imports alphabetically
+- Use MARK comments for code organization
+- Follow the .swift-format configuration
+
+### File Structure Standards
+```swift
+//
+//  Filename.swift
+//  XLKit • https://github.com/TheAcharya/XLKit
+//  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
+//
+
+import Foundation
+@preconcurrency import XLKitCore
+
+// MARK: - Section Name
+// Implementation
+```
+
+### Error Handling Patterns
+- Use specific XLKitError types
+- Provide meaningful error messages
+- Use guard statements for early returns
+- Handle errors gracefully in public APIs
+
+### Type Safety Requirements
+- Use strong typing throughout
+- Prefer enums over strings for constants
+- Use structs for value types, classes for reference types
+- Implement Equatable, Hashable where appropriate
+
+## API Design Guidelines
+
+### Main API (XLKit Module)
+- Provide static convenience methods
+- Use fluent API design with method chaining
+- Support both sync and async operations
+- Re-export functionality from submodules
+
+### Core Types (XLKitCore Module)
+- Workbook: Final class, manages sheets and images (not Sendable due to mutable state)
+- Sheet: Final class, handles cells, formatting, images (not Sendable due to mutable state)
+- CellValue: Enum with all Excel data types
+- CellCoordinate: Struct for Excel-style coordinates
+- CellRange: Struct for cell ranges
+- Cell: Struct combining value and format
+- CellFormat: Struct for comprehensive formatting
+
+### CSV/TSV Operations (XLKitFormatters Module)
+- Use XLKit static methods, not direct CSVUtils
+- Support header row handling
+- Auto-detect data types
+- Handle special characters and quotes
+
+### Image Operations (XLKitImages Module)
+- Support GIF, PNG, JPEG, BMP, TIFF formats
+- Auto-detect formats and sizes
+- Support both Data and URL inputs
+- Handle image embedding in cells
+
+### XLSX Generation (XLKitXLSX Module)
+- Generate OpenXML-compliant files
+- Use temporary directories for file creation
+- Implement proper XML escaping
+- Support ZIP archive creation
+
+## Testing Standards
+
+### Test Coverage Requirements
+- Test all public APIs
+- Test error conditions and edge cases
+- Test CSV/TSV import/export functionality
+- Test image format detection and embedding
+- Test XLSX file generation and saving
+- Test coordinate and range operations
+
+### Test Patterns
+```swift
+func testFeatureName() {
+    // Arrange
+    let workbook = XLKit.createWorkbook()
+    
+    // Act
+    let result = workbook.someOperation()
+    
+    // Assert
+    XCTAssertEqual(result, expectedValue)
+}
+
+func testFeatureNameWithInvalidInput() {
+    // Act & Assert
+    XCTAssertThrowsError(try someOperation(invalidInput)) { error in
+        XCTAssertEqual(error as? XLKitError, .expectedError)
+    }
+}
+```
+
+### Performance Testing
+- Test with large datasets
+- Test memory usage patterns
+- Test async operations
+- Test concurrent access
+
+## Documentation Standards
+
+### Code Documentation
+- All public APIs must have doc comments
+- Include parameter descriptions
+- Provide usage examples
+- Document error conditions
+
+### README Documentation
+- Keep README.md comprehensive and up-to-date
+- Include quick start examples
+- Document all major features
+- Provide API reference sections
+
+### AGENT.MD Documentation
+- Maintain detailed architecture documentation
+- Include implementation details
+- Provide development guidelines
+- Document testing strategies
+
+## Development Workflow
+
+### Feature Development
+1. Add functionality to appropriate module
+2. Follow existing API patterns
+3. Add comprehensive tests
+4. Update documentation
+5. Ensure CI passes
+
+### Code Review Checklist
+- [ ] Code follows Swift 6.0 standards
+- [ ] All public APIs documented
+- [ ] Tests cover new functionality
+- [ ] No force-unwraps in public API
+- [ ] Proper error handling
+- [ ] Code is formatted correctly
+- [ ] CI tests pass
+
+### Commit Standards
+- Use descriptive commit messages
+- Reference issues when applicable
+- Keep commits focused and atomic
+- Test before committing
+
+## Performance Considerations
+
+### Memory Management
+- Optimize for large datasets
+- Use efficient data structures
+- Minimize memory allocations
+- Handle cleanup properly
+
+### Async Operations
+- Use async/await for file I/O
+- Note: Async operations use synchronous implementation since Workbook/Sheet are not Sendable
+- Implement proper concurrency where possible
+- Avoid blocking operations
+- Handle cancellation gracefully
+
+### Optimization Guidelines
+- Use batch operations for multiple cells
+- Optimize range operations
+- Minimize XML generation overhead
+- Efficient image processing
+
+## Security & Safety
+
+### Input Validation
+- Validate all user inputs
+- Sanitize file paths and URLs
+- Handle malformed data gracefully
+- Prevent path traversal attacks
+
+### Error Handling
+- Never expose internal errors to users
+- Provide meaningful error messages
+- Log errors appropriately
+- Handle edge cases gracefully
+
+## Maintenance & Evolution
+
+### Backward Compatibility
+- Maintain API compatibility
+- Use deprecation warnings for changes
+- Provide migration guides
+- Version APIs appropriately
+
+### Code Quality
+- Regular code reviews
+- Automated testing
+- Performance monitoring
+- Documentation updates
+
+### Future Considerations
+- Plan for feature additions
+- Consider platform expansion
+- Monitor Swift evolution
+- Track Excel format changes
+
+## Integration Guidelines
+
+### Package Manager
+- Use Swift Package Manager
+- Maintain proper dependencies
+- Version modules appropriately
+- Document requirements
+
+### CI/CD Integration
+- Automated testing on macOS
+- Code formatting checks
+- Documentation generation
+- Release automation
+
+### External Dependencies
+- Minimize external dependencies
+- Use only essential libraries
+- Document dependency reasons
+- Monitor for updates
+
+## Troubleshooting Guide
+
+### Common Issues
+- Sendable conformance warnings
+- Memory usage with large files
+- Image format detection failures
+- CSV parsing edge cases
+
+### Debugging Tips
+- Use proper logging
+- Test with minimal examples
+- Check file permissions
+- Validate input data
+
+### Performance Issues
+- Profile memory usage
+- Monitor file I/O operations
+- Check async operation patterns
+- Optimize data structures
+
+This comprehensive .cursorrules file provides all the guidelines and standards for AI agents working with the XLKit codebase, ensuring consistent, high-quality development practices.
+
+## Documentation Maintenance Requirements
+
+### Critical Update Requirements
+
+**MANDATORY**: This .cursorrules file must be updated whenever:
+- New features are added to the library
+- Significant architectural changes are made
+- New modules or major components are introduced
+- API changes or breaking changes occur
+- New testing patterns or requirements are established
+- Performance optimizations or security improvements are implemented
+- Platform requirements or dependencies change
+- Coding standards or best practices are updated
+- File organization or module structure changes
+- New error types or handling patterns are introduced
+
+### Update Checklist for AI Agents
+
+When making significant changes to the codebase, ensure this .cursorrules file is updated to include:
+
+- [ ] **New Features**: Add rules for new functionality and APIs
+- [ ] **Architecture Changes**: Update module structure and dependencies
+- [ ] **API Guidelines**: Add guidelines for new API patterns
+- [ ] **Testing Requirements**: Update testing standards and coverage requirements
+- [ ] **Performance Guidelines**: Add performance considerations for new features
+- [ ] **Error Handling**: Update error types and handling requirements
+- [ ] **Code Standards**: Update coding standards for new patterns
+- [ ] **File Organization**: Update allowed/disallowed paths if needed
+- [ ] **Platform Constraints**: Update platform requirements if changed
+- [ ] **Integration Rules**: Add rules for new integrations or dependencies
+
+### Synchronization with AGENT.MD
+
+Ensure consistency between .cursorrules and AGENT.MD files:
+- [ ] Architecture descriptions match between files
+- [ ] Coding standards are consistent
+- [ ] Testing requirements are aligned
+- [ ] Platform constraints are synchronized
+- [ ] File organization rules are consistent
+- [ ] API design guidelines are synchronized
+- [ ] Error handling patterns match
+- [ ] Performance considerations are consistent
+
+### Version Tracking
+
+Keep track of major updates to this file:
+- Document the date of significant updates
+- Note the version of XLKit when changes were made
+- Reference specific commits or issues that prompted updates
+- Maintain a changelog of rule updates
+
+### Enforcement
+
+These rules are critical for maintaining code quality and consistency:
+- All AI agents must follow these rules strictly
+- Violations should be caught during code review
+- CI/CD should enforce these rules where possible
+- Regular audits should ensure rule compliance
+
+This ensures that the .cursorrules file remains accurate and enforceable for all AI agents working with the codebase. 
