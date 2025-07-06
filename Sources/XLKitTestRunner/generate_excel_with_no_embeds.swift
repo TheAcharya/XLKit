@@ -28,17 +28,13 @@ func findCSVFile() -> String? {
         if FileManager.default.fileExists(atPath: fullPath) {
             // Search for CSV file in this directory and subdirectories
             let fileManager = FileManager.default
-            do {
-                let enumerator = fileManager.enumerator(atPath: fullPath)
-                while let filePath = enumerator?.nextObject() as? String {
-                    if filePath.hasSuffix(".csv") && filePath.contains(csvFileName) {
-                        let csvPath = "\(fullPath)/\(filePath)"
-                        print("[INFO] Found CSV file: \(csvPath)")
-                        return csvPath
-                    }
+            let enumerator = fileManager.enumerator(atPath: fullPath)
+            while let filePath = enumerator?.nextObject() as? String {
+                if filePath.hasSuffix(".csv") && filePath.contains(csvFileName) {
+                    let csvPath = "\(fullPath)/\(filePath)"
+                    print("[INFO] Found CSV file: \(csvPath)")
+                    return csvPath
                 }
-            } catch {
-                print("[WARNING] Error searching in \(fullPath): \(error)")
             }
         }
     }
@@ -50,17 +46,13 @@ func findCSVFile() -> String? {
         if FileManager.default.fileExists(atPath: fullPath) {
             // Search for CSV file in this directory and subdirectories
             let fileManager = FileManager.default
-            do {
-                let enumerator = fileManager.enumerator(atPath: fullPath)
-                while let filePath = enumerator?.nextObject() as? String {
-                    if filePath.hasSuffix(".csv") && filePath.contains(csvFileName) {
-                        let csvPath = "\(fullPath)/\(filePath)"
-                        print("[INFO] Found CSV file: \(csvPath)")
-                        return csvPath
-                    }
+            let enumerator = fileManager.enumerator(atPath: fullPath)
+            while let filePath = enumerator?.nextObject() as? String {
+                if filePath.hasSuffix(".csv") && filePath.contains(csvFileName) {
+                    let csvPath = "\(fullPath)/\(filePath)"
+                    print("[INFO] Found CSV file: \(csvPath)")
+                    return csvPath
                 }
-            } catch {
-                print("[WARNING] Error searching in \(fullPath): \(error)")
             }
         }
     }
@@ -118,10 +110,18 @@ for (rowIdx, row) in rows.enumerated() {
     }
 }
 
+// Ensure output directory exists
+let outputURL = URL(fileURLWithPath: outputExcelFile)
+let outputDir = outputURL.deletingLastPathComponent()
+if !FileManager.default.fileExists(atPath: outputDir.path) {
+    print("[INFO] Creating output directory: \(outputDir.path)")
+    try FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
+}
+
 // Save the workbook
 print("[INFO] Saving Excel file...")
 do {
-    try XLKit.saveWorkbook(workbook, to: URL(fileURLWithPath: outputExcelFile))
+    try XLKit.saveWorkbook(workbook, to: outputURL)
     print("[SUCCESS] Excel file created: \(outputExcelFile)")
 } catch {
     print("[ERROR] Failed to save Excel file: \(error)")
