@@ -9,22 +9,51 @@ import XLKit
 
 // MARK: - Configuration
 
-// Explicit path to the test data folder and CSV file
-let testDataFolder = "Test-Data/Embed-Test 2025-07-06 2-25-34 PM"
+// CSV file name
 let csvFileName = "Embed-Test.csv"
 let outputExcelFile = "Test-Workflows/Embed-Test.xlsx"
 
-// Resolve absolute paths for local and CI environments
-let currentDir = FileManager.default.currentDirectoryPath
-let testDataPath: String
-if FileManager.default.fileExists(atPath: "\(currentDir)/\(testDataFolder)") {
-    testDataPath = "\(currentDir)/\(testDataFolder)"
-} else if FileManager.default.fileExists(atPath: testDataFolder) {
-    testDataPath = testDataFolder
-} else {
-    print("[ERROR] Test data folder not found: \(testDataFolder)")
+// Dynamically find the test data folder
+func findTestDataPath() -> String? {
+    let currentDir = FileManager.default.currentDirectoryPath
+    let possiblePaths = [
+        "Test-Data",
+        "test-data", 
+        "TestData",
+        "testdata"
+    ]
+    
+    for path in possiblePaths {
+        let fullPath = "\(currentDir)/\(path)"
+        if FileManager.default.fileExists(atPath: fullPath) {
+            return fullPath
+        }
+    }
+    
+    // Try parent directory
+    let parentDir = (currentDir as NSString).deletingLastPathComponent
+    for path in possiblePaths {
+        let fullPath = "\(parentDir)/\(path)"
+        if FileManager.default.fileExists(atPath: fullPath) {
+            return fullPath
+        }
+    }
+    
+    return nil
+}
+
+// Find test data path
+guard let testDataPath = findTestDataPath() else {
+    print("[ERROR] Test data folder not found. Looked in:")
+    print("  - Test-Data")
+    print("  - test-data")
+    print("  - TestData")
+    print("  - testdata")
+    print("  - And parent directories")
     exit(1)
 }
+
+print("[INFO] Found test data at: \(testDataPath)")
 
 let csvFilePath = "\(testDataPath)/\(csvFileName)"
 if !FileManager.default.fileExists(atPath: csvFilePath) {
