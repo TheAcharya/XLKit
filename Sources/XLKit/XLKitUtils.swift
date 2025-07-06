@@ -56,6 +56,132 @@ public struct XLKitUtils {
         return days + 2 // Add 2 to account for Excel's leap year bug
     }
     
+    // MARK: - Image Utilities
+    
+    /// Detects image format from data
+    public static func detectImageFormat(from data: Data) -> ImageFormat? {
+        guard data.count >= 8 else { return nil }
+        
+        let bytes = [UInt8](data.prefix(8))
+        
+        // GIF
+        if bytes.count >= 6 && bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46 {
+            return .gif
+        }
+        
+        // PNG
+        if bytes.count >= 8 && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47 {
+            return .png
+        }
+        
+        // JPEG
+        if bytes.count >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8 {
+            return .jpeg
+        }
+        
+        // BMP
+        if bytes.count >= 2 && bytes[0] == 0x42 && bytes[1] == 0x4D {
+            return .bmp
+        }
+        
+        // TIFF
+        if bytes.count >= 4 && ((bytes[0] == 0x49 && bytes[1] == 0x49 && bytes[2] == 0x2A && bytes[3] == 0x00) ||
+                                (bytes[0] == 0x4D && bytes[1] == 0x4D && bytes[2] == 0x00 && bytes[3] == 0x2A)) {
+            return .tiff
+        }
+        
+        return nil
+    }
+    
+    /// Gets image size from data
+    public static func getImageSize(from data: Data, format: ImageFormat) -> CGSize? {
+        switch format {
+        case .gif:
+            return getGIFSize(from: data)
+        case .png:
+            return getPNGSize(from: data)
+        case .jpeg, .jpg:
+            return getJPEGSize(from: data)
+        case .bmp:
+            return getBMPSize(from: data)
+        case .tiff:
+            return getTIFFSize(from: data)
+        }
+    }
+    
+    /// Gets GIF image size
+    private static func getGIFSize(from data: Data) -> CGSize? {
+        guard data.count >= 10 else { return nil }
+        let bytes = [UInt8](data)
+        
+        // GIF header: 6 bytes + width (2 bytes) + height (2 bytes)
+        let width = Int(bytes[6]) | (Int(bytes[7]) << 8)
+        let height = Int(bytes[8]) | (Int(bytes[9]) << 8)
+        
+        return CGSize(width: Double(width), height: Double(height))
+    }
+    
+    /// Gets PNG image size
+    private static func getPNGSize(from data: Data) -> CGSize? {
+        guard data.count >= 24 else { return nil }
+        let bytes = [UInt8](data)
+        
+        // PNG IHDR chunk: width (4 bytes) + height (4 bytes)
+        let width = Int(bytes[16]) << 24 | Int(bytes[17]) << 16 | Int(bytes[18]) << 8 | Int(bytes[19])
+        let height = Int(bytes[20]) << 24 | Int(bytes[21]) << 16 | Int(bytes[22]) << 8 | Int(bytes[23])
+        
+        return CGSize(width: Double(width), height: Double(height))
+    }
+    
+    /// Gets JPEG image size
+    private static func getJPEGSize(from data: Data) -> CGSize? {
+        var offset = 2 // Skip SOI marker
+        
+        while offset < data.count - 1 {
+            guard data[offset] == 0xFF else { return nil }
+            
+            let marker = data[offset + 1]
+            if marker == 0xC0 || marker == 0xC1 || marker == 0xC2 {
+                // SOF marker found
+                guard offset + 9 < data.count else { return nil }
+                
+                let height = Int(data[offset + 5]) << 8 | Int(data[offset + 6])
+                let width = Int(data[offset + 7]) << 8 | Int(data[offset + 8])
+                
+                return CGSize(width: Double(width), height: Double(height))
+            }
+            
+            // Skip to next marker
+            guard offset + 3 < data.count else { return nil }
+            let length = Int(data[offset + 2]) << 8 | Int(data[offset + 3])
+            offset += length + 2
+        }
+        
+        return nil
+    }
+    
+    /// Gets BMP image size
+    private static func getBMPSize(from data: Data) -> CGSize? {
+        guard data.count >= 26 else { return nil }
+        let bytes = [UInt8](data)
+        
+        // BMP header: width (4 bytes) + height (4 bytes)
+        let width = Int(bytes[18]) | (Int(bytes[19]) << 8) | (Int(bytes[20]) << 16) | (Int(bytes[21]) << 24)
+        let height = Int(bytes[22]) | (Int(bytes[23]) << 8) | (Int(bytes[24]) << 16) | (Int(bytes[25]) << 24)
+        
+        return CGSize(width: Double(width), height: Double(height))
+    }
+    
+    /// Gets TIFF image size
+    private static func getTIFFSize(from data: Data) -> CGSize? {
+        guard data.count >= 8 else { return nil }
+        _ = [UInt8](data)
+        
+        // TIFF is complex, for simplicity we'll return a default size
+        // In a production environment, you'd want a proper TIFF parser
+        return CGSize(width: 100, height: 100)
+    }
+    
     // MARK: - XML Generation
     
     /// Escapes XML special characters
@@ -95,13 +221,17 @@ public struct XLKitUtils {
         // Create required directories
         let xlDir = tempDir.appendingPathComponent("xl")
         let worksheetsDir = xlDir.appendingPathComponent("worksheets")
+        let mediaDir = xlDir.appendingPathComponent("media")
         let relsDir = tempDir.appendingPathComponent("_rels")
         let xlRelsDir = xlDir.appendingPathComponent("_rels")
+        let worksheetRelsDir = worksheetsDir.appendingPathComponent("_rels")
         
         try FileManager.default.createDirectory(at: xlDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: worksheetsDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: mediaDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: relsDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: xlRelsDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: worksheetRelsDir, withIntermediateDirectories: true)
         
         // Generate content files
         try generateContentTypes(tempDir: tempDir, workbook: workbook)
@@ -109,6 +239,7 @@ public struct XLKitUtils {
         try generateWorkbookRels(xlRelsDir: xlRelsDir, workbook: workbook)
         try generateWorkbook(xlDir: xlDir, workbook: workbook)
         try generateWorksheets(worksheetsDir: worksheetsDir, workbook: workbook)
+        try generateMediaFiles(mediaDir: mediaDir, workbook: workbook)
         
         // Create ZIP archive
         try createZIPArchive(from: tempDir, to: url)
@@ -129,6 +260,14 @@ public struct XLKitUtils {
             content += """
             
             <Override PartName=\"/xl/worksheets/sheet\(sheet.id).xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>
+            """
+        }
+        
+        // Add image content types
+        for image in workbook.getImages() {
+            content += """
+            
+            <Override PartName=\"/xl/media/\(image.id).\(image.format.rawValue)\" ContentType=\"\(image.format.excelContentType)\"/>
             """
         }
         
@@ -199,13 +338,55 @@ public struct XLKitUtils {
         for sheet in workbook.getSheets() {
             let content = generateWorksheetXML(sheet: sheet)
             try content.write(to: worksheetsDir.appendingPathComponent("sheet\(sheet.id).xml"), atomically: true, encoding: .utf8)
+            
+            // Generate worksheet relationships if there are images
+            if !sheet.getImages().isEmpty {
+                try generateWorksheetRels(worksheetRelsDir: worksheetsDir.appendingPathComponent("_rels"), sheet: sheet)
+            }
         }
+    }
+    
+    private static func generateWorksheetRels(worksheetRelsDir: URL, sheet: Sheet) throws {
+        var content = """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+        """
+        
+        var imageId = 1
+        for (_, image) in sheet.getImages() {
+            content += """
+            
+            <Relationship Id="rId\(imageId)" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/\(image.id).\(image.format.rawValue)"/>
+            """
+            imageId += 1
+        }
+        
+        content += """
+        
+        </Relationships>
+        """
+        
+        try content.write(to: worksheetRelsDir.appendingPathComponent("sheet\(sheet.id).xml.rels"), atomically: true, encoding: .utf8)
     }
     
     private static func generateWorksheetXML(sheet: Sheet) -> String {
         var content = """
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+        """
+        
+        // Add column widths if any
+        if !sheet.getColumnWidths().isEmpty {
+            content += generateColumnWidthsXML(sheet: sheet)
+        }
+        
+        // Add row heights if any
+        if !sheet.getRowHeights().isEmpty {
+            content += generateRowHeightsXML(sheet: sheet)
+        }
+        
+        content += """
+        
             <sheetData>
         """
         
@@ -240,7 +421,62 @@ public struct XLKitUtils {
         content += """
         
             </sheetData>
+        """
+        
+        // Add images if any
+        if !sheet.getImages().isEmpty {
+            content += generateDrawingXML(sheet: sheet)
+        }
+        
+        content += """
+        
         </worksheet>
+        """
+        
+        return content
+    }
+    
+    private static func generateColumnWidthsXML(sheet: Sheet) -> String {
+        var content = """
+        
+            <cols>
+        """
+        
+        for (column, width) in sheet.getColumnWidths().sorted(by: { $0.key < $1.key }) {
+            content += """
+            
+                <col min="\(column)" max="\(column)" width="\(width)" customWidth="1"/>
+            """
+        }
+        
+        content += """
+        
+            </cols>
+        """
+        
+        return content
+    }
+    
+    private static func generateRowHeightsXML(sheet: Sheet) -> String {
+        var content = """
+        
+            <sheetFormatPr defaultRowHeight="15"/>
+        """
+        
+        for (row, height) in sheet.getRowHeights().sorted(by: { $0.key < $1.key }) {
+            content += """
+            
+            <row r="\(row)" ht="\(height)" customHeight="1"/>
+            """
+        }
+        
+        return content
+    }
+    
+    private static func generateDrawingXML(sheet: Sheet) -> String {
+        let content = """
+        
+            <drawing r:id="rId1"/>
         """
         
         return content
@@ -296,6 +532,13 @@ public struct XLKitUtils {
             
                     <c r="\(coordinate)"/>
             """
+        }
+    }
+    
+    private static func generateMediaFiles(mediaDir: URL, workbook: Workbook) throws {
+        for image in workbook.getImages() {
+            let imageURL = mediaDir.appendingPathComponent("\(image.id).\(image.format.rawValue)")
+            try image.data.write(to: imageURL)
         }
     }
     

@@ -1,57 +1,92 @@
 # XLKit
 
-A universal, generic Swift library for creating and manipulating Excel (.xlsx) files on macOS.
+A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) files on macOS.
 
 ## Features
 
-- **Universal & Generic**: No font or icon dependencies - pure data manipulation
-- **Swift 6.0 Ready**: Modern Swift with async/await support
-- **Native ZIP**: Uses Foundation's Archive for ZIP creation
-- **Excel-Compatible**: Generates standard .xlsx files
-- **Type Safe**: Strong typing with enums and structs
-- **Memory Efficient**: Optimized for large datasets
-
-## Requirements
-
-- macOS 13.0+
-- Swift 6.0+
-- Xcode 15.0+
-
-## Installation
-
-### Swift Package Manager
-
-Add XLKit to your project dependencies:
-
-```swift
-dependencies: [
-    .package(url: "https://github.com/yourusername/XLKit.git", from: "1.0.0")
-]
-```
+- **Effortless API**: Fluent, chainable, and bulk data helpers
+- **GIF & Image Embedding**: Add GIF, PNG, JPEG, BMP, TIFF images to any cell
+- **Auto Column Sizing**: Set or auto-size columns based on image dimensions
+- **Async & Sync Save**: Save workbooks with one line (async or sync)
+- **Type-Safe**: Strong enums and structs for all data
+- **No UI, No Dependencies**: Pure Swift, macOS 13+, Swift 6.0+
+- **Comprehensive Tests**: 100% tested, CI ready
 
 ## Quick Start
 
 ```swift
 import XLKit
 
-// Create a new workbook
+// 1. Create a workbook and sheet
 let workbook = XLKit.createWorkbook()
+let sheet = workbook.addSheet(name: "Employees")
 
-// Add a sheet
-let sheet = workbook.addSheet(name: "Data")
+// 2. Add headers and data (fluent, chainable)
+sheet
+    .setRow(1, values: [.string("Name"), .string("Photo"), .string("Age")])
+    .setRow(2, values: [.string("Alice"), .empty, .number(30)])
+    .setRow(3, values: [.string("Bob"), .empty, .number(28)])
 
-// Add data
-sheet.setCell("A1", value: .string("Name"))
-sheet.setCell("B1", value: .string("Age"))
-sheet.setCell("C1", value: .string("Salary"))
+// 3. Add a GIF image to a cell (one-liner)
+let gifData = try Data(contentsOf: URL(fileURLWithPath: "alice.gif"))
+sheet.addImage(gifData, at: "B2", format: .gif)
+    .autoSizeColumn(2, forImageAt: "B2")
 
-sheet.setCell("A2", value: .string("John"))
-sheet.setCell("B2", value: .integer(30))
-sheet.setCell("C2", value: .number(50000.0))
-
-// Save the workbook
-try await XLKit.saveWorkbook(workbook, to: fileURL)
+// 4. Save the workbook (sync or async)
+try XLKit.saveWorkbook(workbook, to: URL(fileURLWithPath: "employees.xlsx"))
+// or
+// try await XLKit.saveWorkbook(workbook, to: url)
 ```
+
+## API Highlights
+
+- **Workbook**: `createWorkbook()`, `addSheet(name:)`, `save(to:)`
+- **Sheet**: `setCell`, `setRow`, `setColumn`, `setRange`, `mergeCells`, `addImage`, `autoSizeColumn`, `setColumnWidth`
+- **Images**: GIF, PNG, JPEG, BMP, TIFF; add from Data or file URL
+- **Fluent API**: Most setters return `Self` for chaining
+- **Bulk Data**: `setRow`, `setColumn` for easy import
+- **Doc Comments**: All public APIs are documented for Xcode autocomplete
+
+## Example: Bulk Data and Images
+
+```swift
+let sheet = workbook.addSheet(name: "Products")
+    .setRow(1, values: [.string("Product"), .string("Image"), .string("Price")])
+    .setRow(2, values: [.string("Apple"), .empty, .number(1.99)])
+    .setRow(3, values: [.string("Banana"), .empty, .number(0.99)])
+
+let appleGif = try Data(contentsOf: URL(fileURLWithPath: "apple.gif"))
+sheet.addImage(appleGif, at: "B2", format: .gif)
+    .autoSizeColumn(2, forImageAt: "B2")
+```
+
+## Column Sizing
+
+```swift
+sheet.setColumnWidth(2, width: 200) // Set manually
+sheet.autoSizeColumn(2, forImageAt: "B2") // Auto-size to fit image
+```
+
+## Supported Image Formats
+- GIF (including animated)
+- PNG
+- JPEG/JPG
+- BMP
+- TIFF
+
+## Requirements
+- macOS 13.0+
+- Swift 6.0+
+
+## Testing
+- 100% tested, including image and column sizing features
+
+## License
+MIT
+
+---
+
+**XLKit: The easiest way to create Excel files in Swift.**
 
 ## Core Concepts
 

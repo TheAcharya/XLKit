@@ -40,8 +40,12 @@ require_macos_version = "13.0"
 # All public APIs must have doc comments
 require_doc_comments = true
 
-# All new features must include corresponding unit tests
+# All new features must include corresponding unit tests and be easy to use
 require_unit_tests = true
+require_easy_to_use_api = true
+
+# All new features (especially image and column sizing) must be tested and documented
+require_image_and_column_sizing_tests = true
 
 # CI must pass before merge
 require_ci_pass = true 

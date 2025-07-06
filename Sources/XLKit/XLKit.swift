@@ -5,7 +5,7 @@ public struct XLKit {
     
     /// Creates a new workbook
     public static func createWorkbook() -> Workbook {
-        return Workbook()
+        Workbook()
     }
     
     /// Saves a workbook to a file asynchronously
@@ -19,16 +19,81 @@ public struct XLKit {
     }
 }
 
+/// Supported image formats for Excel embedding
+public enum ImageFormat: String, CaseIterable {
+    case gif = "gif"
+    case png = "png"
+    case jpeg = "jpeg"
+    case jpg = "jpg"
+    case bmp = "bmp"
+    case tiff = "tiff"
+    
+    /// MIME type for the image format
+    public var mimeType: String {
+        switch self {
+        case .gif: return "image/gif"
+        case .png: return "image/png"
+        case .jpeg, .jpg: return "image/jpeg"
+        case .bmp: return "image/bmp"
+        case .tiff: return "image/tiff"
+        }
+    }
+    
+    /// Excel content type for the image format
+    public var excelContentType: String {
+        switch self {
+        case .gif: return "image/gif"
+        case .png: return "image/png"
+        case .jpeg, .jpg: return "image/jpeg"
+        case .bmp: return "image/bmp"
+        case .tiff: return "image/tiff"
+        }
+    }
+}
+
+/// Represents an image to be embedded in Excel
+public struct ExcelImage {
+    public let id: String
+    public let data: Data
+    public let format: ImageFormat
+    public let originalSize: CGSize
+    public let displaySize: CGSize?
+    
+    public init(id: String, data: Data, format: ImageFormat, originalSize: CGSize, displaySize: CGSize? = nil) {
+        self.id = id
+        self.data = data
+        self.format = format
+        self.originalSize = originalSize
+        self.displaySize = displaySize
+    }
+    
+    /// Creates an ExcelImage from Data
+    public static func from(data: Data, format: ImageFormat, displaySize: CGSize? = nil) -> ExcelImage? {
+        guard let size = XLKitUtils.getImageSize(from: data, format: format) else { return nil }
+        let id = "image_\(UUID().uuidString)"
+        return ExcelImage(id: id, data: data, format: format, originalSize: size, displaySize: displaySize)
+    }
+    
+    /// Creates an ExcelImage from a file URL
+    public static func from(url: URL, displaySize: CGSize? = nil) throws -> ExcelImage? {
+        let data = try Data(contentsOf: url)
+        guard let format = XLKitUtils.detectImageFormat(from: data) else { return nil }
+        return from(data: data, format: format, displaySize: displaySize)
+    }
+}
+
 /// Represents an Excel workbook containing multiple sheets
 public final class Workbook {
     private var sheets: [Sheet] = []
     private let nextSheetId: Int
+    private var images: [ExcelImage] = []
     
     public init() {
         self.nextSheetId = 1
     }
     
     /// Adds a new sheet to the workbook
+    @discardableResult
     public func addSheet(name: String) -> Sheet {
         let sheet = Sheet(name: name, id: nextSheetId)
         sheets.append(sheet)
@@ -37,17 +102,27 @@ public final class Workbook {
     
     /// Gets all sheets in the workbook
     public func getSheets() -> [Sheet] {
-        return sheets
+        sheets
     }
     
     /// Gets a sheet by name
     public func getSheet(name: String) -> Sheet? {
-        return sheets.first { $0.name == name }
+        sheets.first { $0.name == name }
     }
     
     /// Removes a sheet by name
     public func removeSheet(name: String) {
         sheets.removeAll { $0.name == name }
+    }
+    
+    /// Adds an image to the workbook
+    public func addImage(_ image: ExcelImage) {
+        images.append(image)
+    }
+    
+    /// Gets all images in the workbook
+    public func getImages() -> [ExcelImage] {
+        images
     }
     
     /// Saves the workbook to a file asynchronously
@@ -67,6 +142,9 @@ public final class Sheet: Equatable {
     public let id: Int
     private var cells: [String: CellValue] = [:]
     private var mergedRanges: [CellRange] = []
+    private var columnWidths: [Int: Double] = [:]
+    private var rowHeights: [Int: Double] = [:]
+    private var images: [String: ExcelImage] = [:] // coordinate -> image
     
     public init(name: String, id: Int) {
         self.name = name
@@ -74,19 +152,23 @@ public final class Sheet: Equatable {
     }
     
     /// Sets a cell value
-    public func setCell(_ coordinate: String, value: CellValue) {
+    @discardableResult
+    public func setCell(_ coordinate: String, value: CellValue) -> Self {
         cells[coordinate.uppercased()] = value
+        return self
     }
     
     /// Gets a cell value
     public func getCell(_ coordinate: String) -> CellValue? {
-        return cells[coordinate.uppercased()]
+        cells[coordinate.uppercased()]
     }
     
     /// Sets a cell value by row and column
-    public func setCell(row: Int, column: Int, value: CellValue) {
+    @discardableResult
+    public func setCell(row: Int, column: Int, value: CellValue) -> Self {
         let coordinate = CellCoordinate(row: row, column: column).excelAddress
         setCell(coordinate, value: value)
+        return self
     }
     
     /// Gets a cell value by row and column
@@ -96,37 +178,115 @@ public final class Sheet: Equatable {
     }
     
     /// Sets a range of cells with the same value
-    public func setRange(_ range: String, value: CellValue) {
-        guard let cellRange = CellRange(excelRange: range) else { return }
+    @discardableResult
+    public func setRange(_ range: String, value: CellValue) -> Self {
+        guard let cellRange = CellRange(excelRange: range) else { return self }
         for coordinate in cellRange.coordinates {
             setCell(coordinate.excelAddress, value: value)
         }
+        return self
     }
     
     /// Merges a range of cells
-    public func mergeCells(_ range: String) {
-        guard let cellRange = CellRange(excelRange: range) else { return }
+    @discardableResult
+    public func mergeCells(_ range: String) -> Self {
+        guard let cellRange = CellRange(excelRange: range) else { return self }
         mergedRanges.append(cellRange)
+        return self
     }
     
     /// Gets all cell coordinates that have values
     public func getUsedCells() -> [String] {
-        return Array(cells.keys).sorted()
+        Array(cells.keys).sorted()
     }
     
     /// Gets all merged ranges
     public func getMergedRanges() -> [CellRange] {
-        return mergedRanges
+        mergedRanges
+    }
+    
+    /// Sets column width in pixels
+    @discardableResult
+    public func setColumnWidth(_ column: Int, width: Double) -> Self {
+        columnWidths[column] = width
+        return self
+    }
+    
+    /// Gets column width in pixels
+    public func getColumnWidth(_ column: Int) -> Double? {
+        columnWidths[column]
+    }
+    
+    /// Gets all column widths
+    public func getColumnWidths() -> [Int: Double] {
+        columnWidths
+    }
+    
+    /// Sets row height in pixels
+    @discardableResult
+    public func setRowHeight(_ row: Int, height: Double) -> Self {
+        rowHeights[row] = height
+        return self
+    }
+    
+    /// Gets row height in pixels
+    public func getRowHeight(_ row: Int) -> Double? {
+        rowHeights[row]
+    }
+    
+    /// Gets all row heights
+    public func getRowHeights() -> [Int: Double] {
+        rowHeights
+    }
+    
+    /// Auto-sizes a column to fit an image
+    @discardableResult
+    public func autoSizeColumn(_ column: Int, forImageAt coordinate: String) -> Self {
+        guard let image = images[coordinate] else { return self }
+        let width = image.displaySize?.width ?? image.originalSize.width
+        setColumnWidth(column, width: width)
+        return self
+    }
+    
+    /// Adds an image to a cell
+    @discardableResult
+    public func addImage(_ image: ExcelImage, at coordinate: String) -> Self {
+        images[coordinate.uppercased()] = image
+        return self
+    }
+    
+    /// Adds an image from Data
+    @discardableResult
+    public func addImage(_ data: Data, at coordinate: String, format: ImageFormat, displaySize: CGSize? = nil) -> Bool {
+        guard let image = ExcelImage.from(data: data, format: format, displaySize: displaySize) else { return false }
+        addImage(image, at: coordinate)
+        return true
+    }
+    
+    /// Adds an image from file URL
+    @discardableResult
+    public func addImage(from url: URL, at coordinate: String, displaySize: CGSize? = nil) throws -> Bool {
+        guard let image = try ExcelImage.from(url: url, displaySize: displaySize) else { return false }
+        addImage(image, at: coordinate)
+        return true
+    }
+    
+    /// Gets all images in the sheet
+    public func getImages() -> [String: ExcelImage] {
+        images
     }
     
     /// Clears all data from the sheet
     public func clear() {
         cells.removeAll()
         mergedRanges.removeAll()
+        columnWidths.removeAll()
+        rowHeights.removeAll()
+        images.removeAll()
     }
     
     public static func == (lhs: Sheet, rhs: Sheet) -> Bool {
-        return lhs === rhs // Reference equality
+        lhs === rhs // Reference equality
     }
 }
 
