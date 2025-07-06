@@ -2,15 +2,38 @@
 
 A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) files on macOS.
 
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Quick Start](#quick-start)
+- [Core Concepts](#core-concepts)
+- [Basic Usage](#basic-usage)
+- [CSV/TSV Import & Export](#csvtsv-import--export)
+- [Image Support](#image-support)
+- [Advanced Usage](#advanced-usage)
+- [Error Handling](#error-handling)
+- [Performance Considerations](#performance-considerations)
+- [Code Style & Formatting](#code-style--formatting)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [Support](#support)
+- [License](#license)
+
 ## Features
 
 - **Effortless API**: Fluent, chainable, and bulk data helpers
-- **GIF & Image Embedding**: Add GIF, PNG, JPEG, BMP, TIFF images to any cell
+- **Image Embedding**: Add GIF, PNG, JPEG, BMP, TIFF images to any cell
 - **Auto Column Sizing**: Set or auto-size columns based on image dimensions
 - **Async & Sync Save**: Save workbooks with one line (async or sync)
 - **Type-Safe**: Strong enums and structs for all data
-- **No UI, No Dependencies**: Pure Swift, macOS 13+, Swift 6.0+
+- **No Dependencies**: Pure Swift, macOS 13+, Swift 6.0+
 - **Comprehensive Tests**: 100% tested, CI ready
+
+## Requirements
+
+- **macOS**: 13.0+
+- **Swift**: 6.0+
 
 ## Quick Start
 
@@ -37,49 +60,6 @@ try XLKit.saveWorkbook(workbook, to: URL(fileURLWithPath: "employees.xlsx"))
 // or
 // try await XLKit.saveWorkbook(workbook, to: url)
 ```
-
-## API Highlights
-
-- **Workbook**: `createWorkbook()`, `addSheet(name:)`, `save(to:)`
-- **Sheet**: `setCell`, `setRow`, `setColumn`, `setRange`, `mergeCells`, `addImage`, `autoSizeColumn`, `setColumnWidth`
-- **Images**: GIF, PNG, JPEG, BMP, TIFF; add from Data or file URL
-- **Fluent API**: Most setters return `Self` for chaining
-- **Bulk Data**: `setRow`, `setColumn` for easy import
-- **Doc Comments**: All public APIs are documented for Xcode autocomplete
-
-## Example: Bulk Data and Images
-
-```swift
-let sheet = workbook.addSheet(name: "Products")
-    .setRow(1, values: [.string("Product"), .string("Image"), .string("Price")])
-    .setRow(2, values: [.string("Apple"), .empty, .number(1.99)])
-    .setRow(3, values: [.string("Banana"), .empty, .number(0.99)])
-
-let appleGif = try Data(contentsOf: URL(fileURLWithPath: "apple.gif"))
-sheet.addImage(appleGif, at: "B2", format: .gif)
-    .autoSizeColumn(2, forImageAt: "B2")
-```
-
-## Column Sizing
-
-```swift
-sheet.setColumnWidth(2, width: 200) // Set manually
-sheet.autoSizeColumn(2, forImageAt: "B2") // Auto-size to fit image
-```
-
-## Supported Image Formats
-- GIF (including animated)
-- PNG
-- JPEG/JPG
-- BMP
-- TIFF
-
-## Requirements
-- macOS 13.0+
-- Swift 6.0+
-
-## Testing
-- 100% tested, including image and column sizing features
 
 ## Core Concepts
 
@@ -181,6 +161,99 @@ print(range.excelRange) // "A1:C3"
 
 // Parse Excel ranges
 let range2 = CellRange(excelRange: "A1:B5")
+```
+
+## Basic Usage
+
+### API Highlights
+
+- **Workbook**: `createWorkbook()`, `addSheet(name:)`, `save(to:)`
+- **Sheet**: `setCell`, `setRow`, `setColumn`, `setRange`, `mergeCells`, `addImage`, `autoSizeColumn`, `setColumnWidth`
+- **Images**: GIF, PNG, JPEG, BMP, TIFF; add from Data or file URL
+- **Fluent API**: Most setters return `Self` for chaining
+- **Bulk Data**: `setRow`, `setColumn` for easy import
+- **Doc Comments**: All public APIs are documented for Xcode autocomplete
+
+### Example: Bulk Data and Images
+
+```swift
+let sheet = workbook.addSheet(name: "Products")
+    .setRow(1, values: [.string("Product"), .string("Image"), .string("Price")])
+    .setRow(2, values: [.string("Apple"), .empty, .number(1.99)])
+    .setRow(3, values: [.string("Banana"), .empty, .number(0.99)])
+
+let appleGif = try Data(contentsOf: URL(fileURLWithPath: "apple.gif"))
+sheet.addImage(appleGif, at: "B2", format: .gif)
+    .autoSizeColumn(2, forImageAt: "B2")
+```
+
+### Column Sizing
+
+```swift
+sheet.setColumnWidth(2, width: 200) // Set manually
+sheet.autoSizeColumn(2, forImageAt: "B2") // Auto-size to fit image
+```
+
+## CSV/TSV Import & Export
+
+XLKit provides simple static methods for importing and exporting CSV/TSV data:
+
+```swift
+// Create a workbook from CSV
+let csvData = """
+Name,Age,Salary
+John,30,50000.5
+Jane,25,45000.75
+"""
+let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
+let sheet = workbook.getSheets().first!
+
+// Export a sheet to CSV
+let csv = XLKit.exportSheetToCSV(sheet: sheet)
+
+// Import CSV into an existing sheet
+XLKit.importCSVIntoSheet(sheet: sheet, csvData: csvData, hasHeader: true)
+
+// Create a workbook from TSV
+let tsvData = """
+Product\tPrice\tIn Stock
+Apple\t1.99\ttrue
+Banana\t0.99\tfalse
+"""
+let tsvWorkbook = XLKit.createWorkbookFromTSV(tsvData: tsvData, hasHeader: true)
+let tsvSheet = tsvWorkbook.getSheets().first!
+
+// Export a sheet to TSV
+let tsv = XLKit.exportSheetToTSV(sheet: tsvSheet)
+
+// Import TSV into an existing sheet
+XLKit.importTSVIntoSheet(sheet: tsvSheet, tsvData: tsvData, hasHeader: true)
+```
+
+All CSV/TSV helpers are available as static methods on `XLKit` for convenience, and are powered by the `XLKitFormatters` module under the hood.
+
+## Image Support
+
+### Supported Image Formats
+- **GIF** (including animated)
+- **PNG**
+- **JPEG/JPG**
+- **BMP**
+- **TIFF**
+
+### Adding Images
+
+```swift
+// Add image from Data
+let imageData = try Data(contentsOf: URL(fileURLWithPath: "image.png"))
+sheet.addImage(imageData, at: "A1", format: .png)
+
+// Add image from URL
+let imageURL = URL(fileURLWithPath: "image.gif")
+sheet.addImage(imageURL, at: "B1")
+
+// Auto-size column to fit image
+sheet.autoSizeColumn(1, forImageAt: "A1")
 ```
 
 ## Advanced Usage
@@ -298,36 +371,24 @@ do {
 ## File Format
 
 XLKit generates standard Excel (.xlsx) files that are compatible with:
-- Microsoft Excel
-- Google Sheets
-- LibreOffice Calc
-- Numbers (macOS)
+- **Microsoft Excel**
+- **Google Sheets**
+- **LibreOffice Calc**
+- **Numbers (macOS)**
 - Any application that supports the OpenXML format
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Support
-
-If you encounter any issues or have questions, please open an issue on GitHub.
 
 ## Code Style & Formatting
 
 XLKit enforces a modern, consistent Swift code style for all contributions:
 
-- 4-space indentation
-- Trailing commas
-- Grouped and reordered imports
-- 120 character line length
-- Consistent spacing and blank lines
-- No force-unwraps or force-casts in public API
-- All public APIs have doc comments
-- Follows Swift 6 idioms and best practices
+- **4-space indentation**
+- **Trailing commas**
+- **Grouped and reordered imports**
+- **120 character line length**
+- **Consistent spacing and blank lines**
+- **No force-unwraps or force-casts in public API**
+- **All public APIs have doc comments**
+- **Follows Swift 6 idioms and best practices**
 
 A `.swift-format` file is included in the repo. To format the codebase, run:
 
@@ -339,40 +400,20 @@ Or use Xcode's built-in formatter for most style rules.
 
 All code must be formatted and pass CI before merging. See `.cursorrules` for more details.
 
-## CSV/TSV Import & Export
+## Testing
 
-XLKit provides simple static methods for importing and exporting CSV/TSV data:
+- **100% tested**, including image and column sizing features
+- **Comprehensive test suite** covering all public APIs
+- **CI/CD ready** with automated testing
 
-```swift
-// Create a workbook from CSV
-let csvData = """
-Name,Age,Salary
-John,30,50000.5
-Jane,25,45000.75
-"""
-let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
-let sheet = workbook.getSheets().first!
+## Contributing
 
-// Export a sheet to CSV
-let csv = XLKit.exportSheetToCSV(sheet: sheet)
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-// Import CSV into an existing sheet
-XLKit.importCSVIntoSheet(sheet: sheet, csvData: csvData, hasHeader: true)
+## Support
 
-// Create a workbook from TSV
-let tsvData = """
-Product\tPrice\tIn Stock
-Apple\t1.99\ttrue
-Banana\t0.99\tfalse
-"""
-let tsvWorkbook = XLKit.createWorkbookFromTSV(tsvData: tsvData, hasHeader: true)
-let tsvSheet = tsvWorkbook.getSheets().first!
+If you encounter any issues or have questions, please open an issue on GitHub.
 
-// Export a sheet to TSV
-let tsv = XLKit.exportSheetToTSV(sheet: tsvSheet)
+## License
 
-// Import TSV into an existing sheet
-XLKit.importTSVIntoSheet(sheet: tsvSheet, tsvData: tsvData, hasHeader: true)
-```
-
-All CSV/TSV helpers are available as static methods on `XLKit` for convenience, and are powered by the `XLKitFormatters` module under the hood.
+This project is licensed under the MIT License - see the LICENSE file for details.
