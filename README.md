@@ -5,7 +5,7 @@
 
 <p align="center"><a href="https://github.com/TheAcharya/XLKit/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit"><img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg?style=flat" alt="platform"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml"><img src="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml/badge.svg" alt="build"/></a></p>
 
-A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) files on macOS. XLKit provides a fluent, chainable API that makes Excel file generation effortless while supporting advanced features like image embedding, CSV/TSV import/export, cell formatting, and both synchronous and asynchronous operations. Built with Swift 6.0 and targeting macOS 13+, it offers type-safe operations, comprehensive error handling, and zero external dependencies.
+A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) files on macOS. XLKit provides a fluent, chainable API that makes Excel file generation effortless while supporting advanced features like image embedding, CSV/TSV import/export, cell formatting, and both synchronous and asynchronous operations. Built with Swift 6.0 and targeting macOS 14+, it offers type-safe operations, comprehensive error handling, and zero external dependencies.
 
 ## Table of Contents
 
@@ -34,7 +34,7 @@ A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) f
 - **Auto Column Sizing**: Set or auto-size columns based on image dimensions
 - **Async & Sync Save**: Save workbooks with one line (async or sync)
 - **Type-Safe**: Strong enums and structs for all data
-- **No Dependencies**: Pure Swift, macOS 13+, Swift 6.0+
+- **No Dependencies**: Pure Swift, macOS 14+, Swift 6.0+
 - **Comprehensive Tests**: 100% tested, CI ready
 
 ## Performance Considerations

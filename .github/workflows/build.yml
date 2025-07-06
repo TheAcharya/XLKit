@@ -2,24 +2,22 @@ name: build
 
 on:
   push:
-    branches: [main]
     paths-ignore:
       - '**/*.md'           # .md files anywhere in the repo
       - '**/LICENSE'        # LICENSE files anywhere in the repo
       - '**/.gitignore'     # .gitignore files anywhere in the repo
       - '**/*.png'          # .png image files anywhere in the repo
       - '**/*.pdf'          # .pdf files anywhere in the repo
-      - '**/*..cursorrules' # .cursorrules files anywhere in the repo
+      - '**/*.cursorrules'  # .cursorrules files anywhere in the repo
       
   pull_request:
-    branches: [main]
     paths-ignore:
       - '**/*.md'           # .md files anywhere in the repo
       - '**/LICENSE'        # LICENSE files anywhere in the repo
       - '**/.gitignore'     # .gitignore files anywhere in the repo
       - '**/*.png'          # .png image files anywhere in the repo
       - '**/*.pdf'          # .pdf files anywhere in the repo
-      - '**/*..cursorrules' # .cursorrules files anywhere in the repo
+      - '**/*.cursorrules'  # .cursorrules files anywhere in the repo
       
   workflow_dispatch:
     
