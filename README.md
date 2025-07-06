@@ -1,4 +1,9 @@
-# XLKit
+<p align="center">
+  <h1 align="center">XLKit</h1>
+</p>
+
+
+<p align="center"><a href="https://github.com/TheAcharya/XLKit/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit"><img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg?style=flat" alt="platform"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml"><img src="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml/badge.svg" alt="build"/></a></p>
 
 A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) files on macOS.
 
