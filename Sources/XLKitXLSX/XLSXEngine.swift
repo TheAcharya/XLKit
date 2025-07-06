@@ -309,51 +309,32 @@ public struct XLSXEngine {
         switch value {
         case .string(let stringValue):
             return """
-            
-                    <c r="\(coordinate)" t="s">
-                        <v>\(CoreUtils.escapeXML(stringValue))</v>
-                    </c>
+            <c r=\"\(coordinate)\" t=\"inlineStr\">\n                <is><t>\(CoreUtils.escapeXML(stringValue))</t></is>\n            </c>
             """
         case .number(let numberValue):
             return """
-            
-                    <c r="\(coordinate)" t="n">
-                        <v>\(numberValue)</v>
-                    </c>
+            <c r=\"\(coordinate)\" t=\"n\">\n                <v>\(numberValue)</v>\n            </c>
             """
         case .integer(let intValue):
             return """
-            
-                    <c r="\(coordinate)" t="n">
-                        <v>\(intValue)</v>
-                    </c>
+            <c r=\"\(coordinate)\" t=\"n\">\n                <v>\(intValue)</v>\n            </c>
             """
         case .boolean(let boolValue):
             return """
-            
-                    <c r="\(coordinate)" t="b">
-                        <v>\(boolValue ? 1 : 0)</v>
-                    </c>
+            <c r=\"\(coordinate)\" t=\"b\">\n                <v>\(boolValue ? 1 : 0)</v>\n            </c>
             """
         case .date(let dateValue):
             let excelNumber = CoreUtils.excelNumberFromDate(dateValue)
             return """
-            
-                    <c r="\(coordinate)" t="n">
-                        <v>\(excelNumber)</v>
-                    </c>
+            <c r=\"\(coordinate)\" t=\"n\">\n                <v>\(excelNumber)</v>\n            </c>
             """
         case .formula(let formulaValue):
             return """
-            
-                    <c r="\(coordinate)" t="str">
-                        <f>\(CoreUtils.escapeXML(formulaValue))</f>
-                    </c>
+            <c r=\"\(coordinate)\" t=\"str\">\n                <f>\(CoreUtils.escapeXML(formulaValue))</f>\n            </c>
             """
         case .empty:
             return """
-            
-                    <c r="\(coordinate)"/>
+            <c r=\"\(coordinate)\"/>
             """
         }
     }

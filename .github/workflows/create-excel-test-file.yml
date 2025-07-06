@@ -15,15 +15,15 @@ jobs:
         with:
           swift-version: '6.0'
 
-      - name: Run Excel Embed Script
+      - name: Run Excel Generation Script
         run: |
-          chmod +x Test-Workflows/generate_excel_with_embeds.swift
-          swift Test-Workflows/generate_excel_with_embeds.swift
+          chmod +x Test-Workflows/generate_excel_with_no_embeds.swift
+          swift Test-Workflows/generate_excel_with_no_embeds.swift
 
       - name: Zip Excel file
         run: |
-          if [ -f Embed-Test.xlsx ]; then
-            zip Embed-Test.zip Embed-Test.xlsx
+          if [ -f "Test-Workflows/Embed-Test-with-Images.xlsx" ]; then
+            zip Embed-Test-with-Images.zip "Test-Workflows/Embed-Test-with-Images.xlsx"
           else
             echo "Excel file not found!" && exit 1
           fi
@@ -31,5 +31,5 @@ jobs:
       - name: Upload Excel artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Excel Test File
-          path: Embed-Test.zip 
+          name: Excel Test File with Images
+          path: Embed-Test-with-Images.zip 

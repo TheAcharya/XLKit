@@ -53,6 +53,10 @@ let package = Package(
         .testTarget(
             name: "XLKitTests",
             dependencies: ["XLKit"]
+        ),
+        .executableTarget(
+            name: "XLKitTestRunner",
+            dependencies: ["XLKit"]
         )
     ]
 )
