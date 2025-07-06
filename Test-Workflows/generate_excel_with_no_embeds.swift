@@ -4,8 +4,6 @@
 //  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
 //
 
-#!/usr/bin/env swift
-
 import Foundation
 import XLKit
 

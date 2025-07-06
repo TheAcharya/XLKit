@@ -5,7 +5,7 @@ on:
 
 jobs:
   generate-excel:
-    runs-on: macos-13
+    runs-on: macos-15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -15,9 +15,11 @@ jobs:
         with:
           swift-version: '6.0'
 
+      - name: Build XLKit package
+        run: swift build
+
       - name: Run Excel Generation Script
         run: |
-          chmod +x Test-Workflows/generate_excel_with_no_embeds.swift
           swift Test-Workflows/generate_excel_with_no_embeds.swift
 
       - name: Zip Excel file
