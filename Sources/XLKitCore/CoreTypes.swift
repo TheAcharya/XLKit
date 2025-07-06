@@ -1,3 +1,9 @@
+//
+//  CoreTypes.swift
+//  XLKit • https://github.com/TheAcharya/XLKit
+//  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
+//
+
 import Foundation
 import CoreGraphics
 
@@ -8,7 +14,7 @@ import CoreGraphics
 // MARK: - Core Types for XLKit
 
 /// Represents an Excel workbook containing multiple sheets
-public final class Workbook {
+public final class Workbook: Sendable {
     private var sheets: [Sheet] = []
     private let nextSheetId: Int
     private var images: [ExcelImage] = []
@@ -52,7 +58,7 @@ public final class Workbook {
 }
 
 /// Represents a worksheet in an Excel workbook
-public final class Sheet: Equatable {
+public final class Sheet: Equatable, Sendable {
     public let name: String
     public let id: Int
     private var cells: [String: CellValue] = [:]

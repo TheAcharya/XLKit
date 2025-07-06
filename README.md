@@ -10,7 +10,9 @@ A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) f
 ## Table of Contents
 
 - [Features](#features)
+- [Performance Considerations](#performance-considerations)
 - [Requirements](#requirements)
+- [File Format](#file-format)
 - [Quick Start](#quick-start)
 - [Core Concepts](#core-concepts)
 - [Basic Usage](#basic-usage)
@@ -18,7 +20,6 @@ A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) f
 - [Image Support](#image-support)
 - [Advanced Usage](#advanced-usage)
 - [Error Handling](#error-handling)
-- [Performance Considerations](#performance-considerations)
 - [Code Style & Formatting](#code-style--formatting)
 - [Testing](#testing)
 - [Credits](#credits)
@@ -35,6 +36,21 @@ A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) f
 - **Type-Safe**: Strong enums and structs for all data
 - **No Dependencies**: Pure Swift, macOS 13+, Swift 6.0+
 - **Comprehensive Tests**: 100% tested, CI ready
+
+## Performance Considerations
+
+- **Memory Usage**: XLKit is optimized for large datasets with efficient memory management
+- **Async Operations**: Use async/await for file operations to avoid blocking the main thread
+- **Batch Operations**: Set multiple cells in batches for better performance
+- **Range Operations**: Use `setRange()` for setting multiple cells with the same value
+
+## File Format
+
+- **Microsoft Excel**
+- **Google Sheets**
+- **LibreOffice Calc**
+- **Numbers (macOS)**
+- Any application that supports the OpenXML format
 
 ## Requirements
 
@@ -366,22 +382,6 @@ do {
     print("Unknown error: \(error)")
 }
 ```
-
-## Performance Considerations
-
-- **Memory Usage**: XLKit is optimized for large datasets with efficient memory management
-- **Async Operations**: Use async/await for file operations to avoid blocking the main thread
-- **Batch Operations**: Set multiple cells in batches for better performance
-- **Range Operations**: Use `setRange()` for setting multiple cells with the same value
-
-## File Format
-
-XLKit generates standard Excel (.xlsx) files that are compatible with:
-- **Microsoft Excel**
-- **Google Sheets**
-- **LibreOffice Calc**
-- **Numbers (macOS)**
-- Any application that supports the OpenXML format
 
 ## Code Style & Formatting
 

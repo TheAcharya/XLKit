@@ -1,5 +1,11 @@
+//
+//  XLSXEngine.swift
+//  XLKit • https://github.com/TheAcharya/XLKit
+//  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
+//
+
 import Foundation
-import XLKitCore
+@preconcurrency import XLKitCore
 import XLKitFormatters
 import XLKitImages
 
@@ -13,9 +19,16 @@ public struct XLSXEngine {
     
     /// Generates XLSX file asynchronously
     public static func generateXLSX(workbook: Workbook, to url: URL) async throws {
-        // For now, just call the sync version directly since file I/O is not CPU-bound
-        // and the workbook is not shared across threads
-        try generateXLSXSync(workbook: workbook, to: url)
+        try await withCheckedThrowingContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    try generateXLSXSync(workbook: workbook, to: url)
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
     
     /// Generates XLSX file synchronously
@@ -23,36 +36,43 @@ public struct XLSXEngine {
         let tempDir = FileManager.default.temporaryDirectory
             .appendingPathComponent("xlkit-\(UUID().uuidString)")
         
-        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-        defer {
+        do {
+            try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            
+            // Create required directories
+            let xlDir = tempDir.appendingPathComponent("xl")
+            let worksheetsDir = xlDir.appendingPathComponent("worksheets")
+            let mediaDir = xlDir.appendingPathComponent("media")
+            let relsDir = tempDir.appendingPathComponent("_rels")
+            let xlRelsDir = xlDir.appendingPathComponent("_rels")
+            let worksheetRelsDir = worksheetsDir.appendingPathComponent("_rels")
+            
+            try FileManager.default.createDirectory(at: xlDir, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: worksheetsDir, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: mediaDir, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: relsDir, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: xlRelsDir, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: worksheetRelsDir, withIntermediateDirectories: true)
+            
+            // Generate content files
+            try generateContentTypes(tempDir: tempDir, workbook: workbook)
+            try generateRels(tempDir: tempDir, workbook: workbook)
+            try generateWorkbookRels(xlRelsDir: xlRelsDir, workbook: workbook)
+            try generateWorkbook(xlDir: xlDir, workbook: workbook)
+            try generateWorksheets(worksheetsDir: worksheetsDir, workbook: workbook)
+            try generateMediaFiles(mediaDir: mediaDir, workbook: workbook)
+            
+            // Create ZIP archive
+            try createZIPArchive(from: tempDir, to: url)
+            
+            // Clean up
+            try FileManager.default.removeItem(at: tempDir)
+            
+        } catch {
+            // Clean up on error
             try? FileManager.default.removeItem(at: tempDir)
+            throw error
         }
-        
-        // Create required directories
-        let xlDir = tempDir.appendingPathComponent("xl")
-        let worksheetsDir = xlDir.appendingPathComponent("worksheets")
-        let mediaDir = xlDir.appendingPathComponent("media")
-        let relsDir = tempDir.appendingPathComponent("_rels")
-        let xlRelsDir = xlDir.appendingPathComponent("_rels")
-        let worksheetRelsDir = worksheetsDir.appendingPathComponent("_rels")
-        
-        try FileManager.default.createDirectory(at: xlDir, withIntermediateDirectories: true)
-        try FileManager.default.createDirectory(at: worksheetsDir, withIntermediateDirectories: true)
-        try FileManager.default.createDirectory(at: mediaDir, withIntermediateDirectories: true)
-        try FileManager.default.createDirectory(at: relsDir, withIntermediateDirectories: true)
-        try FileManager.default.createDirectory(at: xlRelsDir, withIntermediateDirectories: true)
-        try FileManager.default.createDirectory(at: worksheetRelsDir, withIntermediateDirectories: true)
-        
-        // Generate content files
-        try generateContentTypes(tempDir: tempDir, workbook: workbook)
-        try generateRels(tempDir: tempDir, workbook: workbook)
-        try generateWorkbookRels(xlRelsDir: xlRelsDir, workbook: workbook)
-        try generateWorkbook(xlDir: xlDir, workbook: workbook)
-        try generateWorksheets(worksheetsDir: worksheetsDir, workbook: workbook)
-        try generateMediaFiles(mediaDir: mediaDir, workbook: workbook)
-        
-        // Create ZIP archive
-        try createZIPArchive(from: tempDir, to: url)
     }
     
     // MARK: - Private XLSX Generation Methods

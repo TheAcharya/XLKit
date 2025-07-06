@@ -1,3 +1,9 @@
+//
+//  XLKit.swift
+//  XLKit • https://github.com/TheAcharya/XLKit
+//  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
+//
+
 @_exported import XLKitCore
 @_exported import XLKitFormatters
 @_exported import XLKitImages

@@ -1,5 +1,11 @@
+//
+//  CSVUtils.swift
+//  XLKit • https://github.com/TheAcharya/XLKit
+//  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
+//
+
 import Foundation
-import XLKitCore
+@preconcurrency import XLKitCore
 
 // MARK: - CSV/TSV Utilities for XLKit
 

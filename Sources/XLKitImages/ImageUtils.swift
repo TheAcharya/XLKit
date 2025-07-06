@@ -1,6 +1,12 @@
+//
+//  ImageUtils.swift
+//  XLKit • https://github.com/TheAcharya/XLKit
+//  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
+//
+
 import Foundation
 import CoreGraphics
-import XLKitCore
+@preconcurrency import XLKitCore
 
 // MARK: - Image Utilities for XLKit
 
@@ -11,29 +17,34 @@ public struct ImageUtils {
     
     /// Detects image format from data
     public static func detectImageFormat(from data: Data) -> ImageFormat? {
-        let bytes = [UInt8](data.prefix(8))
+        guard data.count >= 4 else { return nil }
+        let bytes = [UInt8](data)
         
-        // GIF (needs 6 bytes)
-        if bytes.count >= 6 && bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46 {
+        // Check GIF signature
+        if bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46 {
             return .gif
         }
-        // PNG (needs 8 bytes)
-        if bytes.count >= 8 && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47 {
+        
+        // Check PNG signature
+        if bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47 {
             return .png
         }
-        // JPEG (needs 2 bytes)
-        if bytes.count >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8 {
+        
+        // Check JPEG signature
+        if bytes[0] == 0xFF && bytes[1] == 0xD8 {
             return .jpeg
         }
-        // BMP (needs 2 bytes)
-        if bytes.count >= 2 && bytes[0] == 0x42 && bytes[1] == 0x4D {
+        
+        // Check BMP signature
+        if bytes[0] == 0x42 && bytes[1] == 0x4D {
             return .bmp
         }
-        // TIFF (needs 4 bytes)
-        if bytes.count >= 4 && ((bytes[0] == 0x49 && bytes[1] == 0x49 && bytes[2] == 0x2A && bytes[3] == 0x00) ||
-                                (bytes[0] == 0x4D && bytes[1] == 0x4D && bytes[2] == 0x00 && bytes[3] == 0x2A)) {
+        
+        // Check TIFF signature (both little and big endian)
+        if (bytes[0] == 0x49 && bytes[1] == 0x49) || (bytes[0] == 0x4D && bytes[1] == 0x4D) {
             return .tiff
         }
+        
         return nil
     }
     
@@ -58,7 +69,7 @@ public struct ImageUtils {
         guard data.count >= 10 else { return nil }
         let bytes = [UInt8](data)
         
-        // GIF header: 6 bytes + width (2 bytes) + height (2 bytes)
+        // GIF header: width (2 bytes) + height (2 bytes)
         let width = Int(bytes[6]) | (Int(bytes[7]) << 8)
         let height = Int(bytes[8]) | (Int(bytes[9]) << 8)
         
@@ -79,26 +90,25 @@ public struct ImageUtils {
     
     /// Gets JPEG image size
     private static func getJPEGSize(from data: Data) -> CGSize? {
-        var offset = 2 // Skip SOI marker
+        guard data.count >= 2 else { return nil }
+        let bytes = [UInt8](data)
         
-        while offset < data.count - 1 {
-            guard data[offset] == 0xFF else { return nil }
-            
-            let marker = data[offset + 1]
-            if marker == 0xC0 || marker == 0xC1 || marker == 0xC2 {
-                // SOF marker found
-                guard offset + 9 < data.count else { return nil }
-                
-                let height = Int(data[offset + 5]) << 8 | Int(data[offset + 6])
-                let width = Int(data[offset + 7]) << 8 | Int(data[offset + 8])
-                
-                return CGSize(width: Double(width), height: Double(height))
+        // JPEG starts with 0xFF 0xD8
+        guard bytes[0] == 0xFF && bytes[1] == 0xD8 else { return nil }
+        
+        var i = 2
+        while i < data.count - 1 {
+            // Look for SOF markers (0xFF 0xC0-0xCF, except 0xC4, 0xC8, 0xCC)
+            if bytes[i] == 0xFF && bytes[i + 1] >= 0xC0 && bytes[i + 1] <= 0xCF {
+                if bytes[i + 1] != 0xC4 && bytes[i + 1] != 0xC8 && bytes[i + 1] != 0xCC {
+                    if i + 9 < data.count {
+                        let height = Int(bytes[i + 5]) << 8 | Int(bytes[i + 6])
+                        let width = Int(bytes[i + 7]) << 8 | Int(bytes[i + 8])
+                        return CGSize(width: Double(width), height: Double(height))
+                    }
+                }
             }
-            
-            // Skip to next marker
-            guard offset + 3 < data.count else { return nil }
-            let length = Int(data[offset + 2]) << 8 | Int(data[offset + 3])
-            offset += length + 2
+            i += 1
         }
         
         return nil

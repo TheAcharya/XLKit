@@ -22,7 +22,6 @@ allowed_extensions = [
     ".swift",
     ".md",
     ".yml",
-    ".ini"
 ]
 
 # Do not suggest or create files for other platforms (iOS, Linux, Windows, etc.)

@@ -1,3 +1,9 @@
+//
+//  XLKitTests.swift
+//  XLKit • https://github.com/TheAcharya/XLKit
+//  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
+//
+
 import XCTest
 import XLKit
 
