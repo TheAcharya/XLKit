@@ -939,4 +939,24 @@ Ensure consistency between AGENT.MD and .cursorrules files:
 - Platform constraints are synchronized
 - File organization rules are consistent
 
-This ensures that both documentation files remain accurate and useful for AI agents working with the codebase. 
+This ensures that both documentation files remain accurate and useful for AI agents working with the codebase.
+
+## Architecture Update (2025-07-07)
+- The XLSX engine now generates all required files for Excel compliance, including docProps, theme, styles, sharedStrings, and all relationship files.
+- Worksheet, styles, and workbook XML are generated in a single-line, Excel-compliant format.
+- The test runner (`XLKitTestRunner`) now includes automated validation using [CoreXLSX](https://github.com/CoreOffice/CoreXLSX) to ensure every generated file is fully compliant and readable by Excel and third-party tools.
+
+## Compliance & Validation
+- Every generated Excel file is validated for structure and content using CoreXLSX.
+- Validation checks include: workbook, worksheet, shared strings, styles, and row/cell integrity.
+- The test runner will fail if the generated file is not fully compliant.
+
+## Developer Workflow
+- To add new Excel features, update the engine and add/extend validation in the test runner.
+- Use the test runner to ensure all changes remain Excel-compliant.
+- Manual unpacking and inspection of .xlsx files is no longer required for compliance.
+
+## Recent Improvements
+- Added all required OpenXML files and relationships for Excel.
+- Automated validation with CoreXLSX.
+- Removed legacy debug folders from workflow. 

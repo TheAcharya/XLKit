@@ -23,10 +23,16 @@ switch testType {
 case "no-embeds", "no-images":
     print("Executing: Generate Excel with No Image Embeds")
     generateExcelWithNoEmbeds()
+    validateExcelFile("Test-Workflows/Embed-Test.xlsx")
     
 case "with-embeds", "with-images":
     print("Executing: Generate Excel with Image Embeds")
-    // generateExcelWithEmbeds() // Future implementation
+    if let generateExcelWithImages = Optional<(()->Void)>(nil) {
+        generateExcelWithImages()
+    } else {
+        print("[WARN] generateExcelWithImages() not implemented.")
+    }
+    validateExcelFile("Test-Workflows/Embed-Test.xlsx")
     
 case "csv-import":
     print("Executing: CSV Import Test")

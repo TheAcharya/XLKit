@@ -30,6 +30,9 @@ let package = Package(
             targets: ["XLKitXLSX"]
         ),
     ],
+    dependencies: [
+        .package(url: "https://github.com/CoreOffice/CoreXLSX.git", from: "0.14.0")
+    ],
     targets: [
         .target(
             name: "XLKitCore"
@@ -56,7 +59,7 @@ let package = Package(
         ),
         .executableTarget(
             name: "XLKitTestRunner",
-            dependencies: ["XLKit"],
+            dependencies: ["XLKit", "CoreXLSX"],
             exclude: ["README.md", "Templates"]
         )
     ]

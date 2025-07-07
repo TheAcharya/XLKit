@@ -24,7 +24,7 @@ public struct XLKit {
     }
     /// Saves a workbook to a file synchronously
     public static func saveWorkbook(_ workbook: Workbook, to url: URL) throws {
-        try XLSXEngine.generateXLSXSync(workbook: workbook, to: url)
+        try XLSXEngine.generateXLSX(workbook: workbook, to: url)
     }
     // MARK: - CSV/TSV Convenience Methods
     /// Creates a workbook from CSV data
