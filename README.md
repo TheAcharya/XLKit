@@ -33,35 +33,35 @@ This codebase is developed using AI agents.
 
 ## Features
 
-- **Effortless API**: Fluent, chainable, and bulk data helpers
-- **Perfect Image Embedding**: Pixel-perfect image embedding with automatic aspect ratio preservation
-- **Auto Cell Sizing**: Automatic column width and row height calculation to perfectly fit images
-- **CSV/TSV Import/Export**: Built-in support for importing and exporting CSV/TSV data
-- **Async & Sync Operations**: Save workbooks with one line (async or sync)
-- **Type-Safe**: Strong enums and structs for all data types
-- **Excel Compliance**: Full OpenXML compliance with CoreXLSX validation
-- **No Dependencies**: Pure Swift, macOS 12+, Swift 6.0+
-- **Comprehensive Testing**: 100% tested with automated validation
+- Effortless API: Fluent, chainable, and bulk data helpers
+- Perfect Image Embedding: Pixel-perfect image embedding with automatic aspect ratio preservation
+- Auto Cell Sizing: Automatic column width and row height calculation to perfectly fit images
+- CSV/TSV Import/Export: Built-in support for importing and exporting CSV/TSV data
+- Async & Sync Operations: Save workbooks with one line (async or sync)
+- Type-Safe: Strong enums and structs for all data types
+- Excel Compliance: Full OpenXML compliance with CoreXLSX validation
+- No Dependencies: Pure Swift, macOS 12+, Swift 6.0+
+- Comprehensive Testing: 100% tested with automated validation
 
 ## Performance Considerations
 
-- **Memory Usage**: XLKit is optimized for large datasets with efficient memory management
-- **Async Operations**: Use async/await for file operations to avoid blocking the main thread
-- **Batch Operations**: Set multiple cells in batches for better performance
-- **Range Operations**: Use `setRange()` for setting multiple cells with the same value
+- Memory Usage: XLKit is optimized for large datasets with efficient memory management
+- Async Operations: Use async/await for file operations to avoid blocking the main thread
+- Batch Operations: Set multiple cells in batches for better performance
+- Range Operations: Use `setRange()` for setting multiple cells with the same value
 
 ## File Format
 
-- **Microsoft Excel**
-- **Google Sheets**
-- **LibreOffice Calc**
-- **Numbers (macOS)**
+- Microsoft Excel
+- Google Sheets
+- LibreOffice Calc
+- Numbers (macOS)
 - Any application that supports the OpenXML format
 
 ## Requirements
 
-- **macOS**: 12.0+
-- **Swift**: 6.0+
+- macOS: 12.0+
+- Swift: 6.0+
 
 ## Quick Start
 
@@ -194,13 +194,13 @@ let range2 = CellRange(excelRange: "A1:B5")
 
 ### API Highlights
 
-- **Workbook**: `createWorkbook()`, `addSheet(name:)`, `save(to:)`
-- **Sheet**: `setCell`, `setRow`, `setColumn`, `setRange`, `mergeCells`, `embedImageAutoSized`, `setColumnWidth`
-- **Images**: GIF, PNG, JPEG with perfect aspect ratio preservation
-- **CSV/TSV**: `createWorkbookFromCSV`, `exportSheetToCSV`, `importCSVIntoSheet`
-- **Fluent API**: Most setters return `Self` for chaining
-- **Bulk Data**: `setRow`, `setColumn` for easy import
-- **Doc Comments**: All public APIs are documented for Xcode autocomplete
+- Workbook: `createWorkbook()`, `addSheet(name:)`, `save(to:)`
+- Sheet: `setCell`, `setRow`, `setColumn`, `setRange`, `mergeCells`, `embedImageAutoSized`, `setColumnWidth`
+- Images: GIF, PNG, JPEG with perfect aspect ratio preservation
+- CSV/TSV: `createWorkbookFromCSV`, `exportSheetToCSV`, `importCSVIntoSheet`
+- Fluent API: Most setters return `Self` for chaining
+- Bulk Data: `setRow`, `setColumn` for easy import
+- Doc Comments: All public APIs are documented for Xcode autocomplete
 
 ### Example: Bulk Data and Images
 
@@ -265,23 +265,23 @@ All CSV/TSV helpers are available as static methods on `XLKit` for convenience, 
 
 XLKit provides pixel-perfect image embedding with automatic aspect ratio preservation. Images maintain their exact original proportions regardless of cell dimensions, preventing any stretching, squashing, or distortion.
 
-**Comprehensive Aspect Ratio Support**: XLKit has been extensively tested with all common aspect ratios including:
-- **16:9** (HD/4K video)
-- **1:1** (Square format)
-- **9:16** (Vertical video)
-- **21:9** (Ultra-wide)
-- **3:4** (Portrait)
-- **2.39:1** (Cinemascope/Anamorphic)
-- **1.85:1** (Academy ratio)
-- **4:3** (Classic TV/monitor)
-- **18:9** (Modern mobile)
+Comprehensive Aspect Ratio Support: XLKit has been extensively tested with all common aspect ratios including:
+- 16:9 (HD/4K video)
+- 1:1 (Square format)
+- 9:16 (Vertical video)
+- 21:9 (Ultra-wide)
+- 3:4 (Portrait)
+- 2.39:1 (Cinemascope/Anamorphic)
+- 1.85:1 (Academy ratio)
+- 4:3 (Classic TV/monitor)
+- 18:9 (Modern mobile)
 
 All aspect ratios are preserved with pixel-perfect accuracy using empirically derived Excel formulas.
 
 ### Supported Image Formats
-- **GIF** (including animated)
-- **PNG**
-- **JPEG/JPG**
+- GIF (including animated)
+- PNG
+- JPEG/JPG
 
 ### Adding Images with Perfect Sizing
 
@@ -453,24 +453,24 @@ Every generated Excel file is automatically validated using CoreXLSX to ensure:
 
 ### Test Coverage
 
-- **Unit Tests**: All public APIs and core functionality
-- **Integration Tests**: Complete Excel file generation workflows
-- **Image Embedding Tests**: Aspect ratio preservation for all supported formats
-- **CSV/TSV Tests**: Import/export functionality with various data types
-- **Performance Tests**: Large dataset handling and memory management
+- Unit Tests: All public APIs and core functionality
+- Integration Tests: Complete Excel file generation workflows
+- Image Embedding Tests: Aspect ratio preservation for all supported formats
+- CSV/TSV Tests: Import/export functionality with various data types
+- Performance Tests: Large dataset handling and memory management
 
 ## Code Style & Formatting
 
 XLKit enforces a modern, consistent Swift code style for all contributions:
 
-- **4-space indentation**
-- **Trailing commas**
-- **Grouped and reordered imports**
-- **120 character line length**
-- **Consistent spacing and blank lines**
-- **No force-unwraps or force-casts in public API**
-- **All public APIs have doc comments**
-- **Follows Swift 6 idioms and best practices**
+- 4-space indentation
+- Trailing commas
+- Grouped and reordered imports
+- 120 character line length
+- Consistent spacing and blank lines
+- No force-unwraps or force-casts in public API
+- All public APIs have doc comments
+- Follows Swift 6 idioms and best practices
 
 A `.swift-format` file is included in the repo. To format the codebase, run:
 

@@ -59,11 +59,11 @@ XLKit is a modern Swift library for creating and manipulating Excel (.xlsx) file
 
 The library is organized into the following SPM modules:
 
-1. **XLKitCore** - Core types, data structures, and utilities
-2. **XLKitFormatters** - CSV/TSV import/export functionality
-3. **XLKitImages** - Image processing and embedding utilities
-4. **XLKitXLSX** - XLSX file generation engine
-5. **XLKit** - Main API that re-exports all submodules
+1. XLKitCore - Core types, data structures, and utilities
+2. XLKitFormatters - CSV/TSV import/export functionality
+3. XLKitImages - Image processing and embedding utilities
+4. XLKitXLSX - XLSX file generation engine
+5. XLKit - Main API that re-exports all submodules
 
 ### Module Dependencies
 
@@ -101,7 +101,7 @@ XLKitTestRunner is a modular command-line tool for generating Excel files for te
 
 ### Architecture
 
-**File Structure**:
+File Structure:
 ```
 Sources/XLKitTestRunner/
 ├── main.swift                    # Entry point with CLI
@@ -111,16 +111,16 @@ Sources/XLKitTestRunner/
 └── README.md                     # Documentation
 ```
 
-**Key Components**:
+Key Components:
 
-1. **main.swift**: Command-line interface that routes to different test functions
-2. **ExcelGenerators.swift**: Contains the actual Excel generation logic
-3. **Templates/**: Reusable templates for creating new tests
-4. **README.md**: Comprehensive documentation
+1. main.swift: Command-line interface that routes to different test functions
+2. ExcelGenerators.swift: Contains the actual Excel generation logic
+3. Templates/: Reusable templates for creating new tests
+4. README.md: Comprehensive documentation
 
 ### Usage
 
-**Basic Commands**:
+Basic Commands:
 ```bash
 # Run default test (no-embeds)
 swift run XLKitTestRunner
@@ -132,7 +132,7 @@ swift run XLKitTestRunner no-embeds
 swift run XLKitTestRunner help
 ```
 
-**Available Test Types**:
+Available Test Types:
 - `no-embeds` / `no-images`: Generate Excel from CSV without images
 - `with-embeds` / `with-images`: Generate Excel with image embeds (future)
 - `csv-import`: Test CSV import functionality (future)
@@ -141,60 +141,60 @@ swift run XLKitTestRunner help
 
 ### Development Workflow
 
-**Adding New Tests**:
+Adding New Tests:
 
-1. **Use Template**: Copy the template file
+1. Use Template: Copy the template file
    ```bash
    cp Sources/XLKitTestRunner/Templates/TestGeneratorTemplate.swift Sources/XLKitTestRunner/YourTestName.swift
    ```
 
-2. **Modify Template**: Update function name, configuration, and logic
+2. Modify Template: Update function name, configuration, and logic
 
-3. **Register Test**: Add to main.swift switch statement
+3. Register Test: Add to main.swift switch statement
    ```swift
    case "your-test-name":
        print("Executing: Your Test Description")
        yourTestName()
    ```
 
-4. **Update Help**: Add to help function in main.swift
+4. Update Help: Add to help function in main.swift
 
-5. **Create Workflow**: Add GitHub Actions workflow if needed
+5. Create Workflow: Add GitHub Actions workflow if needed
 
-**Naming Conventions**:
-- **Function Names**: camelCase (e.g., `generateExcelWithImages()`)
-- **Test Types**: kebab-case (e.g., `with-images`, `csv-import`)
-- **File Names**: PascalCase (e.g., `ExcelGenerators.swift`)
+Naming Conventions:
+- Function Names: camelCase (e.g., `generateExcelWithImages()`)
+- Test Types: kebab-case (e.g., `with-images`, `csv-import`)
+- File Names: PascalCase (e.g., `ExcelGenerators.swift`)
 
 ### Output Management
 
-**Generated Files**: All Excel files are saved to `Test-Workflows/` directory
+Generated Files: All Excel files are saved to `Test-Workflows/` directory
 - `Embed-Test.xlsx`: From no-embeds test
 - `Embed-Test-Embed.xlsx`: From embed test (with images)
 - `[Your-Test].xlsx`: From custom tests
 
-**Error Handling**: All functions use consistent error handling with descriptive messages and appropriate exit codes.
+Error Handling: All functions use consistent error handling with descriptive messages and appropriate exit codes.
 
 ### Integration
 
-**GitHub Actions**: The test runner is integrated into CI/CD workflows
+GitHub Actions: The test runner is integrated into CI/CD workflows
 - `.github/workflows/create-excel-test-file-no-images.yml`: Runs `no-embeds` test
 - Uses `xcbeautify` for clean output
 - Generates artifacts for download
 
-**Testing Strategy**: Provides a way to test XLKit functionality in real-world scenarios by generating actual Excel files.
+Testing Strategy: Provides a way to test XLKit functionality in real-world scenarios by generating actual Excel files.
 
 ## Detailed Module Breakdown
 
 ### XLKitCore Module
 
-**File**: `Sources/XLKitCore/CoreTypes.swift`
+File: `Sources/XLKitCore/CoreTypes.swift`
 
-**Purpose**: Contains all core data structures and types used throughout the library.
+Purpose: Contains all core data structures and types used throughout the library.
 
 #### Key Types
 
-**Workbook Class**
+Workbook Class
 ```swift
 public final class Workbook {
     private var sheets: [Sheet] = []
@@ -206,7 +206,7 @@ public final class Workbook {
 - Auto-increments sheet IDs
 - Note: Not Sendable due to mutable state requirements
 
-**Sheet Class**
+Sheet Class
 ```swift
 public final class Sheet: Equatable {
     public let name: String
@@ -224,7 +224,7 @@ public final class Sheet: Equatable {
 - Maintains separate storage for cell values and formats
 - Note: Not Sendable due to mutable state requirements
 
-**CellValue Enum**
+CellValue Enum
 ```swift
 public enum CellValue: Equatable {
     case string(String)
@@ -240,7 +240,7 @@ public enum CellValue: Equatable {
 - Supports all Excel data types
 - Includes computed properties for string representation and type identification
 
-**CellCoordinate Struct**
+CellCoordinate Struct
 ```swift
 public struct CellCoordinate: Hashable {
     public let row: Int
@@ -253,7 +253,7 @@ public struct CellCoordinate: Hashable {
 - Converts between numeric and Excel address notation
 - Supports parsing Excel addresses like "A1", "B2", "AA10"
 
-**CellRange Struct**
+CellRange Struct
 ```swift
 public struct CellRange: Hashable {
     public let start: CellCoordinate
@@ -267,7 +267,7 @@ public struct CellRange: Hashable {
 - Generates all coordinates within the range
 - Supports Excel range notation like "A1:B3"
 
-**Cell Struct**
+Cell Struct
 ```swift
 public struct Cell {
     public let value: CellValue
@@ -285,7 +285,7 @@ public struct Cell {
 - Combines cell value with optional formatting
 - Provides factory methods for easy cell creation
 
-**CellFormat Struct**
+CellFormat Struct
 ```swift
 public struct CellFormat {
     public var fontName: String?
@@ -319,7 +319,7 @@ public struct CellFormat {
 - Supports fonts, colors, alignment, borders, and number formats
 - Provides factory methods for common formatting patterns
 
-**CoreUtils Struct**
+CoreUtils Struct
 ```swift
 public struct CoreUtils {
     // Column conversion
@@ -340,7 +340,7 @@ public struct CoreUtils {
 - Handles Excel-specific conversions (column letters, dates)
 - Provides XML escaping for XLSX generation
 
-**ExcelImage Struct**
+ExcelImage Struct
 ```swift
 public struct ExcelImage {
     public let id: String
@@ -354,7 +354,7 @@ public struct ExcelImage {
 - Stores image data, format, and size information
 - Supports custom display sizes
 
-**ImageFormat Enum**
+ImageFormat Enum
 ```swift
 public enum ImageFormat: String, CaseIterable {
     case gif = "gif"
@@ -371,7 +371,7 @@ public enum ImageFormat: String, CaseIterable {
 - Defines supported image formats
 - Provides MIME types and Excel content types
 
-**XLKitError Enum**
+XLKitError Enum
 ```swift
 public enum XLKitError: Error, LocalizedError {
     case invalidCoordinate(String)
@@ -386,11 +386,11 @@ public enum XLKitError: Error, LocalizedError {
 
 ### XLKitFormatters Module
 
-**File**: `Sources/XLKitFormatters/CSVUtils.swift`
+File: `Sources/XLKitFormatters/CSVUtils.swift`
 
-**Purpose**: Handles CSV and TSV import/export operations.
+Purpose: Handles CSV and TSV import/export operations.
 
-**CSVUtils Struct**
+CSVUtils Struct
 ```swift
 public struct CSVUtils {
     // Export functions
@@ -407,14 +407,14 @@ public struct CSVUtils {
 }
 ```
 
-**Key Features**:
+Key Features:
 - Handles CSV/TSV parsing with proper quote escaping
 - Supports header row handling (skips first row when hasHeader = true)
 - Auto-detects data types (string, number, boolean, date)
 - Handles special characters and newlines in CSV data
 - Creates workbooks directly from CSV/TSV data
 
-**Implementation Details**:
+Implementation Details:
 - Uses regex for date pattern matching
 - Implements proper CSV parsing with quote handling
 - Supports both comma and tab separators
@@ -422,11 +422,11 @@ public struct CSVUtils {
 
 ### XLKitImages Module
 
-**File**: `Sources/XLKitImages/ImageUtils.swift`
+File: `Sources/XLKitImages/ImageUtils.swift`
 
-**Purpose**: Handles image processing, format detection, and size extraction.
+Purpose: Handles image processing, format detection, and size extraction.
 
-**ImageUtils Struct**
+ImageUtils Struct
 ```swift
 public struct ImageUtils {
     // Format detection
@@ -441,14 +441,14 @@ public struct ImageUtils {
 }
 ```
 
-**Supported Formats**:
-- **GIF**: Detects signature `GIF`, extracts width/height from header
-- **PNG**: Detects signature `89 50 4E 47`, extracts dimensions from IHDR chunk
-- **JPEG**: Detects signature `FF D8`, parses SOF markers for dimensions
-- **BMP**: Detects signature `42 4D`, extracts dimensions from header
-- **TIFF**: Detects signature `49 49` or `4D 4D`, simplified size detection
+Supported Formats:
+- GIF: Detects signature `GIF`, extracts width/height from header
+- PNG: Detects signature `89 50 4E 47`, extracts dimensions from IHDR chunk
+- JPEG: Detects signature `FF D8`, parses SOF markers for dimensions
+- BMP: Detects signature `42 4D`, extracts dimensions from header
+- TIFF: Detects signature `49 49` or `4D 4D`, simplified size detection
 
-**Implementation Details**:
+Implementation Details:
 - Binary signature detection for format identification
 - Format-specific size extraction algorithms
 - Error handling for corrupted or unsupported images
@@ -456,11 +456,11 @@ public struct ImageUtils {
 
 ### XLKitXLSX Module
 
-**File**: `Sources/XLKitXLSX/XLSXEngine.swift`
+File: `Sources/XLKitXLSX/XLSXEngine.swift`
 
-**Purpose**: Generates XLSX files using the OpenXML format.
+Purpose: Generates XLSX files using the OpenXML format.
 
-**XLSXEngine Struct**
+XLSXEngine Struct
 ```swift
 public struct XLSXEngine {
     // Async and sync save operations
@@ -469,14 +469,14 @@ public struct XLSXEngine {
 }
 ```
 
-**XLSX Generation Process**:
-1. **Content Types**: Generates `[Content_Types].xml` with file type mappings
-2. **Workbook XML**: Creates `xl/workbook.xml` with sheet definitions
-3. **Worksheets**: Generates individual `xl/worksheets/sheetN.xml` files
-4. **Relationships**: Creates relationship files for proper file linking
-5. **ZIP Archive**: Packages all XML files into a ZIP archive
+XLSX Generation Process:
+1. Content Types: Generates `[Content_Types].xml` with file type mappings
+2. Workbook XML: Creates `xl/workbook.xml` with sheet definitions
+3. Worksheets: Generates individual `xl/worksheets/sheetN.xml` files
+4. Relationships: Creates relationship files for proper file linking
+5. ZIP Archive: Packages all XML files into a ZIP archive
 
-**File Structure Generated**:
+File Structure Generated:
 ```
 workbook.xlsx
 ├── [Content_Types].xml
@@ -492,7 +492,7 @@ workbook.xlsx
             └── sheet1.xml.rels
 ```
 
-**Implementation Details**:
+Implementation Details:
 - Uses temporary directories for file generation
 - Implements proper XML escaping
 - Handles ZIP creation using system `zip` command
@@ -501,11 +501,11 @@ workbook.xlsx
 
 ### XLKit Module (Main API)
 
-**File**: `Sources/XLKit/XLKit.swift`
+File: `Sources/XLKit/XLKit.swift`
 
-**Purpose**: Provides the main public API that re-exports all submodule functionality.
+Purpose: Provides the main public API that re-exports all submodule functionality.
 
-**XLKit Struct**
+XLKit Struct
 ```swift
 public struct XLKit {
     // Workbook creation
@@ -525,7 +525,7 @@ public struct XLKit {
 }
 ```
 
-**API Design Principles**:
+API Design Principles:
 - Static methods for easy access
 - Fluent API design with method chaining
 - Comprehensive error handling
@@ -628,12 +628,12 @@ try XLKit.embedImageAutoSized(
 )
 ```
 
-**Image Embedding Features**:
-- **Aspect Ratio Preservation**: Images maintain their original proportions
-- **Automatic Cell Sizing**: Row height and column width automatically adjust to match image dimensions
-- **Precise Positioning**: Images are positioned exactly at cell boundaries with no offsets
-- **Excel Compliance**: Uses precise Excel formulas for sizing calculations
-- **Workbook Registration**: Images are registered with both sheet and workbook for proper tracking
+Image Embedding Features:
+- Aspect Ratio Preservation: Images maintain their original proportions
+- Automatic Cell Sizing: Row height and column width automatically adjust to match image dimensions
+- Precise Positioning: Images are positioned exactly at cell boundaries with no offsets
+- Excel Compliance: Uses precise Excel formulas for sizing calculations
+- Workbook Registration: Images are registered with both sheet and workbook for proper tracking
 
 ### Utility Operations
 
@@ -741,30 +741,30 @@ do {
 
 The library includes comprehensive tests in `Tests/XLKitTests/XLKitTests.swift` covering:
 
-1. **Core Functionality**
+1. Core Functionality
    - Workbook creation and management
    - Sheet operations
    - Cell value setting and retrieval
    - Coordinate and range operations
 
-2. **CSV/TSV Operations**
+2. CSV/TSV Operations
    - Import with and without headers
    - Export with various separators
    - Special character handling
    - Data type detection
 
-3. **Image Operations**
+3. Image Operations
    - Format detection
    - Size extraction
    - ExcelImage creation
    - Image embedding in sheets
 
-4. **XLSX Generation**
+4. XLSX Generation
    - File creation and saving
    - XML structure validation
    - ZIP archive creation
 
-5. **Error Handling**
+5. Error Handling
    - Invalid coordinates and ranges
    - File operation errors
    - Image processing errors
@@ -803,15 +803,15 @@ func testCSVImport() {
 
 ### Memory Management
 
-- **Large Datasets**: XLKit is optimized for handling large datasets efficiently
-- **Cell Storage**: Uses dictionaries for O(1) cell access
-- **Image Handling**: Processes images on-demand to minimize memory usage
+- Large Datasets: XLKit is optimized for handling large datasets efficiently
+- Cell Storage: Uses dictionaries for O(1) cell access
+- Image Handling: Processes images on-demand to minimize memory usage
 
 ### Async Operations
 
-- **File I/O**: Use async/await for file operations to avoid blocking
-- **Concurrent Access**: Workbook and Sheet classes are Sendable for thread safety
-- **Background Processing**: Image processing and XLSX generation can run in background
+- File I/O: Use async/await for file operations to avoid blocking
+- Concurrent Access: Workbook and Sheet classes are Sendable for thread safety
+- Background Processing: Image processing and XLSX generation can run in background
 
 ### Optimization Tips
 
@@ -830,31 +830,31 @@ sheet.clear()
 
 ### Swift 6.0 Compliance
 
-- **Sendable Conformance**: All public types conform to Sendable where appropriate
-- **Modern Swift**: Uses latest Swift features and idioms
-- **Type Safety**: Strong typing throughout the codebase
+- Sendable Conformance: All public types conform to Sendable where appropriate
+- Modern Swift: Uses latest Swift features and idioms
+- Type Safety: Strong typing throughout the codebase
 
 ### Documentation Standards
 
-- **Doc Comments**: All public APIs have comprehensive documentation
-- **Examples**: Code examples in documentation
-- **Parameter Documentation**: All parameters are documented
+- Doc Comments: All public APIs have comprehensive documentation
+- Examples: Code examples in documentation
+- Parameter Documentation: All parameters are documented
 
 ### Formatting Standards
 
-- **4-space Indentation**: Consistent indentation throughout
-- **Trailing Commas**: Used for better git diffs
-- **Grouped Imports**: Imports are organized and grouped
-- **Modern Idioms**: Uses latest Swift best practices
+- 4-space Indentation: Consistent indentation throughout
+- Trailing Commas: Used for better git diffs
+- Grouped Imports: Imports are organized and grouped
+- Modern Idioms: Uses latest Swift best practices
 
 ## Development Guidelines
 
 ### Adding New Features
 
-1. **Module Placement**: Place new functionality in appropriate modules
-2. **API Design**: Follow existing API patterns and conventions
-3. **Testing**: Add comprehensive tests for new features
-4. **Documentation**: Update documentation and add examples
+1. Module Placement: Place new functionality in appropriate modules
+2. API Design: Follow existing API patterns and conventions
+3. Testing: Add comprehensive tests for new features
+4. Documentation: Update documentation and add examples
 
 ### Code Organization
 
@@ -944,38 +944,38 @@ let package = Package(
 
 ### CI Requirements
 
-- **macOS Only**: CI runs only on macOS (no cross-platform support)
-- **Swift 6.0**: Uses latest Swift version
-- **Test Coverage**: All tests must pass
-- **Code Formatting**: Code must be properly formatted
-- **Documentation**: All public APIs must be documented
+- macOS Only: CI runs only on macOS (no cross-platform support)
+- Swift 6.0: Uses latest Swift version
+- Test Coverage: All tests must pass
+- Code Formatting: Code must be properly formatted
+- Documentation: All public APIs must be documented
 
 ## Future Development
 
 ### Potential Enhancements
 
-1. **Cell Formatting**: Enhanced formatting options (colors, fonts, borders)
-2. **Charts and Graphs**: Support for Excel charts
-3. **Formulas**: Enhanced formula support
-4. **Conditional Formatting**: Support for conditional cell formatting
-5. **Data Validation**: Cell data validation rules
-6. **Pivot Tables**: Support for pivot table creation
-7. **Macros**: VBA macro support
-8. **Password Protection**: Workbook and sheet protection
+1. Cell Formatting: Enhanced formatting options (colors, fonts, borders)
+2. Charts and Graphs: Support for Excel charts
+3. Formulas: Enhanced formula support
+4. Conditional Formatting: Support for conditional cell formatting
+5. Data Validation: Cell data validation rules
+6. Pivot Tables: Support for pivot table creation
+7. Macros: VBA macro support
+8. Password Protection: Workbook and sheet protection
 
 ### Architecture Considerations
 
-- **Modularity**: Maintain clean module boundaries
-- **Extensibility**: Design APIs for future enhancements
-- **Performance**: Consider performance implications of new features
-- **Compatibility**: Maintain backward compatibility
+- Modularity: Maintain clean module boundaries
+- Extensibility: Design APIs for future enhancements
+- Performance: Consider performance implications of new features
+- Compatibility: Maintain backward compatibility
 
 ### Integration Points
 
-- **File Formats**: Consider support for other Excel formats (.xls, .xlsm)
-- **Platform Support**: Evaluate iOS/Linux support if needed
-- **Third-party Libraries**: Consider integration with other Swift libraries
-- **Cloud Storage**: Support for cloud storage providers
+- File Formats: Consider support for other Excel formats (.xls, .xlsm)
+- Platform Support: Evaluate iOS/Linux support if needed
+- Third-party Libraries: Consider integration with other Swift libraries
+- Cloud Storage: Support for cloud storage providers
 
 This comprehensive guide provides all the information an AI agent needs to understand, maintain, and extend the XLKit library effectively.
 
@@ -983,7 +983,7 @@ This comprehensive guide provides all the information an AI agent needs to under
 
 ### Documentation Maintenance Requirements
 
-**IMPORTANT**: This AGENT.MD file must be updated whenever:
+IMPORTANT: This AGENT.MD file must be updated whenever:
 - New features are added to the library
 - Significant architectural changes are made
 - New modules or major components are introduced
@@ -996,14 +996,14 @@ This comprehensive guide provides all the information an AI agent needs to under
 
 When making significant changes to the codebase, ensure this AGENT.MD file is updated to include:
 
-- **New Features**: Document all new functionality, APIs, and capabilities
-- **Architecture Changes**: Update module structure and dependencies
-- **API Changes**: Document new methods, parameters, and usage patterns
-- **Testing Updates**: Include new test patterns and coverage requirements
-- **Performance Notes**: Document performance considerations and optimizations
-- **Error Handling**: Update error types and handling patterns
-- **Examples**: Provide code examples for new features
-- **Integration Notes**: Document any new integration requirements
+- New Features: Document all new functionality, APIs, and capabilities
+- Architecture Changes: Update module structure and dependencies
+- API Changes: Document new methods, parameters, and usage patterns
+- Testing Updates: Include new test patterns and coverage requirements
+- Performance Notes: Document performance considerations and optimizations
+- Error Handling: Update error types and handling patterns
+- Examples: Provide code examples for new features
+- Integration Notes: Document any new integration requirements
 
 ### Version Tracking
 
@@ -1050,29 +1050,29 @@ XLKit now supports advanced image embedding with automatic sizing and aspect rat
 
 ### Key Features
 
-**Aspect Ratio Preservation**
+Aspect Ratio Preservation
 - Images maintain their original proportions regardless of cell dimensions
 - Prevents stretching, squashing, or distortion
 - Uses precise Excel formulas for sizing calculations
 
-**Automatic Cell Sizing**
+Automatic Cell Sizing
 - Row height automatically adjusts to match image height
 - Column width automatically adjusts to match image width
 - Cells perfectly fit the embedded images
 
-**Precise Positioning**
+Precise Positioning
 - Images are positioned exactly at cell boundaries
 - No offsets or padding that could cause misalignment
 - Perfect alignment with cell grid
 
-**Excel Compliance**
+Excel Compliance
 - Uses standard Excel formulas for sizing calculations
 - Generates proper drawing XML with correct coordinates
 - Maintains compatibility with all Excel versions
 
 ### Implementation Details
 
-**API Methods**
+API Methods
 ```swift
 // Sheet extension method
 try sheet.embedImageAutoSized(
@@ -1090,58 +1090,58 @@ try XLKit.embedImageAutoSized(
 ) throws
 ```
 
-**Workbook Registration**
+Workbook Registration
 - Images are registered with both sheet and workbook
 - Ensures proper tracking and counting
 - Prevents issues with image enumeration
 
-**Drawing XML Generation**
+Drawing XML Generation
 - Generates precise drawing XML with correct coordinates
 - Uses Excel's standard positioning system
 - Includes proper relationship references
 
-**Cell Sizing Formulas**
+Cell Sizing Formulas
 - Column width: `(imageWidth * 7.2) / 96` (Excel's pixel-to-point conversion)
 - Row height: `imageHeight * 0.75` (Excel's point-to-pixel conversion)
 - Maintains perfect aspect ratio preservation
 
 ### Lessons Learned from Notion Export
 
-**Image Sizing**
+Image Sizing
 - Notion uses precise pixel-to-point conversions
 - Aspect ratio must be preserved at all costs
 - Cell dimensions must exactly match image dimensions
 
-**Positioning**
+Positioning
 - Images must be positioned exactly at cell boundaries
 - No offsets or padding allowed
 - Perfect alignment with Excel's grid system
 
-**Critical Image Positioning Rule**
-- **MANDATORY**: `rowOff = 0` in drawing XML to keep images within cell boundaries
+Critical Image Positioning Rule
+- MANDATORY: `rowOff = 0` in drawing XML to keep images within cell boundaries
 - Images must be positioned exactly at cell start point with no offsets
 - Any `rowOff` value other than 0 will cause Excel to stretch images beyond cell boundaries
 - This rule is essential for maintaining aspect ratio - violation will cause image distortion
 
-**File Structure**
+File Structure
 - All required OpenXML files must be present
 - Proper relationships between files
 - Correct content type declarations
 
-**Validation**
+Validation
 - Automated validation ensures compliance
 - CoreXLSX validation catches structural issues
 - Manual inspection no longer required
 
 ### Test Implementation
 
-**ImageEmbedGenerators.swift**
+ImageEmbedGenerators.swift
 - Dedicated test generator for image embedding
 - Embeds images from CSV "Image Filename" column
 - Creates new "Image" column for embedded images
 - Outputs to `Embed-Test-Embed.xlsx`
 
-**Validation Process**
+Validation Process
 - Generates Excel file with embedded images
 - Validates file structure with CoreXLSX
 - Confirms image count and positioning
@@ -1149,7 +1149,7 @@ try XLKit.embedImageAutoSized(
 
 ### Usage Examples
 
-**Basic Image Embedding**
+Basic Image Embedding
 ```swift
 let workbook = XLKit.createWorkbook()
 let sheet = workbook.addSheet(name: "Images")
@@ -1162,7 +1162,7 @@ try sheet.embedImageAutoSized(
 )
 ```
 
-**CSV with Image Embedding**
+CSV with Image Embedding
 ```swift
 // Create workbook from CSV
 let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
@@ -1183,30 +1183,30 @@ for row in 2...sheet.getUsedCells().count {
 
 ### Performance Considerations
 
-**Memory Management**
+Memory Management
 - Images are processed on-demand
 - Efficient data handling for large images
 - Proper cleanup after processing
 
-**File Size**
+File Size
 - Optimized image compression
 - Efficient XML generation
 - Minimal overhead for embedded images
 
-**Validation Overhead**
+Validation Overhead
 - CoreXLSX validation adds minimal overhead
 - Ensures file quality and compliance
 - Worthwhile trade-off for reliability
 
 ### Future Enhancements
 
-**Planned Features**
+Planned Features
 - Support for image resizing options
 - Multiple image formats (SVG, WebP)
 - Image compression options
 - Batch image processing
 
-**Optimization Opportunities**
+Optimization Opportunities
 - Parallel image processing
 - Caching for repeated images
 - Progressive image loading
