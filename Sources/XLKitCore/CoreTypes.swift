@@ -55,6 +55,31 @@ public final class Workbook {
     public func getImages() -> [ExcelImage] {
         images
     }
+    
+    /// Gets an image by ID
+    public func getImage(withId id: String) -> ExcelImage? {
+        return images.first { $0.id == id }
+    }
+    
+    /// Removes an image by ID
+    public func removeImage(withId id: String) {
+        images.removeAll { $0.id == id }
+    }
+    
+    /// Gets images by format
+    public func getImages(withFormat format: ImageFormat) -> [ExcelImage] {
+        return images.filter { $0.format == format }
+    }
+    
+    /// Clears all images from the workbook
+    public func clearImages() {
+        images.removeAll()
+    }
+    
+    /// Gets the number of images in the workbook
+    public var imageCount: Int {
+        return images.count
+    }
 }
 
 /// Represents a worksheet in an Excel workbook
@@ -285,9 +310,52 @@ public final class Sheet: Equatable {
         return self
     }
     
+    /// Adds an image to a cell by row and column
+    @discardableResult
+    public func addImage(_ image: ExcelImage, at row: Int, column: Int) -> Self {
+        let coordinate = CellCoordinate(row: row, column: column).excelAddress
+        return addImage(image, at: coordinate)
+    }
+    
     /// Gets all images in the sheet
     public func getImages() -> [String: ExcelImage] {
         images
+    }
+    
+    /// Gets an image at a specific coordinate
+    public func getImage(at coordinate: String) -> ExcelImage? {
+        return images[coordinate.uppercased()]
+    }
+    
+    /// Gets an image at a specific row and column
+    public func getImage(at row: Int, column: Int) -> ExcelImage? {
+        let coordinate = CellCoordinate(row: row, column: column).excelAddress
+        return getImage(at: coordinate)
+    }
+    
+    /// Removes an image from a cell
+    @discardableResult
+    public func removeImage(at coordinate: String) -> Self {
+        images.removeValue(forKey: coordinate.uppercased())
+        return self
+    }
+    
+    /// Removes an image from a cell by row and column
+    @discardableResult
+    public func removeImage(at row: Int, column: Int) -> Self {
+        let coordinate = CellCoordinate(row: row, column: column).excelAddress
+        return removeImage(at: coordinate)
+    }
+    
+    /// Checks if a cell has an image
+    public func hasImage(at coordinate: String) -> Bool {
+        return images[coordinate.uppercased()] != nil
+    }
+    
+    /// Checks if a cell has an image by row and column
+    public func hasImage(at row: Int, column: Int) -> Bool {
+        let coordinate = CellCoordinate(row: row, column: column).excelAddress
+        return hasImage(at: coordinate)
     }
     
     /// Clears all data from the sheet

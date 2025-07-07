@@ -72,6 +72,7 @@ swift run XLKitTestRunner help
 - `with-embeds` / `with-images` - Generate Excel with image embeds (future)
 - `csv-import` - Test CSV import functionality (future)
 - `formatting` - Test cell formatting features (future)
+- `embed` - Generate Excel with embedded images from CSV data
 
 **Adding New Tests**:
 1. Copy template: `cp Sources/XLKitTestRunner/Templates/TestGeneratorTemplate.swift Sources/XLKitTestRunner/YourTestName.swift`
@@ -89,6 +90,7 @@ swift run XLKitTestRunner help
 ```
 Test-Workflows/
 ├── Embed-Test.xlsx          # From no-embeds test
+├── Embed-Test-Embed.xlsx    # From embed test (with images)
 └── [Your-Test].xlsx         # From custom tests
 ```
 
@@ -151,6 +153,7 @@ require_modular_api_docs = true
 require_unit_tests = true
 require_image_and_column_sizing_tests = true
 require_ci_pass = true
+require_image_embedding_tests = true
 
 ### API Design Requirements
 require_easy_to_use_api = true
@@ -428,6 +431,135 @@ func testFeatureNameWithInvalidInput() {
 - Added all required OpenXML files and relationships for Excel.
 - Automated validation with CoreXLSX.
 - Removed legacy debug folders from workflow.
+
+## Image Embedding Implementation (2025-01-27)
+
+### Overview
+XLKit now supports advanced image embedding with automatic sizing and aspect ratio preservation, matching the quality of professional Excel exports from tools like Notion.
+
+### Key Features
+
+**Aspect Ratio Preservation**
+- Images maintain their original proportions regardless of cell dimensions
+- Prevents stretching, squashing, or distortion
+- Uses precise Excel formulas for sizing calculations
+
+**Automatic Cell Sizing**
+- Row height automatically adjusts to match image height
+- Column width automatically adjusts to match image width
+- Cells perfectly fit the embedded images
+
+**Precise Positioning**
+- Images are positioned exactly at cell boundaries
+- No offsets or padding that could cause misalignment
+- Perfect alignment with cell grid
+
+**Excel Compliance**
+- Uses standard Excel formulas for sizing calculations
+- Generates proper drawing XML with correct coordinates
+- Maintains compatibility with all Excel versions
+
+### API Requirements
+
+**New Methods**
+```swift
+// Sheet extension method
+try sheet.embedImageAutoSized(
+    imageData: Data,
+    at: String,
+    workbook: Workbook
+) throws
+
+// XLKit convenience method
+try XLKit.embedImageAutoSized(
+    in: Sheet,
+    imageData: Data,
+    at: String,
+    workbook: Workbook
+) throws
+```
+
+**Workbook Registration**
+- Images must be registered with both sheet and workbook
+- Ensures proper tracking and counting
+- Prevents issues with image enumeration
+
+**Cell Sizing Formulas**
+- Column width: `(imageWidth * 7.2) / 96` (Excel's pixel-to-point conversion)
+- Row height: `imageHeight * 0.75` (Excel's point-to-pixel conversion)
+- Maintains perfect aspect ratio preservation
+
+### Implementation Standards
+
+**Drawing XML Generation**
+- Generate precise drawing XML with correct coordinates
+- Use Excel's standard positioning system
+- Include proper relationship references
+
+**Worksheet XML Updates**
+- Include row heights in `<row>` elements
+- Set column widths in `<col>` elements
+- Ensure proper cell sizing for images
+
+**Image Processing**
+- Support GIF, PNG, JPEG, BMP, TIFF formats
+- Auto-detect formats and sizes
+- Handle missing files gracefully
+- Provide meaningful error messages
+
+### Testing Requirements
+
+**Image Embedding Tests**
+- Test aspect ratio preservation
+- Test automatic cell sizing
+- Test precise positioning
+- Test workbook registration
+- Test error handling for missing files
+
+**Validation Requirements**
+- All generated files must pass CoreXLSX validation
+- Image count must match expected values
+- Cell dimensions must match image dimensions
+- Aspect ratio must be preserved
+
+### Performance Guidelines
+
+**Memory Management**
+- Process images on-demand
+- Efficient data handling for large images
+- Proper cleanup after processing
+
+**File Size Optimization**
+- Optimized image compression
+- Efficient XML generation
+- Minimal overhead for embedded images
+
+### Code Quality Standards
+
+**Error Handling**
+- Handle missing image files gracefully
+- Provide meaningful error messages
+- Use specific error types for image operations
+
+**Documentation**
+- Document all new image embedding methods
+- Include usage examples
+- Explain aspect ratio preservation
+- Document cell sizing formulas
+
+### Integration Guidelines
+
+**Test Runner Integration**
+- Add `embed` test type to XLKitTestRunner
+- Create ImageEmbedGenerators.swift for image embedding tests
+- Output to `Embed-Test-Embed.xlsx`
+- Include validation with CoreXLSX
+
+**File Organization**
+- Keep image embedding logic in XLKit module
+- Maintain separation of concerns
+- Follow existing API patterns
+- Ensure proper module dependencies
 
 This comprehensive .cursorrules file provides all the guidelines and standards for AI agents working with the XLKit codebase, ensuring consistent, high-quality development practices.
 

@@ -27,12 +27,8 @@ case "no-embeds", "no-images":
     
 case "with-embeds", "with-images":
     print("Executing: Generate Excel with Image Embeds")
-    if let generateExcelWithImages = Optional<(()->Void)>(nil) {
-        generateExcelWithImages()
-    } else {
-        print("[WARN] generateExcelWithImages() not implemented.")
-    }
-    validateExcelFile("Test-Workflows/Embed-Test.xlsx")
+    generateExcelWithImageEmbeds()
+    validateExcelFile("Test-Workflows/Embed-Test-Embed.xlsx")
     
 case "csv-import":
     print("Executing: CSV Import Test")
@@ -41,6 +37,11 @@ case "csv-import":
 case "formatting":
     print("Executing: Cell Formatting Test")
     // cellFormattingTest() // Future implementation
+    
+case "comprehensive", "demo":
+    print("Executing: Comprehensive API Demonstration")
+    demonstrateComprehensiveAPI()
+    validateExcelFile("Test-Workflows/Comprehensive-Demo.xlsx")
     
 case "help", "-h", "--help":
     printHelp()
@@ -60,7 +61,8 @@ func printHelp() {
     
     Available test types:
       no-embeds, no-images    - Generate Excel file from CSV without image embeds
-      with-embeds, with-images - Generate Excel file with image embeds (future)
+      with-embeds, with-images - Generate Excel file with image embeds
+      comprehensive, demo     - Comprehensive API demonstration with all features
       csv-import              - Test CSV import functionality (future)
       formatting              - Test cell formatting features (future)
       help, -h, --help        - Show this help message
@@ -68,6 +70,7 @@ func printHelp() {
     Examples:
       swift run XLKitTestRunner no-embeds
       swift run XLKitTestRunner with-images
+      swift run XLKitTestRunner comprehensive
       swift run XLKitTestRunner help
     
     """)

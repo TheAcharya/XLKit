@@ -30,18 +30,24 @@ public struct XLSXEngine {
         let xlDir = tempDir.appendingPathComponent("xl")
         let worksheetsDir = xlDir.appendingPathComponent("worksheets")
         let themeDir = xlDir.appendingPathComponent("theme")
+        let mediaDir = xlDir.appendingPathComponent("media")
+        let drawingsDir = xlDir.appendingPathComponent("drawings")
         let docPropsDir = tempDir.appendingPathComponent("docProps")
         let relsDir = tempDir.appendingPathComponent("_rels")
         let xlRelsDir = xlDir.appendingPathComponent("_rels")
         let worksheetsRelsDir = worksheetsDir.appendingPathComponent("_rels")
+        let drawingsRelsDir = drawingsDir.appendingPathComponent("_rels")
         
         try FileManager.default.createDirectory(at: xlDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: worksheetsDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: themeDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: mediaDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: drawingsDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: docPropsDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: relsDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: xlRelsDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: worksheetsRelsDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: drawingsRelsDir, withIntermediateDirectories: true)
         
         // Generate Content_Types.xml
         let contentTypes = generateContentTypes()
@@ -62,11 +68,14 @@ public struct XLSXEngine {
         // Generate workbook
         try generateWorkbook(xlDir: xlDir, workbook: workbook)
         
+        // Generate media files and drawings
+        try generateMediaAndDrawings(mediaDir: mediaDir, drawingsDir: drawingsDir, workbook: workbook)
+        
         // Generate worksheets
         try generateWorksheets(worksheetsDir: worksheetsDir, workbook: workbook, formatMapping: formatMapping, sharedStrings: sharedStrings)
         
         // Generate relationships
-        try generateRelationships(tempDir: tempDir, xlDir: xlDir, worksheetsDir: worksheetsDir, workbook: workbook)
+        try generateRelationships(tempDir: tempDir, xlDir: xlDir, worksheetsDir: worksheetsDir, drawingsDir: drawingsDir, workbook: workbook)
         
         // Create ZIP archive
         try createZIPArchive(from: tempDir, to: url)
@@ -323,6 +332,11 @@ public struct XLSXEngine {
             content += generateColumnWidthsXML(sheet: sheet)
         }
         
+        // Add row heights if any
+        if !sheet.getRowHeights().isEmpty {
+            content += generateRowHeightsXML(sheet: sheet)
+        }
+        
         content += "<sheetData>"
         
         // Group cells by row
@@ -341,7 +355,12 @@ public struct XLSXEngine {
             let minCol = rowCells.keys.compactMap { CellCoordinate(excelAddress: $0) }.map { $0.column }.min() ?? 1
             let maxCol = rowCells.keys.compactMap { CellCoordinate(excelAddress: $0) }.map { $0.column }.max() ?? 1
             
-            content += "<row r=\"\(rowNum)\" spans=\"\(minCol):\(maxCol)\">"
+            // Check for custom row height
+            if let customHeight = sheet.getRowHeight(rowNum) {
+                content += "<row r=\"\(rowNum)\" spans=\"\(minCol):\(maxCol)\" ht=\"\(customHeight)\" customHeight=\"1\">"
+            } else {
+                content += "<row r=\"\(rowNum)\" spans=\"\(minCol):\(maxCol)\">"
+            }
             
             for coordinate in rowCells.keys.sorted() {
                 guard let value = rowCells[coordinate] else { continue }
@@ -356,6 +375,12 @@ public struct XLSXEngine {
         
         // Add page margins
         content += "<pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/>"
+        
+        // Add drawing reference if sheet has images
+        let sheetImages = sheet.getImages()
+        if !sheetImages.isEmpty {
+            content += "<drawing r:id=\"rId1\"/>"
+        }
         
         content += "</worksheet>"
         
@@ -384,10 +409,7 @@ public struct XLSXEngine {
     }
     
     private static func generateRowHeightsXML(sheet: Sheet) -> String {
-        var content = """
-        
-            <sheetFormatPr defaultRowHeight="15"/>
-        """
+        var content = ""
         
         for (row, height) in sheet.getRowHeights().sorted(by: { $0.key < $1.key }) {
             content += """
@@ -466,11 +488,113 @@ public struct XLSXEngine {
         return formatMapping[key]
     }
     
+    private static func generateMediaAndDrawings(mediaDir: URL, drawingsDir: URL, workbook: Workbook) throws {
+        // Generate media files
+        try generateMediaFiles(mediaDir: mediaDir, workbook: workbook)
+        
+        // Generate drawings for each sheet that has images
+        for sheet in workbook.getSheets() {
+            let sheetImages = sheet.getImages()
+            if !sheetImages.isEmpty {
+                try generateDrawingXML(drawingsDir: drawingsDir, sheet: sheet, workbook: workbook)
+            }
+        }
+    }
+    
     private static func generateMediaFiles(mediaDir: URL, workbook: Workbook) throws {
         for image in workbook.getImages() {
             let imageURL = mediaDir.appendingPathComponent("\(image.id).\(image.format.rawValue)")
             try image.data.write(to: imageURL)
         }
+    }
+    
+    private static func generateDrawingXML(drawingsDir: URL, sheet: Sheet, workbook: Workbook) throws {
+        let drawingId = "drawing\(sheet.id)"
+        let drawingXML = generateDrawingXMLContent(sheet: sheet, workbook: workbook)
+        try drawingXML.write(to: drawingsDir.appendingPathComponent("\(drawingId).xml"), atomically: true, encoding: .utf8)
+        
+        // Generate drawing relationships
+        try generateDrawingRelationships(drawingsDir: drawingsDir, drawingId: drawingId, sheet: sheet, workbook: workbook)
+    }
+    
+    private static func generateDrawingXMLContent(sheet: Sheet, workbook: Workbook) -> String {
+        var content = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+        content += "<xdr:wsDr xmlns:xdr=\"http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\">"
+        
+        let sheetImages = sheet.getImages()
+        var imageIndex = 1
+        
+        for (coordinate, image) in sheetImages {
+            guard let cellCoord = CellCoordinate(excelAddress: coordinate) else { continue }
+            
+            // Use displaySize if available, else fallback to originalSize
+            let size = image.displaySize ?? image.originalSize
+            
+            // Excel uses EMUs (English Metric Units): 1 inch = 914400 EMUs
+            // Convert pixels to EMUs (assuming 96 DPI: 1 inch = 96 pixels)
+            // So 1 pixel = 914400 / 96 = 9525 EMUs
+            let widthEMU = Int(size.width * 9525)
+            let heightEMU = Int(size.height * 9525)
+            
+            let col = cellCoord.column
+            let row = cellCoord.row
+            
+            // Position images exactly at cell start point (no offsets)
+            let offsetX = 0 // Start at cell's left edge
+            let offsetY = 0 // Start at cell's top edge
+            
+            // Use the actual image height for rowOff to match cell dimensions
+            let rowOff = heightEMU // Use full image height to match cell height
+            
+            content += "<xdr:twoCellAnchor editAs=\"oneCell\">"
+            content += "<xdr:from><xdr:col>\(col - 1)</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>\(row - 1)</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from>"
+            content += "<xdr:to><xdr:col>\(col)</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>\(row)</xdr:row><xdr:rowOff>\(rowOff)</xdr:rowOff></xdr:to>"
+            content += "<xdr:pic>"
+            content += "<xdr:nvPicPr>"
+            content += "<xdr:cNvPr id=\"\(imageIndex * 2)\" name=\"Picture \(imageIndex)\">"
+            content += "<a:extLst><a:ext uri=\"{FF2B5EF4-FFF2-40B4-BE49-F238E27FC236}\">"
+            content += "<a16:creationId xmlns:a16=\"http://schemas.microsoft.com/office/drawing/2014/main\" id=\"{\(UUID().uuidString.uppercased())}\"/>"
+            content += "</a:ext></a:extLst>"
+            content += "</xdr:cNvPr>"
+            content += "<xdr:cNvPicPr><a:picLocks noChangeAspect=\"1\"/></xdr:cNvPicPr>"
+            content += "</xdr:nvPicPr>"
+            content += "<xdr:blipFill>"
+            content += "<a:blip xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" r:embed=\"rId\(imageIndex)\" cstate=\"print\">"
+            content += "<a:extLst><a:ext uri=\"{28A0092B-C50C-407E-A947-70E740481C1C}\">"
+            content += "<a14:useLocalDpi xmlns:a14=\"http://schemas.microsoft.com/office/drawing/2010/main\" val=\"0\"/>"
+            content += "</a:ext></a:extLst>"
+            content += "</a:blip>"
+            content += "<a:stretch><a:fillRect/></a:stretch>"
+            content += "</xdr:blipFill>"
+            content += "<xdr:spPr>"
+            content += "<a:xfrm><a:off x=\"\(offsetX)\" y=\"\(offsetY)\"/><a:ext cx=\"\(widthEMU)\" cy=\"\(heightEMU)\"/></a:xfrm>"
+            content += "<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>"
+            content += "</xdr:spPr>"
+            content += "</xdr:pic>"
+            content += "<xdr:clientData/>"
+            content += "</xdr:twoCellAnchor>"
+            imageIndex += 1
+        }
+        
+        content += "</xdr:wsDr>"
+        return content
+    }
+    
+    private static func generateDrawingRelationships(drawingsDir: URL, drawingId: String, sheet: Sheet, workbook: Workbook) throws {
+        var content = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+        content += "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
+        
+        let sheetImages = sheet.getImages()
+        var imageIndex = 1
+        
+        for (_, image) in sheetImages {
+            content += "<Relationship Id=\"rId\(imageIndex)\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image\" Target=\"../media/\(image.id).\(image.format.rawValue)\"/>"
+            imageIndex += 1
+        }
+        
+        content += "</Relationships>"
+        
+        try content.write(to: drawingsDir.appendingPathComponent("_rels/\(drawingId).xml.rels"), atomically: true, encoding: .utf8)
     }
     
     // MARK: - ZIP Archive Creation
@@ -495,7 +619,7 @@ public struct XLSXEngine {
         }
     }
     
-    private static func generateRelationships(tempDir: URL, xlDir: URL, worksheetsDir: URL, workbook: Workbook) throws {
+    private static func generateRelationships(tempDir: URL, xlDir: URL, worksheetsDir: URL, drawingsDir: URL, workbook: Workbook) throws {
         // Root relationships
         let rootRels = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/><Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/><Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\"/></Relationships>"
         try rootRels.write(to: tempDir.appendingPathComponent("_rels/.rels"), atomically: true, encoding: .utf8)
@@ -504,9 +628,18 @@ public struct XLSXEngine {
         let workbookRels = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/><Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/><Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\" Target=\"sharedStrings.xml\"/><Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/></Relationships>"
         try workbookRels.write(to: xlDir.appendingPathComponent("_rels/workbook.xml.rels"), atomically: true, encoding: .utf8)
         
-        // Worksheet relationships (empty for now, but required)
-        let worksheetRels = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"></Relationships>"
-        try worksheetRels.write(to: worksheetsDir.appendingPathComponent("_rels/sheet1.xml.rels"), atomically: true, encoding: .utf8)
+        // Worksheet relationships - check if sheet has images
+        for sheet in workbook.getSheets() {
+            let sheetImages = sheet.getImages()
+            if !sheetImages.isEmpty {
+                let drawingId = "drawing\(sheet.id)"
+                let worksheetRels = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing\" Target=\"../drawings/\(drawingId).xml\"/></Relationships>"
+                try worksheetRels.write(to: worksheetsDir.appendingPathComponent("_rels/sheet\(sheet.id).xml.rels"), atomically: true, encoding: .utf8)
+            } else {
+                let worksheetRels = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"></Relationships>"
+                try worksheetRels.write(to: worksheetsDir.appendingPathComponent("_rels/sheet\(sheet.id).xml.rels"), atomically: true, encoding: .utf8)
+            }
+        }
     }
     
     private static func generateContentTypes() -> String {
@@ -514,6 +647,12 @@ public struct XLSXEngine {
         content += "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
         content += "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
         content += "<Default Extension=\"xml\" ContentType=\"application/xml\"/>"
+        content += "<Default Extension=\"png\" ContentType=\"image/png\"/>"
+        content += "<Default Extension=\"jpg\" ContentType=\"image/jpeg\"/>"
+        content += "<Default Extension=\"jpeg\" ContentType=\"image/jpeg\"/>"
+        content += "<Default Extension=\"gif\" ContentType=\"image/gif\"/>"
+        content += "<Default Extension=\"bmp\" ContentType=\"image/bmp\"/>"
+        content += "<Default Extension=\"tiff\" ContentType=\"image/tiff\"/>"
         content += "<Override PartName=\"/docProps/app.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/>"
         content += "<Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/>"
         content += "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
@@ -521,6 +660,7 @@ public struct XLSXEngine {
         content += "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>"
         content += "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>"
         content += "<Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/>"
+        content += "<Override PartName=\"/xl/drawings/drawing1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\"/>"
         content += "</Types>"
         return content
     }

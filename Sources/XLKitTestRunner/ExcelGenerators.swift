@@ -111,9 +111,10 @@ func generateExcelWithNoEmbeds() {
     
     // Save the workbook
     print("[INFO] Saving Excel file...")
+    let outputPath = "Test-Workflows/Embed-Test-Embed.xlsx"
     do {
-        try XLKit.saveWorkbook(workbook, to: outputURL)
-        print("[SUCCESS] Excel file created: \(outputExcelFile)")
+        try XLKit.saveWorkbook(workbook, to: URL(fileURLWithPath: outputPath))
+        print("[SUCCESS] Excel file created: \(outputPath)")
         print("[INFO] Features applied:")
         print("  - Bold headers with gray background")
         print("  - Automatic column width adjustment")
@@ -122,6 +123,168 @@ func generateExcelWithNoEmbeds() {
         print("[ERROR] Failed to save Excel file: \(error)")
         exit(1)
     }
+}
+
+/// Demonstrates comprehensive XLKit API usage with all features
+func demonstrateComprehensiveAPI() {
+    print("[INFO] Starting comprehensive XLKit API demonstration...")
+    
+    // MARK: - Workbook Creation
+    let workbook = XLKit.createWorkbook()
+    let sheet = workbook.addSheet(name: "API Demo")
+    
+    print("[INFO] Created workbook with sheet: \(sheet.name)")
+    
+    // MARK: - Cell Operations
+    print("[INFO] Demonstrating cell operations...")
+    
+    // String cells
+    sheet.setCell("A1", string: "String Value", format: CellFormat.header())
+    sheet.setCell("A2", string: "Another String")
+    
+    // Numeric cells
+    sheet.setCell("B1", number: 123.45, format: CellFormat.currency())
+    sheet.setCell("B2", integer: 42)
+    
+    // Boolean and date cells
+    sheet.setCell("C1", boolean: true)
+    sheet.setCell("C2", date: Date(), format: CellFormat.date())
+    
+    // Formula cells
+    sheet.setCell("D1", formula: "=SUM(B1:B2)")
+    
+    // Range operations
+    sheet.setRange("A4:C6", string: "Range Value", format: CellFormat.bordered())
+    
+    // MARK: - Image Embedding
+    print("[INFO] Demonstrating image embedding...")
+    
+    // Create a simple test image (1x1 pixel PNG)
+    let testImageData = createTestImageData()
+    
+    // Embed image using different methods
+    let success1 = XLKit.embedImage(
+        testImageData,
+        at: "E1",
+        in: sheet,
+        format: .png,
+        displaySize: CGSize(width: 50, height: 50)
+    )
+    
+    if success1 {
+        print("[INFO] ✓ Successfully embedded test image using data")
+    }
+    
+    // MARK: - Workbook Management
+    print("[INFO] Demonstrating workbook management...")
+    
+    // Add another sheet
+    let sheet2 = workbook.addSheet(name: "Second Sheet")
+    sheet2.setCell("A1", string: "Second Sheet Content")
+    
+    // Get sheet by name
+    if let foundSheet = workbook.getSheet(name: "API Demo") {
+        print("[INFO] ✓ Found sheet: \(foundSheet.name)")
+    }
+    
+    // MARK: - Image Management
+    print("[INFO] Demonstrating image management...")
+    
+    // Note: We don't need to add the image to workbook separately since it's already added via embedImage
+    // The embedImage method automatically adds the image to the workbook
+    
+    // Get image statistics
+    print("[INFO] Workbook contains \(workbook.imageCount) images")
+    
+
+    
+    // MARK: - Sheet Image Operations
+    print("[INFO] Demonstrating sheet image operations...")
+    
+    // Check if cell has image
+    if sheet.hasImage(at: "E1") {
+        print("[INFO] ✓ Cell E1 has an image")
+        
+        // Get the image
+        if let image = sheet.getImage(at: "E1") {
+            print("[INFO] ✓ Retrieved image: \(image.id)")
+        }
+    }
+    
+    // MARK: - Column and Row Management
+    print("[INFO] Demonstrating column and row management...")
+    
+    // Set column widths
+    sheet.setColumnWidth(1, width: 15.0)
+    sheet.setColumnWidth(2, width: 12.0)
+    
+    // Set row heights
+    sheet.setRowHeight(1, height: 25.0)
+    sheet.setRowHeight(2, height: 20.0)
+    
+    // Auto-size column for image
+    sheet.autoSizeColumn(5, forImageAt: "E1")
+    
+    // MARK: - Cell Formatting
+    print("[INFO] Demonstrating cell formatting...")
+    
+    // Apply different formats
+    let currencyFormat = CellFormat.currency(format: .currencyWithDecimals, color: "#006600")
+    let percentageFormat = CellFormat.percentage()
+    let borderedFormat = CellFormat.bordered(style: .thin, color: "#000000")
+    
+    sheet.setCell("F1", number: 1234.56, format: currencyFormat)
+    sheet.setCell("F2", number: 0.85, format: percentageFormat)
+    sheet.setCell("F3", string: "Bordered Cell", format: borderedFormat)
+    
+    // MARK: - Save and Validate
+    print("[INFO] Saving comprehensive demo...")
+    
+    let outputPath = "Test-Workflows/Comprehensive-Demo.xlsx"
+    
+    do {
+        try XLKit.saveWorkbook(workbook, to: URL(fileURLWithPath: outputPath))
+        print("[SUCCESS] Comprehensive demo saved: \(outputPath)")
+        print("[INFO] Demo includes:")
+        print("  - Multiple data types (string, number, boolean, date, formula)")
+        print("  - Cell formatting (headers, currency, percentages, borders)")
+        print("  - Image embedding with automatic format detection")
+        print("  - Range operations")
+        print("  - Column and row sizing")
+        print("  - Multiple sheets")
+        print("  - Workbook and sheet image management")
+        
+    } catch {
+        print("[ERROR] Failed to save comprehensive demo: \(error)")
+        exit(1)
+    }
+}
+
+/// Creates a simple test image data for demonstration
+private func createTestImageData() -> Data {
+    // Create a minimal 1x1 pixel PNG image
+    let pngHeader: [UInt8] = [
+        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+        0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+        0x49, 0x48, 0x44, 0x52, // "IHDR"
+        0x00, 0x00, 0x00, 0x01, // width: 1
+        0x00, 0x00, 0x00, 0x01, // height: 1
+        0x08, // bit depth: 8
+        0x02, // color type: RGB
+        0x00, // compression: deflate
+        0x00, // filter: none
+        0x00, // interlace: none
+        0x1F, 0x15, 0xC4, 0x89, // CRC
+        0x00, 0x00, 0x00, 0x0C, // IDAT chunk length
+        0x49, 0x44, 0x41, 0x54, // "IDAT"
+        0x08, 0x99, 0x01, 0x01, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, // compressed data
+        0xE2, 0x21, 0xBC, 0x33, // CRC
+        0x00, 0x00, 0x00, 0x00, // IEND chunk length
+        0x49, 0x45, 0x4E, 0x44, // "IEND"
+        0xAE, 0x42, 0x60, 0x82  // CRC
+    ]
+    
+    return Data(pngHeader)
 }
 
 /// Calculates the approximate width needed for text in Excel
@@ -185,7 +348,7 @@ func validateExcelFile(_ filePath: String) {
         print("[VALIDATION] ✓ Shared strings parsed successfully (\(sharedStrings?.items.count ?? 0) strings)")
         
         // Try to parse styles
-        let styles = try file.parseStyles()
+        _ = try file.parseStyles()
         print("[VALIDATION] ✓ Styles parsed successfully")
         
         // Try to read worksheet data

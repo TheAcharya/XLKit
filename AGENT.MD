@@ -86,6 +86,7 @@ swift run XLKitTestRunner help
 - `with-embeds` / `with-images`: Generate Excel with image embeds (future)
 - `csv-import`: Test CSV import functionality (future)
 - `formatting`: Test cell formatting features (future)
+- `embed`: Generate Excel with embedded images from CSV data
 
 ### Development Workflow
 
@@ -118,6 +119,7 @@ swift run XLKitTestRunner help
 
 **Generated Files**: All Excel files are saved to `Test-Workflows/` directory
 - `Embed-Test.xlsx`: From no-embeds test
+- `Embed-Test-Embed.xlsx`: From embed test (with images)
 - `[Your-Test].xlsx`: From custom tests
 
 **Error Handling**: All functions use consistent error handling with descriptive messages and appropriate exit codes.
@@ -551,7 +553,36 @@ sheet.addImage(excelImage, at: "B2")
 
 // Get all images
 let images = sheet.getImages()
+
+// Embed image with automatic sizing (preserves aspect ratio)
+try sheet.embedImageAutoSized(
+    imageData: imageData,
+    at: "B2",
+    workbook: workbook
+)
+
+// Embed image with automatic sizing from URL
+try sheet.embedImageAutoSized(
+    imageURL: imageURL,
+    at: "B2",
+    workbook: workbook
+)
+
+// XLKit convenience method for auto-sized embedding
+try XLKit.embedImageAutoSized(
+    in: sheet,
+    imageData: imageData,
+    at: "B2",
+    workbook: workbook
+)
 ```
+
+**Image Embedding Features**:
+- **Aspect Ratio Preservation**: Images maintain their original proportions
+- **Automatic Cell Sizing**: Row height and column width automatically adjust to match image dimensions
+- **Precise Positioning**: Images are positioned exactly at cell boundaries with no offsets
+- **Excel Compliance**: Uses precise Excel formulas for sizing calculations
+- **Workbook Registration**: Images are registered with both sheet and workbook for proper tracking
 
 ### Utility Operations
 
@@ -959,4 +990,167 @@ This ensures that both documentation files remain accurate and useful for AI age
 ## Recent Improvements
 - Added all required OpenXML files and relationships for Excel.
 - Automated validation with CoreXLSX.
-- Removed legacy debug folders from workflow. 
+- Removed legacy debug folders from workflow.
+
+## Image Embedding Implementation (2025-01-27)
+
+### Overview
+XLKit now supports advanced image embedding with automatic sizing and aspect ratio preservation, matching the quality of professional Excel exports from tools like Notion.
+
+### Key Features
+
+**Aspect Ratio Preservation**
+- Images maintain their original proportions regardless of cell dimensions
+- Prevents stretching, squashing, or distortion
+- Uses precise Excel formulas for sizing calculations
+
+**Automatic Cell Sizing**
+- Row height automatically adjusts to match image height
+- Column width automatically adjusts to match image width
+- Cells perfectly fit the embedded images
+
+**Precise Positioning**
+- Images are positioned exactly at cell boundaries
+- No offsets or padding that could cause misalignment
+- Perfect alignment with cell grid
+
+**Excel Compliance**
+- Uses standard Excel formulas for sizing calculations
+- Generates proper drawing XML with correct coordinates
+- Maintains compatibility with all Excel versions
+
+### Implementation Details
+
+**API Methods**
+```swift
+// Sheet extension method
+try sheet.embedImageAutoSized(
+    imageData: Data,
+    at: String,
+    workbook: Workbook
+) throws
+
+// XLKit convenience method
+try XLKit.embedImageAutoSized(
+    in: Sheet,
+    imageData: Data,
+    at: String,
+    workbook: Workbook
+) throws
+```
+
+**Workbook Registration**
+- Images are registered with both sheet and workbook
+- Ensures proper tracking and counting
+- Prevents issues with image enumeration
+
+**Drawing XML Generation**
+- Generates precise drawing XML with correct coordinates
+- Uses Excel's standard positioning system
+- Includes proper relationship references
+
+**Cell Sizing Formulas**
+- Column width: `(imageWidth * 7.2) / 96` (Excel's pixel-to-point conversion)
+- Row height: `imageHeight * 0.75` (Excel's point-to-pixel conversion)
+- Maintains perfect aspect ratio preservation
+
+### Lessons Learned from Notion Export
+
+**Image Sizing**
+- Notion uses precise pixel-to-point conversions
+- Aspect ratio must be preserved at all costs
+- Cell dimensions must exactly match image dimensions
+
+**Positioning**
+- Images must be positioned exactly at cell boundaries
+- No offsets or padding allowed
+- Perfect alignment with Excel's grid system
+
+**File Structure**
+- All required OpenXML files must be present
+- Proper relationships between files
+- Correct content type declarations
+
+**Validation**
+- Automated validation ensures compliance
+- CoreXLSX validation catches structural issues
+- Manual inspection no longer required
+
+### Test Implementation
+
+**ImageEmbedGenerators.swift**
+- Dedicated test generator for image embedding
+- Embeds images from CSV "Image Filename" column
+- Creates new "Image" column for embedded images
+- Outputs to `Embed-Test-Embed.xlsx`
+
+**Validation Process**
+- Generates Excel file with embedded images
+- Validates file structure with CoreXLSX
+- Confirms image count and positioning
+- Ensures aspect ratio preservation
+
+### Usage Examples
+
+**Basic Image Embedding**
+```swift
+let workbook = XLKit.createWorkbook()
+let sheet = workbook.addSheet(name: "Images")
+
+// Embed image with automatic sizing
+try sheet.embedImageAutoSized(
+    imageData: imageData,
+    at: "B2",
+    workbook: workbook
+)
+```
+
+**CSV with Image Embedding**
+```swift
+// Create workbook from CSV
+let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
+let sheet = workbook.getSheets()[0]
+
+// Embed images from filename column
+for row in 2...sheet.getUsedCells().count {
+    let filename = sheet.getCell("B\(row)").stringValue
+    if let imageData = loadImageData(filename: filename) {
+        try sheet.embedImageAutoSized(
+            imageData: imageData,
+            at: "C\(row)", // New Image column
+            workbook: workbook
+        )
+    }
+}
+```
+
+### Performance Considerations
+
+**Memory Management**
+- Images are processed on-demand
+- Efficient data handling for large images
+- Proper cleanup after processing
+
+**File Size**
+- Optimized image compression
+- Efficient XML generation
+- Minimal overhead for embedded images
+
+**Validation Overhead**
+- CoreXLSX validation adds minimal overhead
+- Ensures file quality and compliance
+- Worthwhile trade-off for reliability
+
+### Future Enhancements
+
+**Planned Features**
+- Support for image resizing options
+- Multiple image formats (SVG, WebP)
+- Image compression options
+- Batch image processing
+
+**Optimization Opportunities**
+- Parallel image processing
+- Caching for repeated images
+- Progressive image loading
+- Memory usage optimization 
