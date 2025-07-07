@@ -111,7 +111,7 @@ func generateExcelWithNoEmbeds() {
     
     // Save the workbook
     print("[INFO] Saving Excel file...")
-    let outputPath = "Test-Workflows/Embed-Test-Embed.xlsx"
+    let outputPath = outputExcelFile
     do {
         try XLKit.saveWorkbook(workbook, to: URL(fileURLWithPath: outputPath))
         print("[SUCCESS] Excel file created: \(outputPath)")

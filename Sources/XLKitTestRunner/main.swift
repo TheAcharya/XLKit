@@ -27,7 +27,7 @@ case "no-embeds", "no-images":
     
 case "with-embeds", "with-images", "embed":
     print("Executing: Generate Excel with Image Embeds")
-    generateExcelWithEmbeds()
+    generateExcelWithImageEmbeds()
     validateExcelFile("Test-Workflows/Embed-Test-Embed.xlsx")
     
 case "csv-import":
