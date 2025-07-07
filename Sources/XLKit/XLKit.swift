@@ -20,7 +20,7 @@ public struct XLKit {
     }
     /// Saves a workbook to a file asynchronously
     public static func saveWorkbook(_ workbook: Workbook, to url: URL) async throws {
-        try await XLSXEngine.generateXLSX(workbook: workbook, to: url)
+        try XLSXEngine.generateXLSX(workbook: workbook, to: url)
     }
     /// Saves a workbook to a file synchronously
     public static func saveWorkbook(_ workbook: Workbook, to url: URL) throws {
