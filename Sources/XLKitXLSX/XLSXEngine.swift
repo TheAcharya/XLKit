@@ -526,26 +526,40 @@ public struct XLSXEngine {
         
         for (coordinate, image) in sheetImages {
             guard let cellCoord = CellCoordinate(excelAddress: coordinate) else { continue }
-            
-            // Use displaySize if available, else fallback to originalSize
-            let size = image.displaySize ?? image.originalSize
-            
-            // Excel uses EMUs (English Metric Units): 1 inch = 914400 EMUs
-            // Convert pixels to EMUs (assuming 96 DPI: 1 inch = 96 pixels)
-            // So 1 pixel = 914400 / 96 = 9525 EMUs
-            let widthEMU = Int(size.width * 9525)
-            let heightEMU = Int(size.height * 9525)
-            
             let col = cellCoord.column
             let row = cellCoord.row
-            
-            // Position images exactly at cell start point (no offsets)
-            let offsetX = 0 // Start at cell's left edge
-            let offsetY = 0 // Start at cell's top edge
-            
-            // Keep image within cell boundaries - no row offset
-            let rowOff = 0 // Keep image within the cell
-            
+
+            // Use the image's display size if available, else original size
+            let imgSize = image.displaySize ?? image.originalSize
+
+            // 1. Compute ideal cell size (Excel units)
+            let (idealColWidth, idealRowHeight) = ImageSizingUtils.idealCellSizeForImage(
+                imageWidth: imgSize.width,
+                imageHeight: imgSize.height
+            )
+            // 2. Compute cell pixel size
+            let (cellPixelWidth, cellPixelHeight) = ImageSizingUtils.cellPixelSize(
+                colWidth: idealColWidth,
+                rowHeight: idealRowHeight
+            )
+            // 3. Compute drawing size in EMUs
+            let (cx, cy) = ImageSizingUtils.drawingEMUs(
+                imageWidth: imgSize.width,
+                imageHeight: imgSize.height
+            )
+            // 4. Compute offsets to center image in cell
+            let (offsetX, offsetY) = ImageSizingUtils.imageOffsetsInCell(
+                imageWidth: imgSize.width,
+                imageHeight: imgSize.height,
+                cellWidth: cellPixelWidth,
+                cellHeight: cellPixelHeight
+            )
+            // 5. Set cell size in the sheet (so Excel renders the cell big enough)
+            sheet.setColumnWidth(col, width: idealColWidth)
+            sheet.setRowHeight(row, height: idealRowHeight)
+            // 6. Use rowOff=0 (Excel default) for now
+            let rowOff = 0
+
             content += "<xdr:twoCellAnchor editAs=\"oneCell\">"
             content += "<xdr:from><xdr:col>\(col - 1)</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>\(row - 1)</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from>"
             content += "<xdr:to><xdr:col>\(col)</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>\(row)</xdr:row><xdr:rowOff>\(rowOff)</xdr:rowOff></xdr:to>"
@@ -567,7 +581,7 @@ public struct XLSXEngine {
             content += "<a:stretch><a:fillRect/></a:stretch>"
             content += "</xdr:blipFill>"
             content += "<xdr:spPr>"
-            content += "<a:xfrm><a:off x=\"\(offsetX)\" y=\"\(offsetY)\"/><a:ext cx=\"\(widthEMU)\" cy=\"\(heightEMU)\"/></a:xfrm>"
+            content += "<a:xfrm><a:off x=\"\(offsetX)\" y=\"\(offsetY)\"/><a:ext cx=\"\(cx)\" cy=\"\(cy)\"/></a:xfrm>"
             content += "<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>"
             content += "</xdr:spPr>"
             content += "</xdr:pic>"
@@ -651,8 +665,6 @@ public struct XLSXEngine {
         content += "<Default Extension=\"jpg\" ContentType=\"image/jpeg\"/>"
         content += "<Default Extension=\"jpeg\" ContentType=\"image/jpeg\"/>"
         content += "<Default Extension=\"gif\" ContentType=\"image/gif\"/>"
-        content += "<Default Extension=\"bmp\" ContentType=\"image/bmp\"/>"
-        content += "<Default Extension=\"tiff\" ContentType=\"image/tiff\"/>"
         content += "<Override PartName=\"/docProps/app.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/>"
         content += "<Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/>"
         content += "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"

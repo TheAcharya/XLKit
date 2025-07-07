@@ -427,106 +427,136 @@ func testFeatureNameWithInvalidInput() {
 - Use the test runner to ensure all changes remain Excel-compliant.
 - Manual unpacking and inspection of .xlsx files is no longer required for compliance.
 
-## Recent Improvements
-- Added all required OpenXML files and relationships for Excel.
-- Automated validation with CoreXLSX.
-- Removed legacy debug folders from workflow.
+## Recent Improvements (2025-07-07)
+- **Perfect Aspect Ratio Preservation**: Implemented pixel-perfect image embedding with zero distortion
+- **Empirically Derived Formulas**: Column width `pixels / 8.0`, Row height `pixels / 1.33` from manual Excel analysis
+- **ImageSizingUtils**: Centralized sizing logic with consistent formulas across all operations
+- **EMU Coordinate System**: Correct Excel internal format (1 pixel = 9525 EMUs) for perfect positioning
+- **Comprehensive Testing**: All aspect ratios (16:9, 1:1, 9:16, 21:9, 3:4) tested and validated
+- **Excel Compliance**: All generated files pass CoreXLSX validation with perfect aspect ratio preservation
+- **Simplified API**: Easy-to-use methods with automatic sizing and aspect ratio preservation
 
-## Image Embedding Implementation (2025-01-27)
+## Image Embedding Implementation (2025-07-07) - PERFECT ASPECT RATIO PRESERVATION
 
 ### Overview
-XLKit now supports advanced image embedding with automatic sizing and aspect ratio preservation, matching the quality of professional Excel exports from tools like Notion.
+XLKit now supports **pixel-perfect image embedding** with automatic sizing and **perfect aspect ratio preservation**, matching Excel's manual behavior and professional quality exports.
 
 ### Key Features
 
-**Aspect Ratio Preservation**
-- Images maintain their original proportions regardless of cell dimensions
-- Prevents stretching, squashing, or distortion
-- Uses precise Excel formulas for sizing calculations
+**Perfect Aspect Ratio Preservation**
+- Images maintain their **exact original proportions** regardless of cell dimensions
+- **Zero stretching, squashing, or distortion** - pixel-perfect preservation
+- Uses **empirically derived formulas** from manual Excel file analysis
+- Supports **all aspect ratios**: 16:9, 1:1, 9:16, 21:9, 3:4, and any custom ratio
 
-**Automatic Cell Sizing**
-- Row height automatically adjusts to match image height
-- Column width automatically adjusts to match image width
-- Cells perfectly fit the embedded images
+**Super-Precise Cell Sizing**
+- Row height automatically adjusts to match image height using correct formulas
+- Column width automatically adjusts to match image width using correct formulas
+- Cells perfectly fit the embedded images with no overflow or underflow
 
 **Precise Positioning**
-- Images are positioned exactly at cell boundaries
-- No offsets or padding that could cause misalignment
-- Perfect alignment with cell grid
+- Images are positioned exactly at cell boundaries with perfect alignment
+- Uses **EMU (English Metric Units)** for Excel's internal coordinate system
+- **Zero offsets** that could cause misalignment or stretching
 
 **Excel Compliance**
-- Uses standard Excel formulas for sizing calculations
-- Generates proper drawing XML with correct coordinates
-- Maintains compatibility with all Excel versions
+- Uses **correct Excel formulas** derived from manual file analysis
+- Generates proper drawing XML with **accurate EMU coordinates**
+- Maintains compatibility with **all Excel versions**
+- Passes **CoreXLSX validation** for full compliance
 
 ### API Requirements
 
-**New Methods**
+**Simplified Methods**
 ```swift
-// Sheet extension method
-try sheet.embedImageAutoSized(
-    imageData: Data,
-    at: String,
-    workbook: Workbook
-) throws
+// Sheet extension method - auto-sizing with perfect aspect ratio
+sheet.embedImageAutoSized(
+    imageData,
+    at: coordinate,
+    of: workbook
+) -> Bool
 
 // XLKit convenience method
-try XLKit.embedImageAutoSized(
-    in: Sheet,
-    imageData: Data,
-    at: String,
-    workbook: Workbook
-) throws
+XLKit.embedImage(
+    imageData,
+    at: coordinate,
+    in: sheet,
+    of: workbook,
+    scale: 1.0,
+    maxWidth: 600,
+    maxHeight: 400
+) -> Bool
 ```
 
 **Workbook Registration**
-- Images must be registered with both sheet and workbook
+- Images are automatically registered with both sheet and workbook
 - Ensures proper tracking and counting
 - Prevents issues with image enumeration
 
-**Cell Sizing Formulas**
-- Column width: `(imageWidth * 7.2) / 96` (Excel's pixel-to-point conversion)
-- Row height: `imageHeight * 0.75` (Excel's point-to-pixel conversion)
-- Maintains perfect aspect ratio preservation
+**Correct Cell Sizing Formulas**
+- **Column width**: `pixels / 8.0` (empirically derived from manual Excel files)
+- **Row height**: `pixels / 1.33` (empirically derived from manual Excel files)
+- **EMU conversion**: `pixels * 9525` (Excel's internal format)
+- **Maintains perfect aspect ratio preservation** for all image types
 
-**Critical Image Positioning Rule**
+**Critical Implementation Rules**
+- **MANDATORY**: Use `ImageSizingUtils` for all sizing calculations
+- **MANDATORY**: Use calculated values, never hardcoded dimensions
 - **MANDATORY**: `rowOff = 0` in drawing XML to keep images within cell boundaries
-- Images must be positioned exactly at cell start point with no offsets
-- Any `rowOff` value other than 0 will cause Excel to stretch images beyond cell boundaries
-- This rule is essential for maintaining aspect ratio - violation will cause image distortion
+- **MANDATORY**: Images must be positioned exactly at cell start point with no offsets
+- **MANDATORY**: All aspect ratios must be preserved exactly - no exceptions
 
 ### Implementation Standards
 
+**ImageSizingUtils Integration**
+- **MANDATORY**: Use `ImageSizingUtils.calculateDisplaySize()` for all image scaling
+- **MANDATORY**: Use `ImageSizingUtils.excelColumnWidth()` for column width calculations
+- **MANDATORY**: Use `ImageSizingUtils.excelRowHeight()` for row height calculations
+- **MANDATORY**: Use `ImageSizingUtils.calculateDrawingDimensions()` for EMU conversion
+- **MANDATORY**: Never use hardcoded values for sizing calculations
+
 **Drawing XML Generation**
-- Generate precise drawing XML with correct coordinates
-- Use Excel's standard positioning system
-- Include proper relationship references
+- Generate precise drawing XML with **correct EMU coordinates**
+- Use **Excel's EMU coordinate system** (1 pixel = 9525 EMUs)
+- Include proper relationship references and image IDs
+- Ensure **perfect aspect ratio preservation** in drawing dimensions
 
 **Worksheet XML Updates**
-- Include row heights in `<row>` elements
-- Set column widths in `<col>` elements
-- Ensure proper cell sizing for images
+- Include **calculated row heights** in `<row>` elements using correct formulas
+- Set **calculated column widths** in `<col>` elements using correct formulas
+- Ensure **cell dimensions match image dimensions** exactly
+- Use **consistent formulas** across all sizing operations
 
 **Image Processing**
-- Support GIF, PNG, JPEG, BMP, TIFF formats
-- Auto-detect formats and sizes
-- Handle missing files gracefully
-- Provide meaningful error messages
+- Support **GIF, PNG, JPEG** formats (BMP, TIFF removed for compatibility)
+- **Auto-detect formats and sizes** with proper error handling
+- Handle missing files gracefully with meaningful error messages
+- **Preserve original image quality** during processing
 
 ### Testing Requirements
 
 **Image Embedding Tests**
-- Test aspect ratio preservation
-- Test automatic cell sizing
-- Test precise positioning
-- Test workbook registration
-- Test error handling for missing files
+- **Test aspect ratio preservation** for all supported ratios (16:9, 1:1, 9:16, 21:9, 3:4)
+- **Test automatic cell sizing** using correct formulas
+- **Test precise positioning** with zero offsets
+- **Test workbook registration** and image counting
+- **Test error handling** for missing files and invalid formats
+- **Test different image sizes** and scaling scenarios
 
 **Validation Requirements**
-- All generated files must pass CoreXLSX validation
-- Image count must match expected values
-- Cell dimensions must match image dimensions
-- Aspect ratio must be preserved
+- All generated files must pass **CoreXLSX validation**
+- **Image count must match expected values**
+- **Cell dimensions must match image dimensions** exactly
+- **Aspect ratio must be preserved** with zero tolerance for distortion
+- **Drawing XML must use correct EMU coordinates**
+- **Worksheet XML must use calculated dimensions** (no hardcoded values)
+
+**Test Coverage Requirements**
+- **Unit tests** for all `ImageSizingUtils` methods
+- **Integration tests** for complete image embedding workflow
+- **Validation tests** using CoreXLSX for Excel compliance
+- **Performance tests** for large images and multiple embeds
+- **Error handling tests** for edge cases and failures
 
 ### Performance Guidelines
 
@@ -556,16 +586,25 @@ try XLKit.embedImageAutoSized(
 ### Integration Guidelines
 
 **Test Runner Integration**
-- Add `embed` test type to XLKitTestRunner
-- Create ImageEmbedGenerators.swift for image embedding tests
-- Output to `Embed-Test-Embed.xlsx`
-- Include validation with CoreXLSX
+- **`embed` test type** implemented in XLKitTestRunner
+- **ImageEmbedGenerators.swift** handles image embedding tests
+- **Output to `Embed-Test-Embed.xlsx`** with validation
+- **CoreXLSX validation** ensures Excel compliance
+- **All tests pass** with perfect aspect ratio preservation
 
 **File Organization**
-- Keep image embedding logic in XLKit module
-- Maintain separation of concerns
-- Follow existing API patterns
-- Ensure proper module dependencies
+- **ImageSizingUtils.swift** in XLKitImages module for centralized sizing logic
+- **XLKit.swift** provides simplified API methods
+- **XLSXEngine.swift** uses correct EMU calculations
+- **Maintains separation of concerns** across modules
+- **Follows existing API patterns** for consistency
+
+**API Design**
+- **Simplified methods** for easy usage
+- **Automatic sizing** with perfect aspect ratio preservation
+- **Consistent error handling** across all methods
+- **Backward compatibility** maintained where possible
+- **Comprehensive documentation** for all new features
 
 This comprehensive .cursorrules file provides all the guidelines and standards for AI agents working with the XLKit codebase, ensuring consistent, high-quality development practices.
 
@@ -584,6 +623,38 @@ This comprehensive .cursorrules file provides all the guidelines and standards f
 - Coding standards or best practices are updated
 - File organization or module structure changes
 - New error types or handling patterns are introduced
+
+### Table of Contents Maintenance
+
+**MANDATORY**: The table of contents in AGENT.MD must be updated whenever:
+- New sections are added to the document
+- Existing sections are renamed or restructured
+- Subsections are added or removed
+- Document organization changes
+- New implementation details are documented
+- API references are updated
+- Testing strategies are modified
+- Performance considerations are added
+- Architecture updates are documented
+- Any content changes that affect document structure
+
+**Update Process**:
+1. Review all section headers in AGENT.MD using `grep_search` for `^## [A-Z]`
+2. Compare with existing table of contents
+3. Add missing sections with proper anchor links
+4. Remove outdated sections that no longer exist
+5. Update subsection structure to match document organization
+6. Ensure all links are properly formatted and functional
+7. Maintain consistent formatting and indentation
+8. Verify that all sections in the document are represented in the TOC
+
+**TOC Structure Standards**:
+- Use proper markdown link format: `[Section Name](#anchor-link)`
+- Maintain consistent indentation for subsections
+- Group related sections logically
+- Include all subsections under major sections
+- Ensure anchor links match actual section headers
+- Keep TOC organized in document order
 
 ### Update Checklist for AI Agents
 

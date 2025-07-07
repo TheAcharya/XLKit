@@ -35,10 +35,10 @@ swift run XLKitTestRunner help
 
 | Test Type | Description | Status |
 |-----------|-------------|--------|
-| `no-embeds` / `no-images` | Generate Excel from CSV without images | ✅ Implemented |
-| `with-embeds` / `with-images` | Generate Excel with image embeds | 🔄 Future |
-| `csv-import` | Test CSV import functionality | 🔄 Future |
-| `formatting` | Test cell formatting features | 🔄 Future |
+| `no-embeds` / `no-images` | Generate Excel from CSV without images | Implemented |
+| `with-embeds` / `with-images` | Generate Excel with image embeds | Future |
+| `csv-import` | Test CSV import functionality | Future |
+| `formatting` | Test cell formatting features | Future |
 
 ## Adding New Tests
 

@@ -35,16 +35,6 @@ public struct ImageUtils {
             return .jpeg
         }
         
-        // Check BMP signature
-        if bytes[0] == 0x42 && bytes[1] == 0x4D {
-            return .bmp
-        }
-        
-        // Check TIFF signature (both little and big endian)
-        if (bytes[0] == 0x49 && bytes[1] == 0x49) || (bytes[0] == 0x4D && bytes[1] == 0x4D) {
-            return .tiff
-        }
-        
         return nil
     }
     
@@ -57,10 +47,6 @@ public struct ImageUtils {
             return getPNGSize(from: data)
         case .jpeg, .jpg:
             return getJPEGSize(from: data)
-        case .bmp:
-            return getBMPSize(from: data)
-        case .tiff:
-            return getTIFFSize(from: data)
         }
     }
     
@@ -112,28 +98,6 @@ public struct ImageUtils {
         }
         
         return nil
-    }
-    
-    /// Gets BMP image size
-    private static func getBMPSize(from data: Data) -> CGSize? {
-        guard data.count >= 26 else { return nil }
-        let bytes = [UInt8](data)
-        
-        // BMP header: width (4 bytes) + height (4 bytes)
-        let width = Int(bytes[18]) | (Int(bytes[19]) << 8) | (Int(bytes[20]) << 16) | (Int(bytes[21]) << 24)
-        let height = Int(bytes[22]) | (Int(bytes[23]) << 8) | (Int(bytes[24]) << 16) | (Int(bytes[25]) << 24)
-        
-        return CGSize(width: Double(width), height: Double(height))
-    }
-    
-    /// Gets TIFF image size
-    private static func getTIFFSize(from data: Data) -> CGSize? {
-        guard data.count >= 8 else { return nil }
-        _ = [UInt8](data)
-        
-        // TIFF is complex, for simplicity we'll return a default size
-        // In a production environment, you'd want a proper TIFF parser
-        return CGSize(width: 100, height: 100)
     }
     
     /// Creates an ExcelImage from Data

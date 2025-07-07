@@ -816,8 +816,6 @@ public enum ImageFormat: String, CaseIterable {
     case png = "png"
     case jpeg = "jpeg"
     case jpg = "jpg"
-    case bmp = "bmp"
-    case tiff = "tiff"
     
     /// MIME type for the image format
     public var mimeType: String {
@@ -825,8 +823,6 @@ public enum ImageFormat: String, CaseIterable {
         case .gif: return "image/gif"
         case .png: return "image/png"
         case .jpeg, .jpg: return "image/jpeg"
-        case .bmp: return "image/bmp"
-        case .tiff: return "image/tiff"
         }
     }
     
@@ -836,8 +832,6 @@ public enum ImageFormat: String, CaseIterable {
         case .gif: return "image/gif"
         case .png: return "image/png"
         case .jpeg, .jpg: return "image/jpeg"
-        case .bmp: return "image/bmp"
-        case .tiff: return "image/tiff"
         }
     }
 }

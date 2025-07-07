@@ -544,6 +544,295 @@ final class XLKitTests: XCTestCase {
         return Data(pngBytes)
     }
     
+    private func createWidePNG() -> Data {
+        // Create a minimal valid PNG with 16:9 aspect ratio (160x90)
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0xA0, // Width: 160 (big endian)
+            0x00, 0x00, 0x00, 0x5A, // Height: 90 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    private func createTallPNG() -> Data {
+        // Create a minimal valid PNG with 9:16 aspect ratio (90x160)
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0x5A, // Width: 90 (big endian)
+            0x00, 0x00, 0x00, 0xA0, // Height: 160 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    private func createSquarePNG() -> Data {
+        // Create a minimal valid PNG with 1:1 aspect ratio (100x100)
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0x64, // Width: 100 (big endian)
+            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    private func createUltraWidePNG() -> Data {
+        // Create a minimal valid PNG with 21:9 aspect ratio (210x90)
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0xD2, // Width: 210 (big endian)
+            0x00, 0x00, 0x00, 0x5A, // Height: 90 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    private func createPortraitPNG() -> Data {
+        // Create a minimal valid PNG with 3:4 aspect ratio (75x100)
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0x4B, // Width: 75 (big endian)
+            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    // MARK: - Simplified Image Embedding API Tests
+    
+    func testSimplifiedImageEmbeddingAPI() async throws {
+        let workbook = XLKit.createWorkbook()
+        let sheet = workbook.addSheet(name: "Simplified API Test")
+        
+        // Create a simple PNG data (minimal valid PNG)
+        let pngData = createMinimalPNG()
+        
+        // Test the simplified embedImage API
+        let success = sheet.embedImage(
+            pngData,
+            at: "A1",
+            of: workbook,
+            scale: 0.8, // 80% of max size
+            maxWidth: 400,
+            maxHeight: 300
+        )
+        
+        XCTAssertTrue(success)
+        
+        // Verify image was added
+        let images = sheet.getImages()
+        XCTAssertEqual(images.count, 1)
+        XCTAssertNotNil(images["A1"])
+        
+        // Verify workbook has the image
+        XCTAssertEqual(workbook.imageCount, 1)
+        
+        // Save workbook to test file generation
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("simplified_api_test.xlsx")
+        defer {
+            try? FileManager.default.removeItem(at: tempURL)
+        }
+        
+        try await XLKit.saveWorkbook(workbook, to: tempURL)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
+    }
+    
+    func testAspectRatioPreservation() async throws {
+        let workbook = XLKit.createWorkbook()
+        let sheet = workbook.addSheet(name: "Aspect Ratio Test")
+        
+        // Create a wide rectangular PNG (16:9 aspect ratio)
+        let widePNGData = createWidePNG()
+        
+        // Embed with the simplified API
+        let success = sheet.embedImage(
+            widePNGData,
+            at: "A1",
+            of: workbook,
+            scale: 0.5, // 50% of max size
+            maxWidth: 600,
+            maxHeight: 400
+        )
+        
+        XCTAssertTrue(success)
+        
+        // Get the embedded image
+        let images = sheet.getImages()
+        guard let image = images["A1"] else {
+            XCTFail("Image not found")
+            return
+        }
+        
+        // Verify aspect ratio is preserved
+        let originalRatio = image.originalSize.width / image.originalSize.height
+        let displayRatio = image.displaySize!.width / image.displaySize!.height
+        
+        // Aspect ratios should be exactly equal (within floating point precision)
+        XCTAssertEqual(originalRatio, displayRatio, accuracy: 0.001)
+        
+        // Verify Excel cell dimensions match the display size
+        let cellCoord = CellCoordinate(excelAddress: "A1")!
+        let colWidth = sheet.getColumnWidth(cellCoord.column)
+        let rowHeight = sheet.getRowHeight(cellCoord.row)
+        
+        // Calculate expected Excel dimensions from display size
+        let expectedColWidth = ImageSizingUtils.excelColumnWidth(forPixelWidth: image.displaySize!.width)
+        let expectedRowHeight = ImageSizingUtils.excelRowHeight(forPixelHeight: image.displaySize!.height)
+        
+        XCTAssertEqual(colWidth ?? 0, CGFloat(expectedColWidth), accuracy: 0.001)
+        XCTAssertEqual(rowHeight ?? 0, CGFloat(expectedRowHeight), accuracy: 0.001)
+        
+        // Save workbook
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("aspect_ratio_test.xlsx")
+        defer {
+            try? FileManager.default.removeItem(at: tempURL)
+        }
+        
+        try await XLKit.saveWorkbook(workbook, to: tempURL)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
+    }
+    
+    func testAspectRatioPreservationWithDifferentSizes() async throws {
+        let workbook = XLKit.createWorkbook()
+        let sheet = workbook.addSheet(name: "Aspect Ratio Test Different Sizes")
+        
+        // Test with different aspect ratios
+        let testCases = [
+            ("A1", createWidePNG(), "16:9 wide"),
+            ("B1", createSquarePNG(), "1:1 square"),
+            ("C1", createTallPNG(), "9:16 tall")
+        ]
+        
+        for (coordinate, imageData, description) in testCases {
+            let success = sheet.embedImage(
+                imageData,
+                at: coordinate,
+                of: workbook,
+                scale: 0.8,
+                maxWidth: 500,
+                maxHeight: 300
+            )
+            
+            XCTAssertTrue(success, "Failed to embed \(description)")
+            
+            // Get the embedded image
+            let images = sheet.getImages()
+            guard let image = images[coordinate] else {
+                XCTFail("Image not found for \(description)")
+                continue
+            }
+            
+            // Verify aspect ratio is preserved
+            let originalRatio = image.originalSize.width / image.originalSize.height
+            let displayRatio = image.displaySize!.width / image.displaySize!.height
+            
+            XCTAssertEqual(originalRatio, displayRatio, accuracy: 0.001, "Aspect ratio not preserved for \(description)")
+            
+            // Verify the same scale was applied to both dimensions
+            let widthScale = image.displaySize!.width / image.originalSize.width
+            let heightScale = image.displaySize!.height / image.originalSize.height
+            XCTAssertEqual(widthScale, heightScale, accuracy: 0.001, "Different scales applied for \(description)")
+        }
+        
+        // Save workbook
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("aspect_ratio_different_sizes_test.xlsx")
+        defer {
+            try? FileManager.default.removeItem(at: tempURL)
+        }
+        
+        try await XLKit.saveWorkbook(workbook, to: tempURL)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
+    }
+    
+    func testAspectRatioPreservationForAnyDimensions() async throws {
+        let workbook = XLKit.createWorkbook()
+        let sheet = workbook.addSheet(name: "Any Dimensions Test")
+        
+        // Test with various image dimensions and aspect ratios
+        let testCases = [
+            (createWidePNG(), "16:9 wide (160x90)"),
+            (createSquarePNG(), "1:1 square (100x100)"),
+            (createTallPNG(), "9:16 tall (90x160)"),
+            (createUltraWidePNG(), "21:9 ultra-wide (210x90)"),
+            (createPortraitPNG(), "3:4 portrait (75x100)")
+        ]
+        
+        for (index, (imageData, description)) in testCases.enumerated() {
+            let coordinate = "A\(index + 1)"
+            
+            // Test the simplified embedImage API
+            let success = sheet.embedImage(
+                imageData,
+                at: coordinate,
+                of: workbook,
+                scale: 0.6, // 60% of max size
+                maxWidth: 500,
+                maxHeight: 400
+            )
+            
+            XCTAssertTrue(success, "Failed to embed \(description)")
+            
+            // Get the embedded image
+            let images = sheet.getImages()
+            guard let image = images[coordinate] else {
+                XCTFail("Image not found for \(description)")
+                continue
+            }
+            
+            // Verify display size was calculated
+            XCTAssertNotNil(image.displaySize, "Display size not set for \(description)")
+            
+            // Verify aspect ratio is preserved exactly
+            let originalAspectRatio = image.originalSize.width / image.originalSize.height
+            let displayAspectRatio = image.displaySize!.width / image.displaySize!.height
+            XCTAssertEqual(originalAspectRatio, displayAspectRatio, accuracy: 0.001, 
+                          "Aspect ratio not preserved for \(description)")
+            
+            print("[TEST] \(description): original=\(image.originalSize), display=\(image.displaySize!), aspect=\(originalAspectRatio)")
+        }
+        
+        // Save and validate the workbook
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("AnyDimensionsTest.xlsx")
+        try await XLKit.saveWorkbook(workbook, to: tempURL)
+        
+        // Verify file was created
+        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
+        
+        // Clean up
+        try FileManager.default.removeItem(at: tempURL)
+    }
+    
     // MARK: - Rich Cell Formatting Tests
     
     func testCellFormatting() {
@@ -874,5 +1163,81 @@ final class XLKitTests: XCTestCase {
         XCTAssertTrue(csv.contains("Name,Description"))
         XCTAssertTrue(csv.contains("John,\"Contains \"\"quotes\"\" and, commas\""))
         XCTAssertTrue(csv.contains("Jane,\"Contains\nnewlines\""))
+    }
+    
+    func testExcelCellDimensionsForAnyImageSize() async throws {
+        let workbook = XLKit.createWorkbook()
+        let sheet = workbook.addSheet(name: "Cell Dimensions Test")
+        
+        // Test with various image dimensions
+        let testCases = [
+            (createWidePNG(), "A1", "16:9 wide"),
+            (createSquarePNG(), "B1", "1:1 square"),
+            (createTallPNG(), "C1", "9:16 tall"),
+            (createUltraWidePNG(), "D1", "21:9 ultra-wide"),
+            (createPortraitPNG(), "E1", "3:4 portrait")
+        ]
+        
+        for (imageData, coordinate, description) in testCases {
+            // Embed image with auto-sizing
+            let success = sheet.embedImage(
+                imageData,
+                at: coordinate,
+                of: workbook,
+                scale: 0.5, // 50% of max size
+                maxWidth: 400,
+                maxHeight: 300
+            )
+            
+            XCTAssertTrue(success, "Failed to embed \(description)")
+            
+            // Get the embedded image
+            let images = sheet.getImages()
+            guard let image = images[coordinate] else {
+                XCTFail("Image not found for \(description)")
+                continue
+            }
+            
+            // Get cell coordinate
+            guard let cellCoord = CellCoordinate(excelAddress: coordinate) else {
+                XCTFail("Invalid coordinate for \(description)")
+                continue
+            }
+            
+            // Get Excel cell dimensions
+            let colWidth = sheet.getColumnWidth(cellCoord.column)
+            let rowHeight = sheet.getRowHeight(cellCoord.row)
+            
+            XCTAssertNotNil(colWidth, "Column width not set for \(description)")
+            XCTAssertNotNil(rowHeight, "Row height not set for \(description)")
+            
+            // Calculate expected Excel dimensions from display size using new formulas
+            let expectedColWidth = ImageSizingUtils.excelColumnWidth(forPixelWidth: image.displaySize!.width)
+            let expectedRowHeight = ImageSizingUtils.excelRowHeight(forPixelHeight: image.displaySize!.height)
+            
+            // Verify Excel dimensions match expected values
+            XCTAssertEqual(colWidth!, expectedColWidth, accuracy: 0.001, 
+                          "Column width mismatch for \(description)")
+            XCTAssertEqual(rowHeight!, expectedRowHeight, accuracy: 0.001, 
+                          "Row height mismatch for \(description)")
+            
+            // Verify aspect ratio is preserved in Excel cell dimensions
+            let imageAspectRatio = image.displaySize!.width / image.displaySize!.height
+            let cellAspectRatio = (colWidth! * 8.0) / (rowHeight! * 1.33)
+            XCTAssertEqual(imageAspectRatio, cellAspectRatio, accuracy: 0.1, 
+                          "Cell aspect ratio doesn't match image for \(description)")
+            
+            print("[TEST] \(description): image=\(image.displaySize!), col=\(colWidth!), row=\(rowHeight!), aspect=\(imageAspectRatio)")
+        }
+        
+        // Save and validate the workbook
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("CellDimensionsTest.xlsx")
+        try await XLKit.saveWorkbook(workbook, to: tempURL)
+        
+        // Verify file was created
+        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
+        
+        // Clean up
+        try FileManager.default.removeItem(at: tempURL)
     }
 } 

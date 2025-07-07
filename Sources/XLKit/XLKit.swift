@@ -12,6 +12,8 @@
 /// XLKit main API: re-exports all public APIs from submodules for easy use.
 
 import Foundation
+@preconcurrency import XLKitCore
+import XLKitImages // Add this import for ImageSizingUtils
 
 public struct XLKit {
     
@@ -118,6 +120,32 @@ public struct XLKit {
         return sheet.addImage(data, at: coordinate, format: format, displaySize: displaySize)
     }
     
+    /// Embeds an image from data into a sheet at the specified coordinate with automatic sizing and aspect ratio preservation
+    @discardableResult
+    public static func embedImage(
+        _ data: Data,
+        at coordinate: String,
+        in sheet: Sheet,
+        of workbook: Workbook,
+        scale: CGFloat = 1.0,
+        maxWidth: CGFloat = 600,
+        maxHeight: CGFloat = 400
+    ) -> Bool {
+        // Calculate scaled max dimensions
+        let scaledMaxWidth = maxWidth * scale
+        let scaledMaxHeight = maxHeight * scale
+        
+        return embedImageAutoSized(
+            data,
+            at: coordinate,
+            in: sheet,
+            of: workbook,
+            format: nil,
+            maxCellWidth: scaledMaxWidth,
+            maxCellHeight: scaledMaxHeight
+        )
+    }
+    
     /// Embeds an image from a file URL into a sheet at the specified coordinate
     @discardableResult
     public static func embedImage(
@@ -150,42 +178,21 @@ public struct XLKit {
         of workbook: Workbook,
         format: ImageFormat? = nil,
         maxCellWidth: CGFloat = 600,
-        maxCellHeight: CGFloat = 400
+        maxCellHeight: CGFloat = 400,
+        scale: CGFloat = 1.0
     ) -> Bool {
         let detectedFormat = format ?? ImageUtils.detectImageFormat(from: data)
         guard let imageFormat = detectedFormat else { return false }
         guard let originalSize = ImageUtils.getImageSize(from: data, format: imageFormat) else { return false }
-        
-        // Dynamic sizing logic based on original image dimensions
-        let originalWidth = originalSize.width
-        let originalHeight = originalSize.height
-        
-        // Define reasonable display limits for Excel (match Notion export logic)
-        let maxDisplayWidth: CGFloat = maxCellWidth  // Maximum display width in pixels
-        let maxDisplayHeight: CGFloat = maxCellHeight // Maximum display height in pixels
-        let minDisplayWidth: CGFloat = 100  // Minimum display width in pixels
-        let minDisplayHeight: CGFloat = 60  // Minimum display height in pixels
-        
-        // Calculate scale to fit within max bounds while maintaining aspect ratio
-        let widthScale = maxDisplayWidth / originalWidth
-        let heightScale = maxDisplayHeight / originalHeight
-        let maxScale = min(widthScale, heightScale, 1.0) // Don't scale up, only down
-        
-        // Calculate initial display size
-        var displayWidth = originalWidth * maxScale
-        var displayHeight = originalHeight * maxScale
-        
-        // Ensure minimum size for very small images
-        if displayWidth < minDisplayWidth || displayHeight < minDisplayHeight {
-            let minWidthScale = minDisplayWidth / originalWidth
-            let minHeightScale = minDisplayHeight / originalHeight
-            let minScale = max(minWidthScale, minHeightScale)
-            displayWidth = originalWidth * minScale
-            displayHeight = originalHeight * minScale
-        }
-        
-        let displaySize = CGSize(width: displayWidth, height: displayHeight)
-        
+
+        // Use new utility for sizing
+        let displaySize = ImageSizingUtils.calculateDisplaySize(
+            originalSize: originalSize,
+            maxWidth: maxCellWidth,
+            maxHeight: maxCellHeight,
+            scale: scale
+        )
+
         // Create ExcelImage
         let excelImage = ExcelImage(
             id: "image_\(UUID().uuidString)",
@@ -196,26 +203,20 @@ public struct XLKit {
         )
         sheet.addImage(excelImage, at: coordinate)
         workbook.addImage(excelImage)
-        
+
         // Set column width and row height to fit the scaled image exactly (Excel logic)
         if let cellCoord = CellCoordinate(excelAddress: coordinate) {
             let excelCol = cellCoord.column
             let excelRow = cellCoord.row
-            // Use display size (scaled down) for cell dimensions to match the scaled image
-            let roundedWidth = round(displayWidth)
-            let roundedHeight = round(displayHeight)
-            // Excel column width formula: width = (pixels - 5) / 7
-            let colWidth = max((roundedWidth - 5.0) / 7.0, 0.0)
-            // Excel row height formula: height = pixels * 72 / 96
-            let rowHeightInPoints = roundedHeight * 72.0 / 96.0
             
-            // Set column width and row height to match scaled image dimensions exactly
+            // Use the new ImageSizingUtils methods for consistent calculations
+            // These match the formulas used in the drawing XML generation
+            let colWidth = ImageSizingUtils.excelColumnWidth(forPixelWidth: displaySize.width)
+            let rowHeightInPoints = ImageSizingUtils.excelRowHeight(forPixelHeight: displaySize.height)
+            
             sheet.setColumnWidth(excelCol, width: colWidth)
             sheet.setRowHeight(excelRow, height: rowHeightInPoints)
-            
-
         }
-        
         return true
     }
     
@@ -267,7 +268,8 @@ public extension Sheet {
         of workbook: Workbook,
         format: ImageFormat? = nil,
         maxCellWidth: CGFloat = 600,
-        maxCellHeight: CGFloat = 400
+        maxCellHeight: CGFloat = 400,
+        scale: CGFloat = 1.0
     ) -> Bool {
         XLKit.embedImageAutoSized(
             data,
@@ -276,7 +278,29 @@ public extension Sheet {
             of: workbook,
             format: format,
             maxCellWidth: maxCellWidth,
-            maxCellHeight: maxCellHeight
+            maxCellHeight: maxCellHeight,
+            scale: scale
+        )
+    }
+    
+    /// Embeds an image at a coordinate with automatic sizing and aspect ratio preservation (simplified API)
+    @discardableResult
+    func embedImage(
+        _ data: Data,
+        at coordinate: String,
+        of workbook: Workbook,
+        scale: CGFloat = 1.0,
+        maxWidth: CGFloat = 600,
+        maxHeight: CGFloat = 400
+    ) -> Bool {
+        XLKit.embedImage(
+            data,
+            at: coordinate,
+            in: self,
+            of: workbook,
+            scale: scale,
+            maxWidth: maxWidth,
+            maxHeight: maxHeight
         )
     }
 }
