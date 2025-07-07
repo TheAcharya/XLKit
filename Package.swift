@@ -55,12 +55,18 @@ let package = Package(
         ),
         .testTarget(
             name: "XLKitTests",
-            dependencies: ["XLKit"]
+            dependencies: ["XLKit"],
+            swiftSettings: [
+                .unsafeFlags(["-Xfrontend", "-disable-round-trip-debug-types"])
+            ]
         ),
         .executableTarget(
             name: "XLKitTestRunner",
             dependencies: ["XLKit", "CoreXLSX"],
-            exclude: ["README.md", "Templates"]
+            exclude: ["README.md", "Templates"],
+            swiftSettings: [
+                .unsafeFlags(["-Xfrontend", "-disable-round-trip-debug-types"])
+            ]
         )
     ]
 )
