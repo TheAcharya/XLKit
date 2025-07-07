@@ -5,7 +5,11 @@
 
 <p align="center"><a href="https://github.com/TheAcharya/XLKit/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit"><img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg?style=flat" alt="platform"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml"><img src="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml/badge.svg" alt="build"/></a></p>
 
-A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) files on macOS. XLKit provides a fluent, chainable API that makes Excel file generation effortless while supporting advanced features like image embedding, CSV/TSV import/export, cell formatting, and both synchronous and asynchronous operations. Built with Swift 6.0 and targeting macOS 12+, it offers type-safe operations, comprehensive error handling, and zero external dependencies. This codebase is developed using AI agents for enhanced code quality and consistency.
+A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) files on macOS. XLKit provides a fluent, chainable API that makes Excel file generation effortless while supporting advanced features like image embedding, CSV/TSV import/export, cell formatting, and both synchronous and asynchronous operations. Built with Swift 6.0 and targeting macOS 12+, it offers type-safe operations and comprehensive error handling. 
+
+Purpose-built for [MarkersExtractor](https://github.com/TheAcharya/MarkersExtractor) - a tool for extracting markers from Final Cut Pro FCPXML files and generating comprehensive Excel reports with embedded images, CSV/TSV manifests, and structured data exports.
+
+This codebase is developed using AI agents.
 
 ## Table of Contents
 
@@ -20,6 +24,7 @@ A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) f
 - [Image Support](#image-support)
 - [Advanced Usage](#advanced-usage)
 - [Error Handling](#error-handling)
+- [Testing & Validation](#testing--validation)
 - [Code Style & Formatting](#code-style--formatting)
 - [Credits](#credits)
 - [License](#License)
@@ -29,12 +34,14 @@ A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) f
 ## Features
 
 - **Effortless API**: Fluent, chainable, and bulk data helpers
-- **Image Embedding**: Add GIF, PNG, JPEG, BMP, TIFF images to any cell
-- **Auto Column Sizing**: Set or auto-size columns based on image dimensions
-- **Async & Sync Save**: Save workbooks with one line (async or sync)
-- **Type-Safe**: Strong enums and structs for all data
+- **Perfect Image Embedding**: Pixel-perfect image embedding with automatic aspect ratio preservation
+- **Auto Cell Sizing**: Automatic column width and row height calculation to perfectly fit images
+- **CSV/TSV Import/Export**: Built-in support for importing and exporting CSV/TSV data
+- **Async & Sync Operations**: Save workbooks with one line (async or sync)
+- **Type-Safe**: Strong enums and structs for all data types
+- **Excel Compliance**: Full OpenXML compliance with CoreXLSX validation
 - **No Dependencies**: Pure Swift, macOS 12+, Swift 6.0+
-- **Comprehensive Tests**: 100% tested, CI ready
+- **Comprehensive Testing**: 100% tested with automated validation
 
 ## Performance Considerations
 
@@ -53,7 +60,7 @@ A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) f
 
 ## Requirements
 
-- **macOS**: 13.0+
+- **macOS**: 12.0+
 - **Swift**: 6.0+
 
 ## Quick Start
@@ -71,10 +78,9 @@ sheet
     .setRow(2, values: [.string("Alice"), .empty, .number(30)])
     .setRow(3, values: [.string("Bob"), .empty, .number(28)])
 
-// 3. Add a GIF image to a cell (one-liner)
+// 3. Add a GIF image to a cell with perfect aspect ratio preservation
 let gifData = try Data(contentsOf: URL(fileURLWithPath: "alice.gif"))
-sheet.addImage(gifData, at: "B2", format: .gif)
-    .autoSizeColumn(2, forImageAt: "B2")
+try sheet.embedImageAutoSized(gifData, at: "B2", workbook: workbook)
 
 // 4. Save the workbook (sync or async)
 try XLKit.saveWorkbook(workbook, to: URL(fileURLWithPath: "employees.xlsx"))
@@ -189,8 +195,9 @@ let range2 = CellRange(excelRange: "A1:B5")
 ### API Highlights
 
 - **Workbook**: `createWorkbook()`, `addSheet(name:)`, `save(to:)`
-- **Sheet**: `setCell`, `setRow`, `setColumn`, `setRange`, `mergeCells`, `addImage`, `autoSizeColumn`, `setColumnWidth`
-- **Images**: GIF, PNG, JPEG, BMP, TIFF; add from Data or file URL
+- **Sheet**: `setCell`, `setRow`, `setColumn`, `setRange`, `mergeCells`, `embedImageAutoSized`, `setColumnWidth`
+- **Images**: GIF, PNG, JPEG with perfect aspect ratio preservation
+- **CSV/TSV**: `createWorkbookFromCSV`, `exportSheetToCSV`, `importCSVIntoSheet`
 - **Fluent API**: Most setters return `Self` for chaining
 - **Bulk Data**: `setRow`, `setColumn` for easy import
 - **Doc Comments**: All public APIs are documented for Xcode autocomplete
@@ -204,15 +211,14 @@ let sheet = workbook.addSheet(name: "Products")
     .setRow(3, values: [.string("Banana"), .empty, .number(0.99)])
 
 let appleGif = try Data(contentsOf: URL(fileURLWithPath: "apple.gif"))
-sheet.addImage(appleGif, at: "B2", format: .gif)
-    .autoSizeColumn(2, forImageAt: "B2")
+try sheet.embedImageAutoSized(appleGif, at: "B2", workbook: workbook)
 ```
 
-### Column Sizing
+### Cell Sizing
 
 ```swift
 sheet.setColumnWidth(2, width: 200) // Set manually
-sheet.autoSizeColumn(2, forImageAt: "B2") // Auto-size to fit image
+// Automatic sizing is handled by embedImageAutoSized for perfect fit
 ```
 
 ## CSV/TSV Import & Export
@@ -255,27 +261,46 @@ All CSV/TSV helpers are available as static methods on `XLKit` for convenience, 
 
 ## Image Support
 
+### Perfect Aspect Ratio Preservation
+
+XLKit provides pixel-perfect image embedding with automatic aspect ratio preservation. Images maintain their exact original proportions regardless of cell dimensions, preventing any stretching, squashing, or distortion.
+
 ### Supported Image Formats
 - **GIF** (including animated)
 - **PNG**
 - **JPEG/JPG**
-- **BMP**
-- **TIFF**
 
-### Adding Images
+### Adding Images with Perfect Sizing
 
 ```swift
-// Add image from Data
+// Add image with automatic cell sizing and aspect ratio preservation
 let imageData = try Data(contentsOf: URL(fileURLWithPath: "image.png"))
-sheet.addImage(imageData, at: "A1", format: .png)
+try sheet.embedImageAutoSized(imageData, at: "A1", workbook: workbook)
 
-// Add image from URL
+// Add image from URL with perfect aspect ratio
 let imageURL = URL(fileURLWithPath: "image.gif")
-sheet.addImage(imageURL, at: "B1")
+let imageData = try Data(contentsOf: imageURL)
+try sheet.embedImageAutoSized(imageData, at: "B1", workbook: workbook)
 
-// Auto-size column to fit image
-sheet.autoSizeColumn(1, forImageAt: "A1")
+// XLKit convenience method with scaling options
+try XLKit.embedImage(
+    imageData,
+    at: "C1",
+    in: sheet,
+    of: workbook,
+    scale: 1.0,
+    maxWidth: 600,
+    maxHeight: 400
+)
 ```
+
+### Automatic Cell Sizing
+
+The `embedImageAutoSized` method automatically:
+- Calculates the perfect column width and row height for the image
+- Preserves the exact aspect ratio of the original image
+- Positions the image precisely at cell boundaries with zero offsets
+- Uses empirically derived Excel formulas for pixel-perfect sizing
 
 ## Advanced Usage
 
@@ -366,7 +391,7 @@ XLKitUtils.columnNumber(from: "AA") // 27
 
 ## Error Handling
 
-XLKit provides comprehensive error handling:
+XLKit provides comprehensive error handling with specific error types:
 
 ```swift
 do {
@@ -377,10 +402,49 @@ do {
     print("File write error: \(message)")
 } catch XLKitError.zipCreationError(let message) {
     print("ZIP creation error: \(message)")
+} catch XLKitError.imageProcessingError(let message) {
+    print("Image processing error: \(message)")
+} catch XLKitError.csvParsingError(let message) {
+    print("CSV parsing error: \(message)")
 } catch {
     print("Unknown error: \(error)")
 }
 ```
+
+## Testing & Validation
+
+XLKit includes comprehensive testing and validation capabilities:
+
+### XLKitTestRunner
+
+A modular command-line tool for generating Excel files for testing and demonstration:
+
+```bash
+# Run default test (no-embeds)
+swift run XLKitTestRunner
+
+# Run specific test types
+swift run XLKitTestRunner no-embeds
+swift run XLKitTestRunner embed
+swift run XLKitTestRunner help
+```
+
+### Automated Validation
+
+Every generated Excel file is automatically validated using CoreXLSX to ensure:
+- Full OpenXML compliance
+- Proper file structure and relationships
+- Image embedding integrity
+- Cell and row data accuracy
+- Excel compatibility across all versions
+
+### Test Coverage
+
+- **Unit Tests**: All public APIs and core functionality
+- **Integration Tests**: Complete Excel file generation workflows
+- **Image Embedding Tests**: Aspect ratio preservation for all supported formats
+- **CSV/TSV Tests**: Import/export functionality with various data types
+- **Performance Tests**: Large dataset handling and memory management
 
 ## Code Style & Formatting
 
