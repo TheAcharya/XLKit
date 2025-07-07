@@ -265,6 +265,19 @@ All CSV/TSV helpers are available as static methods on `XLKit` for convenience, 
 
 XLKit provides pixel-perfect image embedding with automatic aspect ratio preservation. Images maintain their exact original proportions regardless of cell dimensions, preventing any stretching, squashing, or distortion.
 
+**Comprehensive Aspect Ratio Support**: XLKit has been extensively tested with all common aspect ratios including:
+- **16:9** (HD/4K video)
+- **1:1** (Square format)
+- **9:16** (Vertical video)
+- **21:9** (Ultra-wide)
+- **3:4** (Portrait)
+- **2.39:1** (Cinemascope/Anamorphic)
+- **1.85:1** (Academy ratio)
+- **4:3** (Classic TV/monitor)
+- **18:9** (Modern mobile)
+
+All aspect ratios are preserved with pixel-perfect accuracy using empirically derived Excel formulas.
+
 ### Supported Image Formats
 - **GIF** (including animated)
 - **PNG**

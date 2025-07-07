@@ -629,6 +629,76 @@ final class XLKitTests: XCTestCase {
         return Data(pngBytes)
     }
     
+    // MARK: - Movie/Video Aspect Ratio PNGs
+    
+    private func createCinemascopePNG() -> Data {
+        // Create a minimal valid PNG with 2.39:1 aspect ratio (239x100) - Cinemascope/Anamorphic
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0xEF, // Width: 239 (big endian)
+            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    private func createAcademyPNG() -> Data {
+        // Create a minimal valid PNG with 1.85:1 aspect ratio (185x100) - Academy ratio
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0xB9, // Width: 185 (big endian)
+            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    private func createClassicTVPNG() -> Data {
+        // Create a minimal valid PNG with 4:3 aspect ratio (133x100) - Classic TV/monitor
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0x85, // Width: 133 (big endian)
+            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    private func createModernMobilePNG() -> Data {
+        // Create a minimal valid PNG with 18:9 aspect ratio (180x90) - Modern smartphone screens
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0xB4, // Width: 180 (big endian)
+            0x00, 0x00, 0x00, 0x5A, // Height: 90 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
     // MARK: - Simplified Image Embedding API Tests
     
     func testSimplifiedImageEmbeddingAPI() async throws {
@@ -785,7 +855,11 @@ final class XLKitTests: XCTestCase {
             (createSquarePNG(), "1:1 square (100x100)"),
             (createTallPNG(), "9:16 tall (90x160)"),
             (createUltraWidePNG(), "21:9 ultra-wide (210x90)"),
-            (createPortraitPNG(), "3:4 portrait (75x100)")
+            (createPortraitPNG(), "3:4 portrait (75x100)"),
+            (createCinemascopePNG(), "2.39:1 cinemascope (239x100)"),
+            (createAcademyPNG(), "1.85:1 academy (185x100)"),
+            (createClassicTVPNG(), "4:3 classic TV (133x100)"),
+            (createModernMobilePNG(), "18:9 modern mobile (180x90)")
         ]
         
         for (index, (imageData, description)) in testCases.enumerated() {
@@ -1169,13 +1243,17 @@ final class XLKitTests: XCTestCase {
         let workbook = XLKit.createWorkbook()
         let sheet = workbook.addSheet(name: "Cell Dimensions Test")
         
-        // Test with various image dimensions
+        // Test with various image dimensions including movie/video aspect ratios
         let testCases = [
             (createWidePNG(), "A1", "16:9 wide"),
             (createSquarePNG(), "B1", "1:1 square"),
             (createTallPNG(), "C1", "9:16 tall"),
             (createUltraWidePNG(), "D1", "21:9 ultra-wide"),
-            (createPortraitPNG(), "E1", "3:4 portrait")
+            (createPortraitPNG(), "E1", "3:4 portrait"),
+            (createCinemascopePNG(), "F1", "2.39:1 cinemascope"),
+            (createAcademyPNG(), "G1", "1.85:1 academy"),
+            (createClassicTVPNG(), "H1", "4:3 classic TV"),
+            (createModernMobilePNG(), "I1", "18:9 modern mobile")
         ]
         
         for (imageData, coordinate, description) in testCases {

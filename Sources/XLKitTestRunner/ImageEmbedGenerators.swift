@@ -124,11 +124,14 @@ func generateExcelWithImageEmbeds() {
                     print("[DEBUG] Image: \(imageFilename), Format: \(detectedFormat?.rawValue ?? "unknown"), Size: \(sizeString)")
                     
                     // Use the improved embedImageAutoSized method for dynamic sizing
+                    // Use larger bounds to compensate for the 0.5 scale factor
                     let success = sheet.embedImageAutoSized(
                         imageData,
                         at: imageColumnCoordinate,
                         of: workbook,
-                        format: detectedFormat
+                        format: detectedFormat,
+                        maxCellWidth: 1200, // Double the default to compensate for 0.5 scale
+                        maxCellHeight: 800   // Double the default to compensate for 0.5 scale
                     )
                     
                     if success {

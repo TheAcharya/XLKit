@@ -432,14 +432,27 @@ func testFeatureNameWithInvalidInput() {
 - **Empirically Derived Formulas**: Column width `pixels / 8.0`, Row height `pixels / 1.33` from manual Excel analysis
 - **ImageSizingUtils**: Centralized sizing logic with consistent formulas across all operations
 - **EMU Coordinate System**: Correct Excel internal format (1 pixel = 9525 EMUs) for perfect positioning
-- **Comprehensive Testing**: All aspect ratios (16:9, 1:1, 9:16, 21:9, 3:4) tested and validated
+- **Comprehensive Testing**: All aspect ratios (16:9, 1:1, 9:16, 21:9, 3:4, 2.39:1, 1.85:1, 4:3, 18:9) tested and validated, including cinema and mobile formats
 - **Excel Compliance**: All generated files pass CoreXLSX validation with perfect aspect ratio preservation
 - **Simplified API**: Easy-to-use methods with automatic sizing and aspect ratio preservation
 
 ## Image Embedding Implementation (2025-07-07) - PERFECT ASPECT RATIO PRESERVATION
 
 ### Overview
-XLKit now supports **pixel-perfect image embedding** with automatic sizing and **perfect aspect ratio preservation**, matching Excel's manual behavior and professional quality exports.
+XLKit now supports pixel-perfect image embedding with automatic sizing and perfect aspect ratio preservation, matching Excel's manual behavior and professional quality exports.
+
+**Supported Aspect Ratios (Tested & Validated):**
+- 16:9 (HD/4K video)
+- 1:1 (Square format)
+- 9:16 (Vertical video)
+- 21:9 (Ultra-wide)
+- 3:4 (Portrait)
+- 2.39:1 (Cinemascope/Anamorphic)
+- 1.85:1 (Academy ratio)
+- 4:3 (Classic TV/monitor)
+- 18:9 (Modern mobile)
+
+All aspect ratios are preserved with pixel-perfect accuracy using empirically derived Excel formulas. See Tests/README.md for details and validation results.
 
 ### Key Features
 
@@ -447,7 +460,7 @@ XLKit now supports **pixel-perfect image embedding** with automatic sizing and *
 - Images maintain their **exact original proportions** regardless of cell dimensions
 - **Zero stretching, squashing, or distortion** - pixel-perfect preservation
 - Uses **empirically derived formulas** from manual Excel file analysis
-- Supports **all aspect ratios**: 16:9, 1:1, 9:16, 21:9, 3:4, and any custom ratio
+- Supports **all aspect ratios**: 16:9, 1:1, 9:16, 21:9, 3:4, 2.39:1, 1.85:1, 4:3, 18:9, and any custom ratio
 
 **Super-Precise Cell Sizing**
 - Row height automatically adjusts to match image height using correct formulas
@@ -536,7 +549,201 @@ XLKit.embedImage(
 ### Testing Requirements
 
 **Image Embedding Tests**
-- **Test aspect ratio preservation** for all supported ratios (16:9, 1:1, 9:16, 21:9, 3:4)
+- **Test aspect ratio preservation** for all supported ratios (16:9, 1:1, 9:16, 21:9, 3:4, 2.39:1, 1.85:1, 4:3, 18:9)
+- **Test automatic cell sizing** using correct formulas
+- **Test precise positioning** with zero offsets
+- **Test workbook registration** and image counting
+- **Test error handling** for missing files and invalid formats
+- **Test different image sizes** and scaling scenarios
+
+**Validation Requirements**
+- All generated files must pass **CoreXLSX validation**
+- **Image count must match expected values**
+- **Cell dimensions must match image dimensions** exactly
+- **Aspect ratio must be preserved** with zero tolerance for distortion
+- **Drawing XML must use correct EMU coordinates**
+- **Worksheet XML must use calculated dimensions** (no hardcoded values)
+
+**Test Coverage Requirements**
+- **Unit tests** for all `ImageSizingUtils` methods
+- **Integration tests** for complete image embedding workflow
+- **Validation tests** using CoreXLSX for Excel compliance
+- **Performance tests** for large images and multiple embeds
+- **Error handling tests** for edge cases and failures
+
+### Performance Guidelines
+
+**Memory Management**
+- Process images on-demand
+- Efficient data handling for large images
+- Proper cleanup after processing
+
+**File Size Optimization**
+- Optimized image compression
+- Efficient XML generation
+- Minimal overhead for embedded images
+
+### Code Quality Standards
+
+**Error Handling**
+- Handle missing image files gracefully
+- Provide meaningful error messages
+- Use specific error types for image operations
+
+**Documentation**
+- Document all new image embedding methods
+- Include usage examples
+- Explain aspect ratio preservation
+- Document cell sizing formulas
+
+### Integration Guidelines
+
+**Test Runner Integration**
+- **`embed` test type** implemented in XLKitTestRunner
+- **ImageEmbedGenerators.swift** handles image embedding tests
+- **Output to `Embed-Test-Embed.xlsx`** with validation
+- **CoreXLSX validation** ensures Excel compliance
+- **All tests pass** with perfect aspect ratio preservation
+
+**File Organization**
+- **ImageSizingUtils.swift** in XLKitImages module for centralized sizing logic
+- **XLKit.swift** provides simplified API methods
+- **XLSXEngine.swift** uses correct EMU calculations
+- **Maintains separation of concerns** across modules
+- **Follows existing API patterns** for consistency
+
+**API Design**
+- **Simplified methods** for easy usage
+- **Automatic sizing** with perfect aspect ratio preservation
+- **Consistent error handling** across all methods
+- **Backward compatibility** maintained where possible
+- **Comprehensive documentation** for all new features
+
+This comprehensive .cursorrules file provides all the guidelines and standards for AI agents working with the XLKit codebase, ensuring consistent, high-quality development practices.
+
+## Documentation Maintenance Requirements
+
+- All test documentation must be maintained in Tests/README.md, which serves as the canonical source for test descriptions, categories, and coverage.
+- The structure and content of Tests/README.md must be kept up to date whenever tests are added, removed, or reorganized.
+
+## Testing Requirements
+
+- Test documentation in Tests/README.md must accurately reflect all current tests and their coverage, including all supported aspect ratios.
+
+## Image Embedding Implementation (2025-07-07) - PERFECT ASPECT RATIO PRESERVATION
+
+### Overview
+XLKit now supports pixel-perfect image embedding with automatic sizing and perfect aspect ratio preservation, matching Excel's manual behavior and professional quality exports.
+
+**Supported Aspect Ratios (Tested & Validated):**
+- 16:9 (HD/4K video)
+- 1:1 (Square format)
+- 9:16 (Vertical video)
+- 21:9 (Ultra-wide)
+- 3:4 (Portrait)
+- 2.39:1 (Cinemascope/Anamorphic)
+- 1.85:1 (Academy ratio)
+- 4:3 (Classic TV/monitor)
+- 18:9 (Modern mobile)
+
+All aspect ratios are preserved with pixel-perfect accuracy using empirically derived Excel formulas. See Tests/README.md for details and validation results.
+
+### Key Features
+
+**Perfect Aspect Ratio Preservation**
+- Images maintain their **exact original proportions** regardless of cell dimensions
+- **Zero stretching, squashing, or distortion** - pixel-perfect preservation
+- Uses **empirically derived formulas** from manual Excel file analysis
+- Supports **all aspect ratios**: 16:9, 1:1, 9:16, 21:9, 3:4, 2.39:1, 1.85:1, 4:3, 18:9, and any custom ratio
+
+**Super-Precise Cell Sizing**
+- Row height automatically adjusts to match image height using correct formulas
+- Column width automatically adjusts to match image width using correct formulas
+- Cells perfectly fit the embedded images with no overflow or underflow
+
+**Precise Positioning**
+- Images are positioned exactly at cell boundaries with perfect alignment
+- Uses **EMU (English Metric Units)** for Excel's internal coordinate system
+- **Zero offsets** that could cause misalignment or stretching
+
+**Excel Compliance**
+- Uses **correct Excel formulas** derived from manual file analysis
+- Generates proper drawing XML with **accurate EMU coordinates**
+- Maintains compatibility with **all Excel versions**
+- Passes **CoreXLSX validation** for full compliance
+
+### API Requirements
+
+**Simplified Methods**
+```swift
+// Sheet extension method - auto-sizing with perfect aspect ratio
+sheet.embedImageAutoSized(
+    imageData,
+    at: coordinate,
+    of: workbook
+) -> Bool
+
+// XLKit convenience method
+XLKit.embedImage(
+    imageData,
+    at: coordinate,
+    in: sheet,
+    of: workbook,
+    scale: 1.0,
+    maxWidth: 600,
+    maxHeight: 400
+) -> Bool
+```
+
+**Workbook Registration**
+- Images are automatically registered with both sheet and workbook
+- Ensures proper tracking and counting
+- Prevents issues with image enumeration
+
+**Correct Cell Sizing Formulas**
+- **Column width**: `pixels / 8.0` (empirically derived from manual Excel files)
+- **Row height**: `pixels / 1.33` (empirically derived from manual Excel files)
+- **EMU conversion**: `pixels * 9525` (Excel's internal format)
+- **Maintains perfect aspect ratio preservation** for all image types
+
+**Critical Implementation Rules**
+- **MANDATORY**: Use `ImageSizingUtils` for all sizing calculations
+- **MANDATORY**: Use calculated values, never hardcoded dimensions
+- **MANDATORY**: `rowOff = 0` in drawing XML to keep images within cell boundaries
+- **MANDATORY**: Images must be positioned exactly at cell start point with no offsets
+- **MANDATORY**: All aspect ratios must be preserved exactly - no exceptions
+
+### Implementation Standards
+
+**ImageSizingUtils Integration**
+- **MANDATORY**: Use `ImageSizingUtils.calculateDisplaySize()` for all image scaling
+- **MANDATORY**: Use `ImageSizingUtils.excelColumnWidth()` for column width calculations
+- **MANDATORY**: Use `ImageSizingUtils.excelRowHeight()` for row height calculations
+- **MANDATORY**: Use `ImageSizingUtils.calculateDrawingDimensions()` for EMU conversion
+- **MANDATORY**: Never use hardcoded values for sizing calculations
+
+**Drawing XML Generation**
+- Generate precise drawing XML with **correct EMU coordinates**
+- Use **Excel's EMU coordinate system** (1 pixel = 9525 EMUs)
+- Include proper relationship references and image IDs
+- Ensure **perfect aspect ratio preservation** in drawing dimensions
+
+**Worksheet XML Updates**
+- Include **calculated row heights** in `<row>` elements using correct formulas
+- Set **calculated column widths** in `<col>` elements using correct formulas
+- Ensure **cell dimensions match image dimensions** exactly
+- Use **consistent formulas** across all sizing operations
+
+**Image Processing**
+- Support **GIF, PNG, JPEG** formats (BMP, TIFF removed for compatibility)
+- **Auto-detect formats and sizes** with proper error handling
+- Handle missing files gracefully with meaningful error messages
+- **Preserve original image quality** during processing
+
+### Testing Requirements
+
+**Image Embedding Tests**
+- **Test aspect ratio preservation** for all supported ratios (16:9, 1:1, 9:16, 21:9, 3:4, 2.39:1, 1.85:1, 4:3, 18:9)
 - **Test automatic cell sizing** using correct formulas
 - **Test precise positioning** with zero offsets
 - **Test workbook registration** and image counting

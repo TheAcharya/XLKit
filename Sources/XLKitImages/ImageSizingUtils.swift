@@ -26,13 +26,14 @@ public struct ImageSizingUtils {
     
     /// Calculates the display size for an image, maintaining aspect ratio and fitting within max bounds.
     /// Always uses the same scale factor for both width and height to preserve aspect ratio 100%.
+    /// - Parameter scale: Scaling factor for image size (default: 0.5 = 50% of max bounds for more compact images)
     public static func calculateDisplaySize(
         originalSize: CGSize,
         maxWidth: CGFloat,
         maxHeight: CGFloat,
         minWidth: CGFloat = 100,
         minHeight: CGFloat = 60,
-        scale: CGFloat = 1.0
+        scale: CGFloat = 0.5 // Default 50% scaling for more compact images
     ) -> CGSize {
         let scaledMaxWidth = maxWidth * scale
         let scaledMaxHeight = maxHeight * scale

@@ -46,6 +46,8 @@
   - [Usage Examples](#usage-examples)
   - [Performance Considerations](#performance-considerations-1)
   - [Future Enhancements](#future-enhancements)
+- [Test Documentation](#test-documentation)
+- [Image Embedding and Aspect Ratio Support](#image-embedding-and-aspect-ratio-support)
 
 ---
 
@@ -1209,3 +1211,24 @@ for row in 2...sheet.getUsedCells().count {
 - Caching for repeated images
 - Progressive image loading
 - Memory usage optimization 
+
+## Test Documentation
+
+All test cases, categories, and coverage details are documented in [Tests/README.md](Tests/README.md). This file provides a comprehensive overview of the test suite, including descriptions, purposes, and validation standards for every test in XLKit.
+
+When adding or updating tests, ensure that Tests/README.md is updated to reflect new or changed test cases. The test documentation must remain synchronized with the actual test suite for accuracy and completeness.
+
+## Image Embedding and Aspect Ratio Support
+
+XLKit now supports pixel-perfect image embedding with automatic aspect ratio preservation for all common and professional video/cinema formats. The following aspect ratios are tested and validated:
+- 16:9 (HD/4K video)
+- 1:1 (Square format)
+- 9:16 (Vertical video)
+- 21:9 (Ultra-wide)
+- 3:4 (Portrait)
+- 2.39:1 (Cinemascope/Anamorphic)
+- 1.85:1 (Academy ratio)
+- 4:3 (Classic TV/monitor)
+- 18:9 (Modern mobile)
+
+All aspect ratios are preserved with pixel-perfect accuracy using empirically derived Excel formulas. See [Tests/README.md](Tests/README.md) for details and validation results. 
