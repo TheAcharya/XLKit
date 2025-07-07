@@ -25,9 +25,9 @@ case "no-embeds", "no-images":
     generateExcelWithNoEmbeds()
     validateExcelFile("Test-Workflows/Embed-Test.xlsx")
     
-case "with-embeds", "with-images":
+case "with-embeds", "with-images", "embed":
     print("Executing: Generate Excel with Image Embeds")
-    generateExcelWithImageEmbeds()
+    generateExcelWithEmbeds()
     validateExcelFile("Test-Workflows/Embed-Test-Embed.xlsx")
     
 case "csv-import":
@@ -61,7 +61,7 @@ func printHelp() {
     
     Available test types:
       no-embeds, no-images    - Generate Excel file from CSV without image embeds
-      with-embeds, with-images - Generate Excel file with image embeds
+      with-embeds, with-images, embed - Generate Excel file with image embeds
       comprehensive, demo     - Comprehensive API demonstration with all features
       csv-import              - Test CSV import functionality (future)
       formatting              - Test cell formatting features (future)
