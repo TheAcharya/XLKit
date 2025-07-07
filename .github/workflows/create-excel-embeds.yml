@@ -20,7 +20,7 @@ jobs:
 
       - name: Run Excel Generation Script
         run: |
-          swift run XLKitTestRunner embed
+          swift run -Xswiftc -Xfrontend -Xswiftc -disable-round-trip-debug-types XLKitTestRunner embed
 
       - name: Zip Excel file
         run: |
