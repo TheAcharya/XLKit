@@ -21,7 +21,6 @@ A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) f
 - [Advanced Usage](#advanced-usage)
 - [Error Handling](#error-handling)
 - [Code Style & Formatting](#code-style--formatting)
-- [Testing](#testing)
 - [Credits](#credits)
 - [License](#License)
 - [Reporting Bugs](#reporting-bugs)
