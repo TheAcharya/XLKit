@@ -543,8 +543,8 @@ public struct XLSXEngine {
             let offsetX = 0 // Start at cell's left edge
             let offsetY = 0 // Start at cell's top edge
             
-            // Use the actual image height for rowOff to match cell dimensions
-            let rowOff = heightEMU // Use full image height to match cell height
+            // Keep image within cell boundaries - no row offset
+            let rowOff = 0 // Keep image within the cell
             
             content += "<xdr:twoCellAnchor editAs=\"oneCell\">"
             content += "<xdr:from><xdr:col>\(col - 1)</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>\(row - 1)</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from>"

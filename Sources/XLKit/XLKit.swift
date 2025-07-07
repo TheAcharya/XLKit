@@ -197,11 +197,11 @@ public struct XLKit {
         sheet.addImage(excelImage, at: coordinate)
         workbook.addImage(excelImage)
         
-        // Set column width and row height to fit the image exactly (Excel logic)
+        // Set column width and row height to fit the scaled image exactly (Excel logic)
         if let cellCoord = CellCoordinate(excelAddress: coordinate) {
             let excelCol = cellCoord.column
             let excelRow = cellCoord.row
-            // Use precise Excel formulas for pixel-perfect sizing
+            // Use display size (scaled down) for cell dimensions to match the scaled image
             let roundedWidth = round(displayWidth)
             let roundedHeight = round(displayHeight)
             // Excel column width formula: width = (pixels - 5) / 7
@@ -209,7 +209,7 @@ public struct XLKit {
             // Excel row height formula: height = pixels * 72 / 96
             let rowHeightInPoints = roundedHeight * 72.0 / 96.0
             
-            // Set column width and row height to match image dimensions exactly
+            // Set column width and row height to match scaled image dimensions exactly
             sheet.setColumnWidth(excelCol, width: colWidth)
             sheet.setRowHeight(excelRow, height: rowHeightInPoints)
             

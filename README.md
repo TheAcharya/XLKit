@@ -406,12 +406,6 @@ Or use Xcode's built-in formatter for most style rules.
 
 All code must be formatted and pass CI before merging. See `.cursorrules` for more details.
 
-## Testing
-
-- **100% tested**, including image and column sizing features
-- **Comprehensive test suite** covering all public APIs
-- **CI/CD ready** with automated testing
-
 ## Credits
 
 Created by [Vigneswaran Rajkumar](https://bsky.app/profile/vigneswaranrajkumar.com)

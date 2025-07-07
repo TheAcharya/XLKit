@@ -167,6 +167,19 @@ func generateExcelWithImageEmbeds() {
     print("[INFO] Saving Excel file...")
     let outputPath = "Test-Workflows/Embed-Test-Embed.xlsx"
     
+    // Ensure output directory exists
+    let outputURL = URL(fileURLWithPath: outputPath)
+    let outputDir = outputURL.deletingLastPathComponent()
+    if !FileManager.default.fileExists(atPath: outputDir.path) {
+        print("[INFO] Creating output directory: \(outputDir.path)")
+        do {
+            try FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
+        } catch {
+            print("[ERROR] Failed to create output directory: \(error)")
+            exit(1)
+        }
+    }
+    
     do {
         try XLKit.saveWorkbook(workbook, to: URL(fileURLWithPath: outputPath))
         print("[SUCCESS] Excel file created: \(outputPath)")

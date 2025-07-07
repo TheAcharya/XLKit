@@ -1066,6 +1066,12 @@ try XLKit.embedImageAutoSized(
 - No offsets or padding allowed
 - Perfect alignment with Excel's grid system
 
+**Critical Image Positioning Rule**
+- **MANDATORY**: `rowOff = 0` in drawing XML to keep images within cell boundaries
+- Images must be positioned exactly at cell start point with no offsets
+- Any `rowOff` value other than 0 will cause Excel to stretch images beyond cell boundaries
+- This rule is essential for maintaining aspect ratio - violation will cause image distortion
+
 **File Structure**
 - All required OpenXML files must be present
 - Proper relationships between files
