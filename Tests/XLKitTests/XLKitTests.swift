@@ -631,8 +631,8 @@ final class XLKitTests: XCTestCase {
     
     // MARK: - Movie/Video Aspect Ratio PNGs
     
+    // Create a minimal valid PNG with 2.39:1 aspect ratio (239x100) - Cinemascope/Anamorphic
     private func createCinemascopePNG() -> Data {
-        // Create a minimal valid PNG with 2.39:1 aspect ratio (239x100) - Cinemascope/Anamorphic
         let pngBytes: [UInt8] = [
             0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
             0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
@@ -648,8 +648,8 @@ final class XLKitTests: XCTestCase {
         return Data(pngBytes)
     }
     
+    // Create a minimal valid PNG with 1.85:1 aspect ratio (185x100) - Academy ratio
     private func createAcademyPNG() -> Data {
-        // Create a minimal valid PNG with 1.85:1 aspect ratio (185x100) - Academy ratio
         let pngBytes: [UInt8] = [
             0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
             0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
@@ -665,8 +665,8 @@ final class XLKitTests: XCTestCase {
         return Data(pngBytes)
     }
     
+    // Create a minimal valid PNG with 4:3 aspect ratio (133x100) - Classic TV/monitor
     private func createClassicTVPNG() -> Data {
-        // Create a minimal valid PNG with 4:3 aspect ratio (133x100) - Classic TV/monitor
         let pngBytes: [UInt8] = [
             0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
             0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
@@ -682,14 +682,152 @@ final class XLKitTests: XCTestCase {
         return Data(pngBytes)
     }
     
+    // Create a minimal valid PNG with 18:9 aspect ratio (180x90) - Modern smartphone screens
     private func createModernMobilePNG() -> Data {
-        // Create a minimal valid PNG with 18:9 aspect ratio (180x90) - Modern smartphone screens
         let pngBytes: [UInt8] = [
             0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
             0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
             0x49, 0x48, 0x44, 0x52, // IHDR
             0x00, 0x00, 0x00, 0xB4, // Width: 180 (big endian)
             0x00, 0x00, 0x00, 0x5A, // Height: 90 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    // MARK: - Additional Professional Video/Cinema Aspect Ratio PNGs
+    
+    // Create a minimal valid PNG with 1.19:1 aspect ratio (119x100) - HD Standard
+    private func createHDStandardPNG() -> Data {
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0x77, // Width: 119 (big endian)
+            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    // Create a minimal valid PNG with 1.5:1 aspect ratio (150x100) - SD Academy
+    private func createSDAcademyPNG() -> Data {
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0x96, // Width: 150 (big endian)
+            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    // Create a minimal valid PNG with 1.48:1 aspect ratio (148x100) - SD Academy
+    private func createSDAcademyAltPNG() -> Data {
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0x94, // Width: 148 (big endian)
+            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    // Create a minimal valid PNG with 1.25:1 aspect ratio (125x100) - SD Standard
+    private func createSDStandardPNG() -> Data {
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0x7D, // Width: 125 (big endian)
+            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    // Create a minimal valid PNG with 1.9:1 aspect ratio (190x100) - IMAX Digital
+    private func createIMAXDigitalPNG() -> Data {
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0xBE, // Width: 190 (big endian)
+            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    // Create a minimal valid PNG with 1.32:1 aspect ratio (132x100) - 2K/4K DCI Standard
+    private func createDCIStandardPNG() -> Data {
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0x84, // Width: 132 (big endian)
+            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    // Create a minimal valid PNG with 2.37:1 aspect ratio (237x100) - 5K Cinema Scope
+    private func create5KCinemaScopePNG() -> Data {
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0xED, // Width: 237 (big endian)
+            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
+            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+            0x00, 0x00, 0x00, 0x00, // CRC placeholder
+            0x00, 0x00, 0x00, 0x00, // IEND chunk
+            0x49, 0x45, 0x4E, 0x44, // IEND
+            0xAE, 0x42, 0x60, 0x82  // CRC
+        ]
+        return Data(pngBytes)
+    }
+    
+    // Create a minimal valid PNG with 1.37:1 aspect ratio (137x100) - IMAX Film 15/70mm
+    private func createIMAXFilmPNG() -> Data {
+        let pngBytes: [UInt8] = [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+            0x49, 0x48, 0x44, 0x52, // IHDR
+            0x00, 0x00, 0x00, 0x89, // Width: 137 (big endian)
+            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
             0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
             0x00, 0x00, 0x00, 0x00, // CRC placeholder
             0x00, 0x00, 0x00, 0x00, // IEND chunk
@@ -859,7 +997,15 @@ final class XLKitTests: XCTestCase {
             (createCinemascopePNG(), "2.39:1 cinemascope (239x100)"),
             (createAcademyPNG(), "1.85:1 academy (185x100)"),
             (createClassicTVPNG(), "4:3 classic TV (133x100)"),
-            (createModernMobilePNG(), "18:9 modern mobile (180x90)")
+            (createModernMobilePNG(), "18:9 modern mobile (180x90)"),
+            (createHDStandardPNG(), "1.19:1 HD standard (119x100)"),
+            (createSDAcademyPNG(), "1.5:1 SD academy (150x100)"),
+            (createSDAcademyAltPNG(), "1.48:1 SD academy alt (148x100)"),
+            (createSDStandardPNG(), "1.25:1 SD standard (125x100)"),
+            (createIMAXDigitalPNG(), "1.9:1 IMAX digital (190x100)"),
+            (createDCIStandardPNG(), "1.32:1 DCI standard (132x100)"),
+            (create5KCinemaScopePNG(), "2.37:1 5K cinema scope (237x100)"),
+            (createIMAXFilmPNG(), "1.37:1 IMAX film (137x100)")
         ]
         
         for (index, (imageData, description)) in testCases.enumerated() {
@@ -1253,7 +1399,15 @@ final class XLKitTests: XCTestCase {
             (createCinemascopePNG(), "F1", "2.39:1 cinemascope"),
             (createAcademyPNG(), "G1", "1.85:1 academy"),
             (createClassicTVPNG(), "H1", "4:3 classic TV"),
-            (createModernMobilePNG(), "I1", "18:9 modern mobile")
+            (createModernMobilePNG(), "I1", "18:9 modern mobile"),
+            (createHDStandardPNG(), "J1", "1.19:1 HD standard"),
+            (createSDAcademyPNG(), "K1", "1.5:1 SD academy"),
+            (createSDAcademyAltPNG(), "L1", "1.48:1 SD academy alt"),
+            (createSDStandardPNG(), "M1", "1.25:1 SD standard"),
+            (createIMAXDigitalPNG(), "N1", "1.9:1 IMAX digital"),
+            (createDCIStandardPNG(), "O1", "1.32:1 DCI standard"),
+            (create5KCinemaScopePNG(), "P1", "2.37:1 5K cinema scope"),
+            (createIMAXFilmPNG(), "Q1", "1.37:1 IMAX film")
         ]
         
         for (imageData, coordinate, description) in testCases {
