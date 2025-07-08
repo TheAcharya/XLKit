@@ -1,5 +1,24 @@
 # Changelog
 
+### 1.0.1
+
+**🎉 Released:**
+- 9th July 2025
+
+**🔧 Improvements:**
+- Added SecurityManager with rate limiting, security logging, file quarantine, and checksums
+- Integrated security features throughout XLSXEngine, ImageUtils, and XLKit API
+- Added comprehensive input validation for all user inputs
+- Replaced system zip command with pure Swift ZIP library to eliminate command injection risk
+- Fixed Swift 6.0 concurrency issues with @MainActor and throws propagation
+- Enhanced XLKitTestRunner with security integration and better error handling
+- Updated documentation (AGENT.MD and .cursorrules) with security features
+- Fixed test runner hanging issues and build errors
+- Expanded from 9 to all 17 professional video and cinema aspect ratios with pixel-perfect preservation
+- Added comprehensive security requirements and validation processes to development guidelines
+
+---
+
 ### 1.0.0
 
 **🎉 Released:**

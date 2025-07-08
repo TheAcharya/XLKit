@@ -10,7 +10,8 @@ import CoreXLSX
 
 // MARK: - Image Embedding Generation Functions
 
-func generateExcelWithImageEmbeds() {
+@MainActor
+func generateExcelWithImageEmbeds() throws {
     print("[INFO] Starting Excel generation with image embeds...")
     
     // Use the same CSV data as base
@@ -19,14 +20,14 @@ func generateExcelWithImageEmbeds() {
     
     guard let csvData = try? String(contentsOfFile: csvPath, encoding: .utf8) else {
         print("[ERROR] Failed to read CSV file")
-        exit(1)
+        throw XLKitError.fileWriteError("Failed to read CSV file")
     }
     
     // Parse CSV
     let lines = csvData.components(separatedBy: .newlines).filter { !$0.isEmpty }
     guard lines.count > 1 else {
         print("[ERROR] CSV file is empty or has no data rows")
-        exit(1)
+        throw XLKitError.fileWriteError("CSV file is empty or has no data rows")
     }
     
     let headers = lines[0].components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -37,7 +38,7 @@ func generateExcelWithImageEmbeds() {
     // Find the Image Filename column index
     guard let imageFilenameColumnIndex = headers.firstIndex(of: "Image Filename") else {
         print("[ERROR] 'Image Filename' column not found in CSV")
-        exit(1)
+        throw XLKitError.fileWriteError("'Image Filename' column not found in CSV")
     }
     
     print("[INFO] Found 'Image Filename' column at index \(imageFilenameColumnIndex)")
@@ -125,13 +126,14 @@ func generateExcelWithImageEmbeds() {
                     
                     // Use the improved embedImageAutoSized method for dynamic sizing
                     // Use larger bounds to compensate for the 0.5 scale factor
-                    let success = sheet.embedImageAutoSized(
+                    let success = try sheet.embedImageAutoSized(
                         imageData,
                         at: imageColumnCoordinate,
                         of: workbook,
                         format: detectedFormat,
-                        maxCellWidth: 1200, // Double the default to compensate for 0.5 scale
-                        maxCellHeight: 800   // Double the default to compensate for 0.5 scale
+                        maxCellWidth: 1200,  // Larger bounds for 0.5 scale
+                        maxCellHeight: 800,  // Larger bounds for 0.5 scale
+                        scale: 0.5
                     )
                     
                     if success {
@@ -179,7 +181,7 @@ func generateExcelWithImageEmbeds() {
             try FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
         } catch {
             print("[ERROR] Failed to create output directory: \(error)")
-            exit(1)
+            throw XLKitError.fileWriteError("Failed to create output directory: \(error)")
         }
     }
     
@@ -195,7 +197,7 @@ func generateExcelWithImageEmbeds() {
         
     } catch {
         print("[ERROR] Failed to save Excel file: \(error)")
-        exit(1)
+        throw error
     }
 }
 

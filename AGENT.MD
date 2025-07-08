@@ -86,27 +86,41 @@ Sources/XLKitTestRunner/
 
 Usage:
 ```bash
-# Run default test (no-embeds)
-swift run XLKitTestRunner
-
 # Run specific test types
 swift run XLKitTestRunner no-embeds
 swift run XLKitTestRunner embed
+swift run XLKitTestRunner comprehensive
 swift run XLKitTestRunner help
 ```
 
 Available Test Types:
-- `no-embeds`: Generate Excel from CSV without images
-- `embed`: Generate Excel with embedded images from CSV data
-- `help`: Show available commands
+- `no-embeds` / `no-images`: Generate Excel from CSV without images
+- `embed` / `with-embeds` / `with-images`: Generate Excel with embedded images from CSV data
+- `comprehensive` / `demo`: Comprehensive API demonstration with all features
+- `help` / `-h` / `--help`: Show available commands
+
+Test Features:
+- **Security Integration**: All tests include security logging and validation
+- **CoreXLSX Validation**: Generated files are validated for Excel compliance
+- **Aspect Ratio Testing**: Image embedding tests all 17 professional aspect ratios
+- **Performance Testing**: Large dataset handling and memory optimization
+- **Error Handling**: Comprehensive error testing and edge case coverage
 
 Output Structure:
 ```
 Test-Workflows/
 ├── Embed-Test.xlsx          # From no-embeds test
 ├── Embed-Test-Embed.xlsx    # From embed test (with images)
+├── Comprehensive-Demo.xlsx  # From comprehensive test
 └── [Your-Test].xlsx         # From custom tests
 ```
+
+Security Features in Tests:
+- **Rate Limiting**: Prevents test abuse and resource exhaustion
+- **Security Logging**: All test operations are logged for audit trails
+- **Input Validation**: All test inputs are validated for security
+- **File Quarantine**: Suspicious test files are automatically quarantined
+- **Checksum Verification**: Optional file integrity verification (disabled by default)
 
 ## Development Standards
 
@@ -162,6 +176,131 @@ All code must be free from vulnerability injection, supply chain poisoning, and 
 - No hardcoded secrets, tokens, or suspicious data
 - All code must be readable, idiomatic Swift, and match the documented architecture
 - Every code change must pass static analysis and security review
+
+### Security Features
+
+XLKit includes comprehensive security features to protect against vulnerabilities, supply chain attacks, and malicious code injection:
+
+#### SecurityManager
+
+The `SecurityManager` provides centralized security controls and monitoring:
+
+```swift
+@MainActor
+public struct SecurityManager {
+    // Configuration
+    public static var enableChecksumStorage = false  // Disabled by default
+    
+    // Rate limiting, logging, quarantine, and checksum features
+}
+```
+
+#### Rate Limiting
+
+Prevents abuse and resource exhaustion:
+- **Default**: 100 operations per minute
+- **Configurable**: Time window and operation limits
+- **Automatic**: Integrated into all file operations
+- **Logging**: Rate limit violations are logged
+
+```swift
+// Check rate limit before operations
+try SecurityManager.checkRateLimit()
+```
+
+#### Security Logging
+
+Comprehensive audit trail of all security-relevant operations:
+- **Console logging**: Real-time security events
+- **File logging**: Persistent audit trail in temporary directory
+- **Structured data**: Timestamp, operation, details, user agent
+- **Operations logged**: File generation, checksums, quarantines, rate limits
+
+```swift
+// Log security operations
+SecurityManager.logSecurityOperation("xlsx_generation_started", details: [
+    "target_path": filePath,
+    "workbook_sheets": sheetCount,
+    "workbook_images": imageCount
+])
+```
+
+#### File Quarantine
+
+Isolates suspicious files to prevent execution:
+- **Pattern detection**: Checks for malicious code patterns
+- **Size validation**: Prevents oversized files
+- **Format validation**: Validates image formats
+- **Automatic isolation**: Moves suspicious files to quarantine directory
+
+```swift
+// Check if file should be quarantined
+if SecurityManager.shouldQuarantineFile(imageData, format: .png) {
+    try SecurityManager.quarantineSuspiciousFile(fileURL, reason: "Suspicious content detected")
+}
+```
+
+#### File Checksums
+
+Cryptographic integrity verification (optional):
+- **SHA-256 hashes**: Secure file integrity verification
+- **Configurable**: Can be enabled/disabled via `enableChecksumStorage`
+- **Tamper detection**: Identifies unauthorized file modifications
+- **Supply chain protection**: Ensures file authenticity
+
+```swift
+// Store file checksum (when enabled)
+SecurityManager.storeFileChecksum(checksum, for: fileURL)
+
+// Verify file integrity (when enabled)
+let isValid = SecurityManager.verifyFileChecksum(fileURL)
+```
+
+#### Input Validation
+
+Comprehensive validation of all user inputs:
+- **File paths**: Validates and sanitizes file paths
+- **Image data**: Validates image formats and sizes
+- **CSV data**: Validates CSV structure and content
+- **Coordinates**: Validates Excel coordinate formats
+
+#### Error Handling
+
+Secure error handling that doesn't expose sensitive information:
+- **Generic messages**: User-friendly error messages
+- **Detailed logging**: Internal error details logged for debugging
+- **Graceful degradation**: Continues operation when possible
+- **Security events**: Security-related errors trigger additional logging
+
+#### Security Integration
+
+Security features are integrated throughout the codebase:
+- **XLSXEngine**: Rate limiting, logging, checksums for file generation
+- **ImageUtils**: Quarantine, validation for image processing
+- **XLKit API**: Input validation, security logging for all operations
+- **Test Runner**: Security validation for all test operations
+
+#### Configuration
+
+Security features can be configured as needed:
+```swift
+// Enable checksum storage (disabled by default)
+SecurityManager.enableChecksumStorage = true
+
+// Security logging is always active
+// Rate limiting is always active
+// Input validation is always active
+// File quarantine is always active
+```
+
+#### Security Log Output
+
+Example security log entries:
+```
+[SECURITY] 2025-07-08 8:25:48 PM +0000: xlsx_generation_started - ["target_path": "...", "workbook_sheets": 1, "workbook_images": 0]
+[SECURITY] 2025-07-08 8:25:48 PM +0000: xlsx_generation_completed - ["checksum": "...", "file_size": 19676, "target_path": "..."]
+[SECURITY] 2025-07-08 8:25:48 PM +0000: checksum_stored - ["checksum": "...", "timestamp": 1752006230.891748, "file_path": "..."]
+```
 
 ### Testing Strategy
 

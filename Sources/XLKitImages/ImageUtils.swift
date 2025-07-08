@@ -11,6 +11,7 @@ import CoreGraphics
 // MARK: - Image Utilities for XLKit
 
 /// Image utility functions for XLKit
+@MainActor
 public struct ImageUtils {
     
     // MARK: - Image Format Detection
@@ -101,25 +102,46 @@ public struct ImageUtils {
     }
     
     /// Creates an ExcelImage from Data
-    public static func createExcelImage(from data: Data, format: ImageFormat, displaySize: CGSize? = nil) -> ExcelImage? {
+    public static func createExcelImage(from data: Data, format: ImageFormat, displaySize: CGSize? = nil) throws -> ExcelImage? {
+        // Security checks
+        try CoreUtils.validateImageFileSize(data)
+        
+        // Check for suspicious files
+        if SecurityManager.shouldQuarantineFile(data, format: format) {
+            throw XLKitError.suspiciousFileDetected("Suspicious image file detected")
+        }
+        
         guard let size = getImageSize(from: data, format: format) else { return nil }
         let id = "image_\(UUID().uuidString)"
+        
+        // Log image processing
+        SecurityManager.logSecurityOperation("image_processed", details: [
+            "image_id": id,
+            "format": format.rawValue,
+            "size": data.count,
+            "dimensions": "\(size.width)x\(size.height)"
+        ])
+        
         return ExcelImage(id: id, data: data, format: format, originalSize: size, displaySize: displaySize)
     }
     
     /// Creates an ExcelImage from a file URL
     public static func createExcelImage(from url: URL, displaySize: CGSize? = nil) throws -> ExcelImage? {
+        // Security checks
+        try CoreUtils.validateFilePath(url.path)
+        
         let data = try Data(contentsOf: url)
         guard let format = detectImageFormat(from: data) else { return nil }
-        return createExcelImage(from: data, format: format, displaySize: displaySize)
+        return try createExcelImage(from: data, format: format, displaySize: displaySize)
     }
 }
 
+@MainActor
 public extension Sheet {
     /// Adds an image from Data
     @discardableResult
-    func addImage(_ data: Data, at coordinate: String, format: ImageFormat, displaySize: CGSize? = nil) -> Bool {
-        guard let image = ImageUtils.createExcelImage(from: data, format: format, displaySize: displaySize) else { return false }
+    func addImage(_ data: Data, at coordinate: String, format: ImageFormat, displaySize: CGSize? = nil) throws -> Bool {
+        guard let image = try ImageUtils.createExcelImage(from: data, format: format, displaySize: displaySize) else { return false }
         addImage(image, at: coordinate)
         return true
     }

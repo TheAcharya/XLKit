@@ -6,6 +6,7 @@
 
 import Foundation
 import CoreGraphics
+import CryptoKit
 
 /// Core types for XLKitCore
 // MARK: - Workbook, Sheet, Cell, CellValue, CellFormat, CellCoordinate, CellRange, XLKitError
@@ -717,6 +718,10 @@ public enum XLKitError: Error, LocalizedError {
     case fileWriteError(String)
     case zipCreationError(String)
     case xmlGenerationError(String)
+    case securityError(String)
+    case rateLimitExceeded(String)
+    case fileSizeLimitExceeded(String)
+    case suspiciousFileDetected(String)
     
     public var errorDescription: String? {
         switch self {
@@ -730,6 +735,14 @@ public enum XLKitError: Error, LocalizedError {
             return "ZIP creation error: \(message)"
         case .xmlGenerationError(let message):
             return "XML generation error: \(message)"
+        case .securityError(let message):
+            return "Security error: \(message)"
+        case .rateLimitExceeded(let message):
+            return "Rate limit exceeded: \(message)"
+        case .fileSizeLimitExceeded(let message):
+            return "File size limit exceeded: \(message)"
+        case .suspiciousFileDetected(let message):
+            return "Suspicious file detected: \(message)"
         }
     }
 }
@@ -807,6 +820,64 @@ public struct CoreUtils {
     /// Generates XML header
     public static func xmlHeader() -> String {
         return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+    }
+    
+    // MARK: - Security Utilities
+    
+    /// Maximum allowed file size for images (50MB)
+    public static let maxImageFileSize = 50 * 1024 * 1024
+    
+    /// Maximum allowed file size for Excel files (100MB)
+    public static let maxExcelFileSize = 100 * 1024 * 1024
+    
+    /// Allowed directories for file operations
+    public static let allowedDirectories = [
+        FileManager.default.temporaryDirectory,
+        FileManager.default.homeDirectoryForCurrentUser
+    ]
+    
+    /// Validates file path for security
+    public static func validateFilePath(_ path: String) throws {
+        // Prevent path traversal attacks
+        guard !path.contains("..") else {
+            throw XLKitError.securityError("Path traversal not allowed")
+        }
+        
+        // Ensure path is within allowed directories
+        let fileURL = URL(fileURLWithPath: path)
+        
+        guard allowedDirectories.contains(where: { fileURL.path.hasPrefix($0.path) }) else {
+            throw XLKitError.securityError("File path outside allowed directories")
+        }
+    }
+    
+    /// Validates file size
+    public static func validateFileSize(_ data: Data, maxSize: Int) throws {
+        guard data.count <= maxSize else {
+            throw XLKitError.fileSizeLimitExceeded("File size \(data.count) exceeds limit \(maxSize)")
+        }
+    }
+    
+    /// Validates image file size
+    public static func validateImageFileSize(_ data: Data) throws {
+        try validateFileSize(data, maxSize: maxImageFileSize)
+    }
+    
+    /// Validates Excel file size
+    public static func validateExcelFileSize(_ data: Data) throws {
+        try validateFileSize(data, maxSize: maxExcelFileSize)
+    }
+    
+    /// Generates SHA-256 checksum for data
+    public static func generateChecksum(_ data: Data) -> String {
+        let hash = SHA256.hash(data: data)
+        return hash.compactMap { String(format: "%02x", $0) }.joined()
+    }
+    
+    /// Generates SHA-256 checksum for file
+    public static func generateFileChecksum(_ fileURL: URL) throws -> String {
+        let data = try Data(contentsOf: fileURL)
+        return generateChecksum(data)
     }
 }
 

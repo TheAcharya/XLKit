@@ -19,7 +19,17 @@ import ZIPFoundation
 public struct XLSXEngine {
     
     /// Generates XLSX file asynchronously
+    @MainActor
     public static func generateXLSX(workbook: Workbook, to url: URL) throws {
+        // Security checks
+        try SecurityManager.checkRateLimit()
+        try CoreUtils.validateFilePath(url.path)
+        
+        SecurityManager.logSecurityOperation("xlsx_generation_started", details: [
+            "target_path": url.path,
+            "workbook_sheets": workbook.getSheets().count,
+            "workbook_images": workbook.imageCount
+        ])
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         
@@ -80,6 +90,16 @@ public struct XLSXEngine {
         
         // Create ZIP archive
         try createZIPArchive(from: tempDir, to: url)
+        
+        // Generate and store checksum
+        let checksum = try CoreUtils.generateFileChecksum(url)
+        SecurityManager.storeFileChecksum(checksum, for: url)
+        
+        SecurityManager.logSecurityOperation("xlsx_generation_completed", details: [
+            "target_path": url.path,
+            "checksum": checksum,
+            "file_size": try Data(contentsOf: url).count
+        ])
     }
     
 

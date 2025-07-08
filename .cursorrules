@@ -55,12 +55,10 @@ Sources/XLKitTestRunner/
 
 Usage:
 ```bash
-# Run default test (no-embeds)
-swift run XLKitTestRunner
-
 # Run specific test types
 swift run XLKitTestRunner no-embeds
 swift run XLKitTestRunner embed
+swift run XLKitTestRunner comprehensive
 swift run XLKitTestRunner help
 
 # Show help
@@ -69,8 +67,16 @@ swift run XLKitTestRunner help
 
 Available Test Types:
 - `no-embeds` / `no-images` - Generate Excel from CSV without images
-- `embed` - Generate Excel with embedded images from CSV data
-- `help` - Show available commands
+- `embed` / `with-embeds` / `with-images` - Generate Excel with embedded images from CSV data
+- `comprehensive` / `demo` - Comprehensive API demonstration with all features
+- `help` / `-h` / `--help` - Show available commands
+
+Test Features:
+- **Security Integration**: All tests include security logging and validation
+- **CoreXLSX Validation**: Generated files are validated for Excel compliance
+- **Aspect Ratio Testing**: Image embedding tests all 17 professional aspect ratios
+- **Performance Testing**: Large dataset handling and memory optimization
+- **Error Handling**: Comprehensive error testing and edge case coverage
 
 Adding New Tests:
 1. Copy template: `cp Sources/XLKitTestRunner/Templates/TestGeneratorTemplate.swift Sources/XLKitTestRunner/YourTestName.swift`
@@ -89,8 +95,16 @@ Output Structure:
 Test-Workflows/
 ├── Embed-Test.xlsx          # From no-embeds test
 ├── Embed-Test-Embed.xlsx    # From embed test (with images)
+├── Comprehensive-Demo.xlsx  # From comprehensive test
 └── [Your-Test].xlsx         # From custom tests
 ```
+
+Security Features in Tests:
+- **Rate Limiting**: Prevents test abuse and resource exhaustion
+- **Security Logging**: All test operations are logged for audit trails
+- **Input Validation**: All test inputs are validated for security
+- **File Quarantine**: Suspicious test files are automatically quarantined
+- **Checksum Verification**: Optional file integrity verification (disabled by default)
 
 ## File Organization & Paths
 
@@ -360,6 +374,58 @@ All code in this repository must be free from vulnerability injection, supply ch
 - No hardcoded secrets, tokens, or suspicious data.
 - All code must be readable, idiomatic Swift, and match the documented architecture.
 - Every code change must pass static analysis and security review for injection and supply chain risks.
+
+### Security Features Implementation
+
+XLKit includes comprehensive security features implemented in SecurityManager:
+
+#### SecurityManager Components
+- **Rate Limiting**: 100 operations per minute, configurable limits
+- **Security Logging**: Comprehensive audit trail with structured data
+- **File Quarantine**: Automatic isolation of suspicious files
+- **File Checksums**: SHA-256 integrity verification (configurable)
+- **Input Validation**: Comprehensive validation of all user inputs
+- **Error Handling**: Secure error handling without information leakage
+
+#### Security Integration Points
+- **XLSXEngine**: Rate limiting, logging, checksums for file generation
+- **ImageUtils**: Quarantine, validation for image processing
+- **XLKit API**: Input validation, security logging for all operations
+- **Test Runner**: Security validation for all test operations
+
+#### Security Configuration
+```swift
+// Checksum storage (disabled by default)
+SecurityManager.enableChecksumStorage = false
+
+// Security logging (always active)
+SecurityManager.logSecurityOperation("operation_name", details: [...])
+
+// Rate limiting (always active)
+try SecurityManager.checkRateLimit()
+
+// File quarantine (always active)
+if SecurityManager.shouldQuarantineFile(data, format: .png) {
+    try SecurityManager.quarantineSuspiciousFile(url, reason: "Suspicious content")
+}
+```
+
+#### Security Log Output
+Security operations are logged with structured data:
+```
+[SECURITY] 2025-07-08 8:25:48 PM +0000: xlsx_generation_started - ["target_path": "...", "workbook_sheets": 1, "workbook_images": 0]
+[SECURITY] 2025-07-08 8:25:48 PM +0000: xlsx_generation_completed - ["checksum": "...", "file_size": 19676, "target_path": "..."]
+[SECURITY] 2025-07-08 8:25:48 PM +0000: checksum_stored - ["checksum": "...", "timestamp": 1752006230.891748, "file_path": "..."]
+```
+
+#### Security Requirements for AI Agents
+- All security features must remain active and functional
+- Security logging must be maintained for audit trails
+- Rate limiting must be respected to prevent abuse
+- Input validation must be comprehensive and secure
+- File quarantine must be functional for suspicious content
+- Checksum verification can be disabled for development but must be available
+- All security events must be properly logged and handled
 
 ## Maintenance & Evolution
 
