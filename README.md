@@ -7,7 +7,7 @@
 
 A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) files on macOS. XLKit provides a fluent, chainable API that makes Excel file generation effortless while supporting advanced features like image embedding, CSV/TSV import/export, cell formatting, and both synchronous and asynchronous operations. Built with Swift 6.0 and targeting macOS 12+, it offers type-safe operations and comprehensive error handling. 
 
-Purpose-built for [MarkersExtractor](https://github.com/TheAcharya/MarkersExtractor) - a tool for extracting markers from Final Cut Pro FCPXML files and generating comprehensive Excel reports with embedded images, CSV/TSV manifests, and structured data exports.
+Purpose-built for [MarkersExtractor](https://github.com/TheAcharya/MarkersExtractor) - a tool for extracting markers from Final Cut Pro FCPXML files and generating comprehensive Excel reports with embedded images, CSV/TSV manifests, and structured data exports. Perfect for professional video editing workflows requiring pixel-perfect image embedding with all video and cinema aspect ratios.
 
 This codebase is developed using AI agents.
 
@@ -35,6 +35,7 @@ This codebase is developed using AI agents.
 
 - Effortless API: Fluent, chainable, and bulk data helpers
 - Perfect Image Embedding: Pixel-perfect image embedding with automatic aspect ratio preservation
+- Professional Video Support: All 17 video and cinema aspect ratios with zero distortion
 - Auto Cell Sizing: Automatic column width and row height calculation to perfectly fit images
 - CSV/TSV Import/Export: Built-in support for importing and exporting CSV/TSV data
 - Async & Sync Operations: Save workbooks with one line (async or sync)
@@ -265,7 +266,7 @@ All CSV/TSV helpers are available as static methods on `XLKit` for convenience, 
 
 XLKit provides pixel-perfect image embedding with automatic aspect ratio preservation. Images maintain their exact original proportions regardless of cell dimensions, preventing any stretching, squashing, or distortion.
 
-Comprehensive Aspect Ratio Support: XLKit has been extensively tested with all common aspect ratios including:
+Comprehensive Aspect Ratio Support: XLKit has been extensively tested with all professional video and cinema aspect ratios including:
 - 16:9 (HD/4K video)
 - 1:1 (Square format)
 - 9:16 (Vertical video)
@@ -275,8 +276,16 @@ Comprehensive Aspect Ratio Support: XLKit has been extensively tested with all c
 - 1.85:1 (Academy ratio)
 - 4:3 (Classic TV/monitor)
 - 18:9 (Modern mobile)
+- 1.19:1 (HD Standard)
+- 1.5:1 (SD Academy)
+- 1.48:1 (SD Academy Alt)
+- 1.25:1 (SD Standard)
+- 1.9:1 (IMAX Digital)
+- 1.32:1 (DCI Standard)
+- 2.37:1 (5K Cinema Scope)
+- 1.37:1 (IMAX Film 15/70mm)
 
-All aspect ratios are preserved with pixel-perfect accuracy using empirically derived Excel formulas.
+All aspect ratios are preserved with pixel-perfect accuracy using empirically derived Excel formulas, ensuring professional-quality exports for any video or cinema format.
 
 ### Supported Image Formats
 - GIF (including animated)
@@ -445,19 +454,21 @@ swift run XLKitTestRunner help
 ### Automated Validation
 
 Every generated Excel file is automatically validated using CoreXLSX to ensure:
-- Full OpenXML compliance
+- Full OpenXML compliance and Excel compatibility
 - Proper file structure and relationships
-- Image embedding integrity
+- Image embedding integrity with perfect aspect ratio preservation
 - Cell and row data accuracy
-- Excel compatibility across all versions
+- Professional-quality exports for all video and cinema formats
+- Zero tolerance for distortion or stretching in embedded images
 
 ### Test Coverage
 
 - Unit Tests: All public APIs and core functionality
 - Integration Tests: Complete Excel file generation workflows
-- Image Embedding Tests: Aspect ratio preservation for all supported formats
+- Image Embedding Tests: Aspect ratio preservation for all 17 supported formats
 - CSV/TSV Tests: Import/export functionality with various data types
 - Performance Tests: Large dataset handling and memory management
+- Validation Tests: CoreXLSX compliance verification for all generated files
 
 ## Code Style & Formatting
 
@@ -496,4 +507,4 @@ For bug reports, feature requests and suggestions you can create a new [issue](h
 
 ## Contribution
 
-Community contributions are welcome and appreciated. Developers are encouraged to fork the repository and submit pull requests to enhance functionality or introduce thoughtful improvements. However, a key requirement is that nothing should break—all existing features, behaviours theme and styling must remain fully functional and unchanged. Once reviewed and approved, updates will be merged into the main branch.
+Community contributions are welcome and appreciated. Developers are encouraged to fork the repository and submit pull requests to enhance functionality or introduce thoughtful improvements. However, a key requirement is that nothing should break—all existing features and behaviours and logic must remain fully functional and unchanged. Once reviewed and approved, updates will be merged into the main branch.

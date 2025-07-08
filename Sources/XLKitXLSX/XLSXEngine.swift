@@ -8,6 +8,7 @@ import Foundation
 @preconcurrency import XLKitCore
 import XLKitFormatters
 import XLKitImages
+import ZIPFoundation
 
 /// XLSX file generation and XML/ZIP utilities for XLKit
 // (Content will be filled in next step) 
@@ -619,17 +620,42 @@ public struct XLSXEngine {
             try FileManager.default.removeItem(at: destinationURL)
         }
         
-        // Use system zip command for simplicity
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
-        process.arguments = ["-r", destinationURL.path, "."]
-        process.currentDirectoryURL = sourceDir
+        // Use ZIPFoundation for cross-platform compatibility and security
+        // Create a temporary ZIP file first, then move it to the destination
+        let tempZipURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".zip")
         
-        try process.run()
-        process.waitUntilExit()
-        
-        if process.terminationStatus != 0 {
-            throw XLKitError.zipCreationError("ZIP creation failed with status \(process.terminationStatus)")
+        do {
+            // Create ZIP archive with contents of sourceDir (not the directory itself)
+            let archive = try Archive(url: tempZipURL, accessMode: .create)
+            
+            let parentDir = sourceDir.deletingLastPathComponent()
+            let enumerator = FileManager.default.enumerator(at: parentDir, includingPropertiesForKeys: [.isDirectoryKey])
+            
+            // Normalize the source directory path to handle /private prefix
+            let normalizedSourcePath = (try? sourceDir.resolvingSymlinksInPath())?.path ?? sourceDir.path
+            let prefix = normalizedSourcePath + "/"
+            
+            while let fileURL = enumerator?.nextObject() as? URL {
+                // Normalize the file path to handle /private prefix
+                let normalizedFilePath = (try? fileURL.resolvingSymlinksInPath())?.path ?? fileURL.path
+                
+                // Only add files inside sourceDir
+                guard normalizedFilePath.hasPrefix(prefix) else { continue }
+                
+                let relativePath = String(normalizedFilePath.dropFirst(prefix.count))
+                if relativePath.isEmpty { continue }
+                
+                let resourceValues = try fileURL.resourceValues(forKeys: [.isDirectoryKey])
+                if resourceValues.isDirectory == true { continue }
+                
+                try archive.addEntry(with: relativePath, fileURL: fileURL)
+            }
+            
+            try FileManager.default.moveItem(at: tempZipURL, to: destinationURL)
+            
+        } catch {
+            try? FileManager.default.removeItem(at: tempZipURL)
+            throw XLKitError.zipCreationError("ZIP creation failed: \(error.localizedDescription)")
         }
     }
     

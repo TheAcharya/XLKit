@@ -1,8 +1,7 @@
 # XLKit - Cursor Rules for AI Agents
 
 ## Project Overview
-XLKit is a modern Swift library for creating and manipulating Excel (.xlsx) files on macOS. 
-Built with Swift 6.0, targeting macOS 12+, using modular SPM architecture.
+XLKit is a modern Swift library for creating and manipulating Excel (.xlsx) files on macOS. Built with Swift 6.0, targeting macOS 12+, using modular SPM architecture.
 
 ## Architecture & Module Structure
 
@@ -48,6 +47,7 @@ Structure:
 Sources/XLKitTestRunner/
 ├── main.swift                    # Entry point with command-line interface
 ├── ExcelGenerators.swift         # Excel generation functions
+├── ImageEmbedGenerators.swift    # Image embedding tests
 ├── Templates/                    # Template files for new tests
 │   └── TestGeneratorTemplate.swift
 └── README.md                     # Documentation
@@ -60,7 +60,7 @@ swift run XLKitTestRunner
 
 # Run specific test types
 swift run XLKitTestRunner no-embeds
-swift run XLKitTestRunner with-images
+swift run XLKitTestRunner embed
 swift run XLKitTestRunner help
 
 # Show help
@@ -69,10 +69,8 @@ swift run XLKitTestRunner help
 
 Available Test Types:
 - `no-embeds` / `no-images` - Generate Excel from CSV without images
-- `with-embeds` / `with-images` - Generate Excel with image embeds (future)
-- `csv-import` - Test CSV import functionality (future)
-- `formatting` - Test cell formatting features (future)
 - `embed` - Generate Excel with embedded images from CSV data
+- `help` - Show available commands
 
 Adding New Tests:
 1. Copy template: `cp Sources/XLKitTestRunner/Templates/TestGeneratorTemplate.swift Sources/XLKitTestRunner/YourTestName.swift`
@@ -225,7 +223,7 @@ import Foundation
 - Handle special characters and quotes
 
 ### Image Operations (XLKitImages Module)
-- Support GIF, PNG, JPEG, BMP, TIFF formats
+- Support GIF, PNG, JPEG formats (BMP, TIFF removed for compatibility)
 - Auto-detect formats and sizes
 - Support both Data and URL inputs
 - Handle image embedding in cells
@@ -234,7 +232,7 @@ import Foundation
 - Generate OpenXML-compliant files
 - Use temporary directories for file creation
 - Implement proper XML escaping
-- Support ZIP archive creation
+- Support ZIP archive creation using ZIPFoundation
 
 ## Testing Standards
 
@@ -352,6 +350,17 @@ func testFeatureNameWithInvalidInput() {
 - Log errors appropriately
 - Handle edge cases gracefully
 
+## Security & Supply Chain Integrity (2025-07-08)
+
+All code in this repository must be free from vulnerability injection, supply chain poisoning, and hidden malicious logic. This includes:
+- No dynamic code execution, system shell commands, or unsafe reflection.
+- All dependencies must be reputable, open-source, and version-pinned in Package.resolved.
+- No network, HTTP, or remote code execution except for documented, safe APIs.
+- All file operations must be local and safe, with no writing to unexpected or system locations.
+- No hardcoded secrets, tokens, or suspicious data.
+- All code must be readable, idiomatic Swift, and match the documented architecture.
+- Every code change must pass static analysis and security review for injection and supply chain risks.
+
 ## Maintenance & Evolution
 
 ### Backward Compatibility
@@ -432,7 +441,7 @@ func testFeatureNameWithInvalidInput() {
 - Empirically Derived Formulas: Column width `pixels / 8.0`, Row height `pixels / 1.33` from manual Excel analysis
 - ImageSizingUtils: Centralized sizing logic with consistent formulas across all operations
 - EMU Coordinate System: Correct Excel internal format (1 pixel = 9525 EMUs) for perfect positioning
-- Comprehensive Testing: All aspect ratios (16:9, 1:1, 9:16, 21:9, 3:4, 2.39:1, 1.85:1, 4:3, 18:9) tested and validated, including cinema and mobile formats
+- Comprehensive Testing: All 17 professional video and cinema aspect ratios (16:9, 1:1, 9:16, 21:9, 3:4, 2.39:1, 1.85:1, 4:3, 18:9, 1.19:1, 1.5:1, 1.48:1, 1.25:1, 1.9:1, 1.32:1, 2.37:1, 1.37:1) tested and validated, including cinema and mobile formats
 - Excel Compliance: All generated files pass CoreXLSX validation with perfect aspect ratio preservation
 - Simplified API: Easy-to-use methods with automatic sizing and aspect ratio preservation
 
@@ -451,6 +460,14 @@ Supported Aspect Ratios (Tested & Validated):
 - 1.85:1 (Academy ratio)
 - 4:3 (Classic TV/monitor)
 - 18:9 (Modern mobile)
+- 1.19:1 (HD Standard)
+- 1.5:1 (SD Academy)
+- 1.48:1 (SD Academy Alt)
+- 1.25:1 (SD Standard)
+- 1.9:1 (IMAX Digital)
+- 1.32:1 (DCI Standard)
+- 2.37:1 (5K Cinema Scope)
+- 1.37:1 (IMAX Film 15/70mm)
 
 All aspect ratios are preserved with pixel-perfect accuracy using empirically derived Excel formulas. See Tests/README.md for details and validation results.
 
@@ -460,7 +477,7 @@ Perfect Aspect Ratio Preservation
 - Images maintain their exact original proportions regardless of cell dimensions
 - Zero stretching, squashing, or distortion - pixel-perfect preservation
 - Uses empirically derived formulas from manual Excel file analysis
-- Supports all aspect ratios: 16:9, 1:1, 9:16, 21:9, 3:4, 2.39:1, 1.85:1, 4:3, 18:9, and any custom ratio
+- Supports all 17 professional video and cinema aspect ratios: 16:9, 1:1, 9:16, 21:9, 3:4, 2.39:1, 1.85:1, 4:3, 18:9, 1.19:1, 1.5:1, 1.48:1, 1.25:1, 1.9:1, 1.32:1, 2.37:1, 1.37:1, and any custom ratio
 
 Super-Precise Cell Sizing
 - Row height automatically adjusts to match image height using correct formulas
@@ -549,7 +566,7 @@ Image Processing
 ### Testing Requirements
 
 Image Embedding Tests
-- Test aspect ratio preservation for all supported ratios (16:9, 1:1, 9:16, 21:9, 3:4, 2.39:1, 1.85:1, 4:3, 18:9)
+- Test aspect ratio preservation for all 17 supported ratios (16:9, 1:1, 9:16, 21:9, 3:4, 2.39:1, 1.85:1, 4:3, 18:9, 1.19:1, 1.5:1, 1.48:1, 1.25:1, 1.9:1, 1.32:1, 2.37:1, 1.37:1)
 - Test automatic cell sizing using correct formulas
 - Test precise positioning with zero offsets
 - Test workbook registration and image counting
@@ -618,19 +635,6 @@ API Design
 - Consistent error handling across all methods
 - Backward compatibility maintained where possible
 - Comprehensive documentation for all new features
-
-This comprehensive .cursorrules file provides all the guidelines and standards for AI agents working with the XLKit codebase, ensuring consistent, high-quality development practices.
-
-## Documentation Maintenance Requirements
-
-- All test documentation must be maintained in Tests/README.md, which serves as the canonical source for test descriptions, categories, and coverage.
-- The structure and content of Tests/README.md must be kept up to date whenever tests are added, removed, or reorganized.
-
-## Testing Requirements
-
-- Test documentation in Tests/README.md must accurately reflect all current tests and their coverage, including all supported aspect ratios.
-
-
 
 ## Documentation Maintenance Requirements
 

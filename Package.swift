@@ -31,7 +31,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/CoreOffice/CoreXLSX.git", from: "0.14.0")
+        .package(url: "https://github.com/CoreOffice/CoreXLSX.git", from: "0.14.0"),
+        .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.0")
     ],
     targets: [
         .target(
@@ -47,7 +48,7 @@ let package = Package(
         ),
         .target(
             name: "XLKitXLSX",
-            dependencies: ["XLKitCore", "XLKitFormatters", "XLKitImages"]
+            dependencies: ["XLKitCore", "XLKitFormatters", "XLKitImages", "ZIPFoundation"]
         ),
         .target(
             name: "XLKit",
