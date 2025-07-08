@@ -186,7 +186,7 @@ public struct XLKit {
     ) throws -> Bool {
         let detectedFormat = format ?? ImageUtils.detectImageFormat(from: data)
         guard let imageFormat = detectedFormat else { return false }
-        guard let originalSize = try ImageUtils.getImageSize(from: data, format: imageFormat) else { return false }
+        guard let originalSize = ImageUtils.getImageSize(from: data, format: imageFormat) else { return false }
 
         // Use new utility for sizing
         let displaySize = ImageSizingUtils.calculateDisplaySize(

@@ -7,15 +7,16 @@
 import XCTest
 import XLKit
 
+@MainActor
 final class XLKitTests: XCTestCase {
     
-    func testCreateWorkbook() {
+    func testCreateWorkbook() throws {
         let workbook = XLKit.createWorkbook()
         XCTAssertNotNil(workbook)
         XCTAssertEqual(workbook.getSheets().count, 0)
     }
     
-    func testAddSheet() {
+    func testAddSheet() throws {
         let workbook = XLKit.createWorkbook()
         let sheet = workbook.addSheet(name: "Test Sheet")
         
@@ -24,7 +25,7 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(sheet.id, 1)
     }
     
-    func testGetSheetByName() {
+    func testGetSheetByName() throws {
         let workbook = XLKit.createWorkbook()
         let sheet1 = workbook.addSheet(name: "Sheet1")
         let sheet2 = workbook.addSheet(name: "Sheet2")
@@ -34,7 +35,7 @@ final class XLKitTests: XCTestCase {
         XCTAssertNil(workbook.getSheet(name: "NonExistent"))
     }
     
-    func testRemoveSheet() {
+    func testRemoveSheet() throws {
         let workbook = XLKit.createWorkbook()
         _ = workbook.addSheet(name: "Sheet1")
         _ = workbook.addSheet(name: "Sheet2")
@@ -47,7 +48,7 @@ final class XLKitTests: XCTestCase {
         XCTAssertNotNil(workbook.getSheet(name: "Sheet2"))
     }
     
-    func testSetAndGetCell() {
+    func testSetAndGetCell() throws {
         let workbook = XLKit.createWorkbook()
         let sheet = workbook.addSheet(name: "Test")
         
@@ -77,7 +78,7 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(sheet.getCell("F1"), .formula("=A1+B1"))
     }
     
-    func testSetCellByRowColumn() {
+    func testSetCellByRowColumn() throws {
         let workbook = XLKit.createWorkbook()
         let sheet = workbook.addSheet(name: "Test")
         
@@ -88,7 +89,7 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(sheet.getCell("B2"), .string("B2"))
     }
     
-    func testSetRange() {
+    func testSetRange() throws {
         let workbook = XLKit.createWorkbook()
         let sheet = workbook.addSheet(name: "Test")
         
@@ -99,7 +100,7 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(sheet.getCell("C3"), .string("Range"))
     }
     
-    func testMergeCells() {
+    func testMergeCells() throws {
         let workbook = XLKit.createWorkbook()
         let sheet = workbook.addSheet(name: "Test")
         
@@ -110,7 +111,7 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(mergedRanges[0].excelRange, "A1:C1")
     }
     
-    func testGetUsedCells() {
+    func testGetUsedCells() throws {
         let workbook = XLKit.createWorkbook()
         let sheet = workbook.addSheet(name: "Test")
         
@@ -125,7 +126,7 @@ final class XLKitTests: XCTestCase {
         XCTAssertTrue(usedCells.contains("C3"))
     }
     
-    func testClearSheet() {
+    func testClearSheet() throws {
         let workbook = XLKit.createWorkbook()
         let sheet = workbook.addSheet(name: "Test")
         
@@ -253,7 +254,7 @@ final class XLKitTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
     }
     
-    func testSaveWorkbookSync() throws {
+    func testSaveWorkbookSync() async throws {
         let workbook = XLKit.createWorkbook()
         let sheet = workbook.addSheet(name: "Test")
         
@@ -265,7 +266,7 @@ final class XLKitTests: XCTestCase {
             try? FileManager.default.removeItem(at: tempURL)
         }
         
-        try XLKit.saveWorkbook(workbook, to: tempURL)
+        try await XLKit.saveWorkbook(workbook, to: tempURL)
         
         XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
     }
@@ -348,31 +349,31 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(pngSize?.height, 48)
     }
     
-    func testExcelImageCreation() {
+    func testExcelImageCreation() throws {
         let imageData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00, 0x20, 0x00])
         
         // Test creation from data
-        let image = ImageUtils.createExcelImage(from: imageData, format: .gif)
+        let image = try ImageUtils.createExcelImage(from: imageData, format: .gif)
         XCTAssertNotNil(image)
         XCTAssertEqual(image?.format, .gif)
         XCTAssertEqual(image?.originalSize.width, 16)
         XCTAssertEqual(image?.originalSize.height, 32)
         
         // Test creation with display size
-        let imageWithSize = ImageUtils.createExcelImage(from: imageData, format: .gif, displaySize: CGSize(width: 100, height: 200))
+        let imageWithSize = try ImageUtils.createExcelImage(from: imageData, format: .gif, displaySize: CGSize(width: 100, height: 200))
         XCTAssertNotNil(imageWithSize)
         XCTAssertEqual(imageWithSize?.displaySize?.width, 100)
         XCTAssertEqual(imageWithSize?.displaySize?.height, 200)
     }
     
-    func testSheetImageOperations() {
+    func testSheetImageOperations() throws {
         let workbook = XLKit.createWorkbook()
         let sheet = workbook.addSheet(name: "Images")
         
         let imageData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00, 0x20, 0x00])
         
         // Test adding image from data
-        let success = sheet.addImage(imageData, at: "A1", format: .gif)
+        let success = try sheet.addImage(imageData, at: "A1", format: .gif)
         XCTAssertTrue(success)
         
         // Test getting images
@@ -382,11 +383,11 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(images["A1"]?.format, .gif)
     }
     
-    func testWorkbookImageOperations() {
+    func testWorkbookImageOperations() throws {
         let workbook = XLKit.createWorkbook()
         
         let imageData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00, 0x20, 0x00])
-        let image = ImageUtils.createExcelImage(from: imageData, format: .gif)!
+        let image = try ImageUtils.createExcelImage(from: imageData, format: .gif)!
         
         // Test adding image to workbook
         workbook.addImage(image)
@@ -439,12 +440,12 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(heights[2], 30.0)
     }
     
-    func testAutoSizeColumnForImage() {
+    func testAutoSizeColumnForImage() throws {
         let workbook = XLKit.createWorkbook()
         let sheet = workbook.addSheet(name: "AutoSize")
         
         let imageData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00, 0x20, 0x00])
-        let success = sheet.addImage(imageData, at: "A1", format: .gif, displaySize: CGSize(width: 150, height: 100))
+        let success = try sheet.addImage(imageData, at: "A1", format: .gif, displaySize: CGSize(width: 150, height: 100))
         XCTAssertTrue(success)
         
         // Test auto-sizing column
@@ -462,7 +463,7 @@ final class XLKitTests: XCTestCase {
         let gifData = createMinimalGIF()
         
         // Add GIF to sheet
-        let success = sheet.addImage(gifData, at: "A1", format: .gif)
+        let success = try sheet.addImage(gifData, at: "A1", format: .gif)
         XCTAssertTrue(success)
         
         // Set column width to fit GIF
@@ -486,8 +487,8 @@ final class XLKitTests: XCTestCase {
         let gifData = createMinimalGIF()
         let pngData = createMinimalPNG()
         
-        sheet.addImage(gifData, at: "A1", format: .gif)
-        sheet.addImage(pngData, at: "B1", format: .png)
+        try sheet.addImage(gifData, at: "A1", format: .gif)
+        try sheet.addImage(pngData, at: "B1", format: .png)
         
         // Set column widths
         sheet.autoSizeColumn(1, forImageAt: "A1")
@@ -847,7 +848,7 @@ final class XLKitTests: XCTestCase {
         let pngData = createMinimalPNG()
         
         // Test the simplified embedImage API
-        let success = sheet.embedImage(
+        let success = try sheet.embedImage(
             pngData,
             at: "A1",
             of: workbook,
@@ -884,7 +885,7 @@ final class XLKitTests: XCTestCase {
         let widePNGData = createWidePNG()
         
         // Embed with the simplified API
-        let success = sheet.embedImage(
+        let success = try sheet.embedImage(
             widePNGData,
             at: "A1",
             of: workbook,
@@ -943,7 +944,7 @@ final class XLKitTests: XCTestCase {
         ]
         
         for (coordinate, imageData, description) in testCases {
-            let success = sheet.embedImage(
+            let success = try sheet.embedImage(
                 imageData,
                 at: coordinate,
                 of: workbook,
@@ -1012,7 +1013,7 @@ final class XLKitTests: XCTestCase {
             let coordinate = "A\(index + 1)"
             
             // Test the simplified embedImage API
-            let success = sheet.embedImage(
+            let success = try sheet.embedImage(
                 imageData,
                 at: coordinate,
                 of: workbook,
@@ -1302,7 +1303,7 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(sheet.getCell("C4"), .integer(60000))
     }
     
-    func testCSVImportWithDates() {
+    func testCSVImportWithDates() async throws {
         let csvData = """
         Name,Birth Date,Hire Date
         John Doe,1990-05-15,2020-03-01
@@ -1336,7 +1337,7 @@ final class XLKitTests: XCTestCase {
         }
     }
     
-    func testCSVImportIntoExistingSheet() {
+    func testCSVImportIntoExistingSheet() throws {
         let workbook = XLKit.createWorkbook()
         let sheet = workbook.addSheet(name: "Import Test")
         
@@ -1364,7 +1365,7 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(sheet.getCell("B3"), .integer(300))
     }
     
-    func testCSVExportWithSpecialCharacters() {
+    func testCSVExportWithSpecialCharacters() throws {
         let workbook = XLKit.createWorkbook()
         let sheet = workbook.addSheet(name: "Special Chars")
         
@@ -1412,7 +1413,7 @@ final class XLKitTests: XCTestCase {
         
         for (imageData, coordinate, description) in testCases {
             // Embed image with auto-sizing
-            let success = sheet.embedImage(
+            let success = try sheet.embedImage(
                 imageData,
                 at: coordinate,
                 of: workbook,
