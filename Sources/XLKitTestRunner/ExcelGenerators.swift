@@ -10,8 +10,8 @@ import CoreXLSX
 
 // MARK: - Excel Generation Functions
 
-/// Generates an Excel file from CSV data without image embeds
-func generateExcelWithNoEmbeds() {
+@MainActor
+func generateExcelWithNoEmbeds() throws {
     // MARK: - Configuration
     
     // Fixed CSV file path
@@ -23,7 +23,7 @@ func generateExcelWithNoEmbeds() {
     // Check if CSV file exists
     guard FileManager.default.fileExists(atPath: csvFilePath) else {
         print("[ERROR] CSV file not found: \(csvFilePath)")
-        exit(1)
+        throw XLKitError.fileWriteError("CSV file not found: \(csvFilePath)")
     }
     
     // MARK: - CSV Parsing
@@ -37,7 +37,7 @@ func generateExcelWithNoEmbeds() {
     
     guard let csvData = try? String(contentsOfFile: csvFilePath, encoding: .utf8) else {
         print("[ERROR] Failed to read CSV file: \(csvFilePath)")
-        exit(1)
+        throw XLKitError.fileWriteError("Failed to read CSV file: \(csvFilePath)")
     }
     
     let (rows, headers) = parseCSV(csvData)
@@ -105,7 +105,7 @@ func generateExcelWithNoEmbeds() {
             try FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
         } catch {
             print("[ERROR] Failed to create output directory: \(error)")
-            exit(1)
+            throw XLKitError.fileWriteError("Failed to create output directory: \(error)")
         }
     }
     
@@ -121,12 +121,12 @@ func generateExcelWithNoEmbeds() {
         print("  - \(headers.count) columns optimized")
     } catch {
         print("[ERROR] Failed to save Excel file: \(error)")
-        exit(1)
+        throw error
     }
 }
 
-/// Demonstrates comprehensive XLKit API usage with all features
-func demonstrateComprehensiveAPI() {
+@MainActor
+func demonstrateComprehensiveAPI() throws {
     print("[INFO] Starting comprehensive XLKit API demonstration...")
     
     // MARK: - Workbook Creation
@@ -163,12 +163,12 @@ func demonstrateComprehensiveAPI() {
     let testImageData = createTestImageData()
     
     // Embed image using different methods
-    let success1 = XLKit.embedImage(
+    let success1 = try XLKit.embedImage(
         testImageData,
         at: "E1",
         in: sheet,
         format: .png,
-        displaySize: CGSize(width: 50, height: 50)
+        displaySize: CGSize(width: 100, height: 100)
     )
     
     if success1 {
@@ -256,7 +256,7 @@ func demonstrateComprehensiveAPI() {
         
     } catch {
         print("[ERROR] Failed to save comprehensive demo: \(error)")
-        exit(1)
+        throw error
     }
 }
 
@@ -305,21 +305,18 @@ private func calculateTextWidth(_ text: String) -> Double {
 func generateExcelWithEmbeds() {
     print("[INFO] Image embed functionality not yet implemented")
     print("[INFO] This will be implemented in a future version")
-    exit(0)
 }
 
 /// Tests CSV import functionality (future implementation)
 func csvImportTest() {
     print("[INFO] CSV import test functionality not yet implemented")
     print("[INFO] This will be implemented in a future version")
-    exit(0)
 }
 
 /// Tests cell formatting features (future implementation)
 func cellFormattingTest() {
     print("[INFO] Cell formatting test functionality not yet implemented")
     print("[INFO] This will be implemented in a future version")
-    exit(0)
 }
 
 func validateExcelFile(_ filePath: String) {

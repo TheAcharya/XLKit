@@ -5,15 +5,18 @@
 
 <p align="center"><a href="https://github.com/TheAcharya/XLKit/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit"><img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg?style=flat" alt="platform"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml"><img src="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml/badge.svg" alt="build"/></a></p>
 
-A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) files on macOS. XLKit provides a fluent, chainable API that makes Excel file generation effortless while supporting advanced features like image embedding, CSV/TSV import/export, cell formatting, and both synchronous and asynchronous operations. Built with Swift 6.0 and targeting macOS 12+, it offers type-safe operations and comprehensive error handling. 
+A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) files on macOS. XLKit provides a fluent, chainable API that makes Excel file generation effortless while supporting advanced features like image embedding, CSV/TSV import/export, cell formatting, and both synchronous and asynchronous operations. Built with Swift 6.0 and targeting macOS 12+, it offers type-safe operations, comprehensive error handling, and security features.
 
 Purpose-built for [MarkersExtractor](https://github.com/TheAcharya/MarkersExtractor) - a tool for extracting markers from Final Cut Pro FCPXML files and generating comprehensive Excel reports with embedded images, CSV/TSV manifests, and structured data exports. Perfect for professional video editing workflows requiring pixel-perfect image embedding with all video and cinema aspect ratios.
+
+Includes comprehensive security features for production use: rate limiting, security logging, file quarantine, input validation, and optional checksum verification to protect against vulnerabilities and supply chain attacks.
 
 This codebase is developed using AI agents.
 
 ## Table of Contents
 
 - [Features](#features)
+- [Security Features](#security-features)
 - [Performance Considerations](#performance-considerations)
 - [Requirements](#requirements)
 - [File Format](#file-format)
@@ -43,6 +46,69 @@ This codebase is developed using AI agents.
 - Excel Compliance: Full OpenXML compliance with CoreXLSX validation
 - No Dependencies: Pure Swift, macOS 12+, Swift 6.0+
 - Comprehensive Testing: 100% tested with automated validation
+- Security Features: Comprehensive security features for production use
+
+## Security Features
+
+XLKit includes comprehensive security features to protect against vulnerabilities, supply chain attacks, and malicious code injection:
+
+### SecurityManager
+
+Centralized security controls and monitoring with configurable features:
+
+```swift
+// Security features are automatically active
+// Checksum storage can be enabled if needed
+SecurityManager.enableChecksumStorage = true
+```
+
+### Rate Limiting
+
+Prevents abuse and resource exhaustion:
+- Default: 100 operations per minute
+- Configurable: Time window and operation limits
+- Automatic: Integrated into all file operations
+- Logging: Rate limit violations are logged
+
+### Security Logging
+
+Comprehensive audit trail of all security-relevant operations:
+- Console logging: Real-time security events
+- File logging: Persistent audit trail
+- Structured data: Timestamp, operation, details, user agent
+- Operations logged: File generation, checksums, quarantines, rate limits
+
+### File Quarantine
+
+Isolates suspicious files to prevent execution:
+- Pattern detection: Checks for malicious code patterns
+- Size validation: Prevents oversized files
+- Format validation: Validates image formats
+- Automatic isolation: Moves suspicious files to quarantine directory
+
+### File Checksums
+
+Cryptographic integrity verification (optional):
+- SHA-256 hashes: Secure file integrity verification
+- Configurable: Can be enabled/disabled via `enableChecksumStorage`
+- Tamper detection: Identifies unauthorized file modifications
+- Supply chain protection: Ensures file authenticity
+
+### Input Validation
+
+Comprehensive validation of all user inputs:
+- File paths: Validates and sanitizes file paths
+- Image data: Validates image formats and sizes
+- CSV data: Validates CSV structure and content
+- Coordinates: Validates Excel coordinate formats
+
+### Security Integration
+
+Security features are integrated throughout the codebase:
+- XLSXEngine: Rate limiting, logging, checksums for file generation
+- ImageUtils: Quarantine, validation for image processing
+- XLKit API: Input validation, security logging for all operations
+- Test Runner: Security validation for all test operations
 
 ## Performance Considerations
 
@@ -435,21 +501,41 @@ do {
 
 ## Testing & Validation
 
-XLKit includes comprehensive testing and validation capabilities:
+XLKit includes comprehensive testing and validation capabilities with integrated security features:
 
 ### XLKitTestRunner
 
 A modular command-line tool for generating Excel files for testing and demonstration:
 
 ```bash
-# Run default test (no-embeds)
-swift run XLKitTestRunner
-
 # Run specific test types
 swift run XLKitTestRunner no-embeds
 swift run XLKitTestRunner embed
+swift run XLKitTestRunner comprehensive
 swift run XLKitTestRunner help
 ```
+
+Available Test Types:
+- `no-embeds` / `no-images`: Generate Excel from CSV without images
+- `embed` / `with-embeds` / `with-images`: Generate Excel with embedded images from CSV data
+- `comprehensive` / `demo`: Comprehensive API demonstration with all features
+- `help` / `-h` / `--help`: Show available commands
+
+Test Features:
+- Security Integration: All tests include security logging and validation
+- CoreXLSX Validation: Generated files are validated for Excel compliance
+- Aspect Ratio Testing: Image embedding tests all 17 professional aspect ratios
+- Performance Testing: Large dataset handling and memory optimization
+- Error Handling: Comprehensive error testing and edge case coverage
+
+### Security Features in Tests
+
+All test operations include comprehensive security validation:
+- Rate Limiting: Prevents test abuse and resource exhaustion
+- Security Logging: All test operations are logged for audit trails
+- Input Validation: All test inputs are validated for security
+- File Quarantine: Suspicious test files are automatically quarantined
+- Checksum Verification: Optional file integrity verification (disabled by default)
 
 ### Automated Validation
 
@@ -460,6 +546,7 @@ Every generated Excel file is automatically validated using CoreXLSX to ensure:
 - Cell and row data accuracy
 - Professional-quality exports for all video and cinema formats
 - Zero tolerance for distortion or stretching in embedded images
+- Security compliance and audit trail integrity
 
 ### Test Coverage
 
@@ -469,6 +556,7 @@ Every generated Excel file is automatically validated using CoreXLSX to ensure:
 - CSV/TSV Tests: Import/export functionality with various data types
 - Performance Tests: Large dataset handling and memory management
 - Validation Tests: CoreXLSX compliance verification for all generated files
+- Security Tests: Rate limiting, input validation, file quarantine, and checksum verification
 
 ## Code Style & Formatting
 

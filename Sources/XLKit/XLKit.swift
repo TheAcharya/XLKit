@@ -15,6 +15,7 @@ import Foundation
 @preconcurrency import XLKitCore
 import XLKitImages // Add this import for ImageSizingUtils
 
+@MainActor
 public struct XLKit {
     
     // MARK: - Workbook Creation
@@ -116,8 +117,8 @@ public struct XLKit {
         in sheet: Sheet,
         format: ImageFormat,
         displaySize: CGSize? = nil
-    ) -> Bool {
-        return sheet.addImage(data, at: coordinate, format: format, displaySize: displaySize)
+    ) throws -> Bool {
+        return try sheet.addImage(data, at: coordinate, format: format, displaySize: displaySize)
     }
     
     /// Embeds an image from data into a sheet at the specified coordinate with automatic sizing and aspect ratio preservation
@@ -131,12 +132,12 @@ public struct XLKit {
         scale: CGFloat = 0.5, // Default 50% scaling for more compact images
         maxWidth: CGFloat = 600,
         maxHeight: CGFloat = 400
-    ) -> Bool {
+    ) throws -> Bool {
         // Calculate scaled max dimensions
         let scaledMaxWidth = maxWidth * scale
         let scaledMaxHeight = maxHeight * scale
         
-        return embedImageAutoSized(
+        return try embedImageAutoSized(
             data,
             at: coordinate,
             in: sheet,
@@ -182,10 +183,10 @@ public struct XLKit {
         maxCellWidth: CGFloat = 600,
         maxCellHeight: CGFloat = 400,
         scale: CGFloat = 0.5 // Default 50% scaling for more compact images
-    ) -> Bool {
+    ) throws -> Bool {
         let detectedFormat = format ?? ImageUtils.detectImageFormat(from: data)
         guard let imageFormat = detectedFormat else { return false }
-        guard let originalSize = ImageUtils.getImageSize(from: data, format: imageFormat) else { return false }
+        guard let originalSize = try ImageUtils.getImageSize(from: data, format: imageFormat) else { return false }
 
         // Use new utility for sizing
         let displaySize = ImageSizingUtils.calculateDisplaySize(
@@ -226,9 +227,9 @@ public struct XLKit {
     public static func createImage(
         from data: Data,
         displaySize: CGSize? = nil
-    ) -> ExcelImage? {
+    ) throws -> ExcelImage? {
         guard let format = ImageUtils.detectImageFormat(from: data) else { return nil }
-        return ImageUtils.createExcelImage(from: data, format: format, displaySize: displaySize)
+        return try ImageUtils.createExcelImage(from: data, format: format, displaySize: displaySize)
     }
     
     /// Creates an ExcelImage from a file URL with automatic format detection
@@ -261,9 +262,23 @@ public struct XLKit {
     }
 }
 
+@MainActor
 public extension Sheet {
-    /// Embeds an image at a coordinate, maintaining aspect ratio and auto-sizing the cell
-    /// - Parameter scale: Scaling factor for image size (default: 0.5 = 50% of max bounds for more compact images)
+    /// Adds an image from Data
+    @discardableResult
+    func addImage(_ data: Data, at coordinate: String, format: ImageFormat, displaySize: CGSize? = nil) throws -> Bool {
+        guard let image = try ImageUtils.createExcelImage(from: data, format: format, displaySize: displaySize) else { return false }
+        addImage(image, at: coordinate)
+        return true
+    }
+    /// Adds an image from file URL
+    @discardableResult
+    func addImage(from url: URL, at coordinate: String, displaySize: CGSize? = nil) throws -> Bool {
+        guard let image = try ImageUtils.createExcelImage(from: url, displaySize: displaySize) else { return false }
+        addImage(image, at: coordinate)
+        return true
+    }
+    /// Embeds an image from data with auto-sizing
     @discardableResult
     func embedImageAutoSized(
         _ data: Data,
@@ -272,9 +287,9 @@ public extension Sheet {
         format: ImageFormat? = nil,
         maxCellWidth: CGFloat = 600,
         maxCellHeight: CGFloat = 400,
-        scale: CGFloat = 0.5 // Default 50% scaling for more compact images
-    ) -> Bool {
-        XLKit.embedImageAutoSized(
+        scale: CGFloat = 0.5
+    ) throws -> Bool {
+        return try XLKit.embedImageAutoSized(
             data,
             at: coordinate,
             in: self,
@@ -285,19 +300,17 @@ public extension Sheet {
             scale: scale
         )
     }
-    
-    /// Embeds an image at a coordinate with automatic sizing and aspect ratio preservation (simplified API)
-    /// - Parameter scale: Scaling factor for image size (default: 0.5 = 50% of max bounds for more compact images)
+    /// Embeds an image from data with scaling
     @discardableResult
     func embedImage(
         _ data: Data,
         at coordinate: String,
         of workbook: Workbook,
-        scale: CGFloat = 0.5, // Default 50% scaling for more compact images
+        scale: CGFloat = 0.5,
         maxWidth: CGFloat = 600,
         maxHeight: CGFloat = 400
-    ) -> Bool {
-        XLKit.embedImage(
+    ) throws -> Bool {
+        return try XLKit.embedImage(
             data,
             at: coordinate,
             in: self,

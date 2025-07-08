@@ -7,53 +7,60 @@
 import Foundation
 
 // MARK: - Command Line Interface
-
 print("XLKit Test Runner")
 print("==================")
 
-// Get command line arguments
-let arguments = CommandLine.arguments
-let testType = arguments.count > 1 ? arguments[1] : "no-embeds"
+let args = CommandLine.arguments
 
+if args.count < 2 {
+    printHelp()
+    exit(0)
+}
+
+let testType = args[1].lowercased()
 print("Running test type: \(testType)")
 
-// MARK: - Test Runner
+print("[DEBUG] Starting execution...")
 
-switch testType {
-case "no-embeds", "no-images":
-    print("Executing: Generate Excel with No Image Embeds")
-    generateExcelWithNoEmbeds()
-    validateExcelFile("Test-Workflows/Embed-Test.xlsx")
-    
-case "with-embeds", "with-images", "embed":
-    print("Executing: Generate Excel with Image Embeds")
-    generateExcelWithImageEmbeds()
-    validateExcelFile("Test-Workflows/Embed-Test-Embed.xlsx")
-    
-case "csv-import":
-    print("Executing: CSV Import Test")
-    // csvImportTest() // Future implementation
-    
-case "formatting":
-    print("Executing: Cell Formatting Test")
-    // cellFormattingTest() // Future implementation
-    
-case "comprehensive", "demo":
-    print("Executing: Comprehensive API Demonstration")
-    demonstrateComprehensiveAPI()
-    validateExcelFile("Test-Workflows/Comprehensive-Demo.xlsx")
-    
-case "help", "-h", "--help":
-    printHelp()
-    
-default:
-    print("Unknown test type: \(testType)")
-    printHelp()
+do {
+    switch testType {
+    case "no-embeds", "no-images":
+        print("Executing: Generate Excel with No Image Embeds")
+        print("[DEBUG] About to call generateExcelWithNoEmbeds()")
+        try generateExcelWithNoEmbeds()
+        print("[DEBUG] generateExcelWithNoEmbeds() completed")
+        validateExcelFile("Test-Workflows/Embed-Test.xlsx")
+    case "with-embeds", "with-images", "embed":
+        print("Executing: Generate Excel with Image Embeds")
+        print("[DEBUG] About to call generateExcelWithImageEmbeds()")
+        try generateExcelWithImageEmbeds()
+        print("[DEBUG] generateExcelWithImageEmbeds() completed")
+        validateExcelFile("Test-Workflows/Embed-Test-Embed.xlsx")
+    case "comprehensive", "demo":
+        print("Executing: Comprehensive API Demonstration")
+        print("[DEBUG] About to call demonstrateComprehensiveAPI()")
+        try demonstrateComprehensiveAPI()
+        print("[DEBUG] demonstrateComprehensiveAPI() completed")
+        validateExcelFile("Test-Workflows/Comprehensive-Demo.xlsx")
+    case "csv-import":
+        print("[INFO] CSV import test not yet implemented")
+    case "formatting":
+        print("[INFO] Formatting test not yet implemented")
+    case "help", "-h", "--help":
+        printHelp()
+    default:
+        print("[ERROR] Unknown test type: \(testType)")
+        printHelp()
+    }
+    print("[DEBUG] Execution completed successfully")
+    exit(0)
+} catch {
+    print("[ERROR] Test failed: \(error)")
+    print("[DEBUG] Execution failed with error")
     exit(1)
 }
 
 // MARK: - Help Function
-
 func printHelp() {
     print("""
     
@@ -72,6 +79,7 @@ func printHelp() {
       swift run XLKitTestRunner with-images
       swift run XLKitTestRunner comprehensive
       swift run XLKitTestRunner help
+    
     
     """)
 } 
