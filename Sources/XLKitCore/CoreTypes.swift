@@ -837,7 +837,13 @@ public struct CoreUtils {
     ]
     
     /// Validates file path for security
+    @MainActor
     public static func validateFilePath(_ path: String) throws {
+        // Skip validation if file path restrictions are disabled
+        guard SecurityManager.enableFilePathRestrictions else {
+            return
+        }
+        
         // Prevent path traversal attacks
         guard !path.contains("..") else {
             throw XLKitError.securityError("Path traversal not allowed")

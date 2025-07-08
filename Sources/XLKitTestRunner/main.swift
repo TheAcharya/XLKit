@@ -46,6 +46,11 @@ do {
         print("[INFO] CSV import test not yet implemented")
     case "formatting":
         print("[INFO] Formatting test not yet implemented")
+    case "security-demo", "security":
+        print("Executing: File Path Security Restrictions Demo")
+        print("[DEBUG] About to call demonstrateFilePathRestrictions()")
+        demonstrateFilePathRestrictions()
+        print("[DEBUG] demonstrateFilePathRestrictions() completed")
     case "help", "-h", "--help":
         printHelp()
     default:
@@ -70,6 +75,7 @@ func printHelp() {
       no-embeds, no-images    - Generate Excel file from CSV without image embeds
       with-embeds, with-images, embed - Generate Excel file with image embeds
       comprehensive, demo     - Comprehensive API demonstration with all features
+      security-demo, security - Demonstrate file path security restrictions
       csv-import              - Test CSV import functionality (future)
       formatting              - Test cell formatting features (future)
       help, -h, --help        - Show this help message

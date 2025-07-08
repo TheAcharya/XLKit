@@ -260,6 +260,52 @@ func demonstrateComprehensiveAPI() throws {
     }
 }
 
+/// Demonstrates file path security restrictions
+@MainActor
+func demonstrateFilePathRestrictions() {
+    print("=== File Path Security Restrictions Demo ===")
+    
+    // Test 1: Default behavior (restrictions disabled)
+    print("\n1. Testing default behavior (restrictions disabled):")
+    SecurityManager.enableFilePathRestrictions = false
+    print("   enableFilePathRestrictions = false")
+    
+    do {
+        let testPath = "/Users/vr/Developer/XLKit/Test-Workflows/test-default.xlsx"
+        try CoreUtils.validateFilePath(testPath)
+        print("   ✓ File path validation passed: \(testPath)")
+    } catch {
+        print("   ✗ File path validation failed: \(error)")
+    }
+    
+    // Test 2: With restrictions enabled
+    print("\n2. Testing with restrictions enabled:")
+    SecurityManager.enableFilePathRestrictions = true
+    print("   enableFilePathRestrictions = true")
+    
+    do {
+        let testPath = "/Users/vr/Developer/XLKit/Test-Workflows/test-restricted.xlsx"
+        try CoreUtils.validateFilePath(testPath)
+        print("   ✓ File path validation passed: \(testPath)")
+    } catch {
+        print("   ✗ File path validation failed: \(error)")
+    }
+    
+    // Test 3: Path traversal attempt
+    print("\n3. Testing path traversal protection:")
+    do {
+        let maliciousPath = "/Users/vr/Developer/XLKit/Test-Workflows/../etc/passwd"
+        try CoreUtils.validateFilePath(maliciousPath)
+        print("   ✓ File path validation passed: \(maliciousPath)")
+    } catch {
+        print("   ✗ File path validation failed: \(error)")
+    }
+    
+    // Reset to default
+    SecurityManager.enableFilePathRestrictions = false
+    print("\n=== Demo completed ===")
+}
+
 /// Creates a simple test image data for demonstration
 private func createTestImageData() -> Data {
     // Create a minimal 1x1 pixel PNG image

@@ -42,16 +42,21 @@ public struct SecurityManager {
      - Supply chain protection for file authenticity
      - Configurable via enableChecksumStorage flag
      
+     File Path Restrictions:
+     - Directory-based file access restrictions (optional, disabled by default)
+     - Path traversal attack prevention
+     - Configurable via enableFilePathRestrictions flag
+     
      Input Validation:
      - Comprehensive validation of all user inputs
-     - File path sanitization and validation
+     - File path sanitization and validation (configurable, disabled by default)
      - Image format and size validation
      - CSV structure and content validation
      - Excel coordinate format validation
      
      Integration Points:
-     - XLSXEngine: Rate limiting, logging, checksums for file generation
-     - ImageUtils: Quarantine, validation for image processing
+     - XLSXEngine: Rate limiting, logging, checksums, path validation for file generation
+     - ImageUtils: Quarantine, validation, path validation for image processing
      - XLKit API: Input validation, security logging for all operations
      - Test Runner: Security validation for all test operations
      */
@@ -60,6 +65,11 @@ public struct SecurityManager {
     
     /// Flag to enable/disable checksum file creation
     public static var enableChecksumStorage = false
+    
+    /// Flag to enable/disable file path security restrictions
+    /// When disabled (default), files can be saved to any location
+    /// When enabled, files are restricted to temporary directory and home directory
+    public static var enableFilePathRestrictions = false
     
     // MARK: - Rate Limiting
     
