@@ -632,12 +632,12 @@ public struct XLSXEngine {
             let enumerator = FileManager.default.enumerator(at: parentDir, includingPropertiesForKeys: [.isDirectoryKey])
             
             // Normalize the source directory path to handle /private prefix
-            let normalizedSourcePath = (try? sourceDir.resolvingSymlinksInPath())?.path ?? sourceDir.path
+            let normalizedSourcePath = sourceDir.resolvingSymlinksInPath().path
             let prefix = normalizedSourcePath + "/"
             
             while let fileURL = enumerator?.nextObject() as? URL {
                 // Normalize the file path to handle /private prefix
-                let normalizedFilePath = (try? fileURL.resolvingSymlinksInPath())?.path ?? fileURL.path
+                let normalizedFilePath = fileURL.resolvingSymlinksInPath().path
                 
                 // Only add files inside sourceDir
                 guard normalizedFilePath.hasPrefix(prefix) else { continue }
