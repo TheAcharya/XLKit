@@ -1,5 +1,15 @@
 # Changelog
 
+### 1.0.2
+
+**🎉 Released:**
+- 9th July 2025
+
+**🔧 Improvements:**
+- Update Security defaults
+
+---
+
 ### 1.0.1
 
 **🎉 Released:**
