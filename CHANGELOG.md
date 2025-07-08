@@ -6,7 +6,7 @@
 - 9th July 2025
 
 **🔧 Improvements:**
-- Update Security defaults
+- Updated Security defaults
 
 ---
 
