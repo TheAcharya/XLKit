@@ -1,4 +1,5 @@
 <p align="center">
+  <a href="https://github.com/TheAcharya/XLKit"><img src="Assets/XLKit_Icon.png" height="200">
   <h1 align="center">XLKit</h1>
 </p>
 
