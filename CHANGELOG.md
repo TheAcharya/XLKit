@@ -2,7 +2,7 @@
 
 ### 1.0.3
 
-**Released:**
+**🎉 Released:**
 - 12th July 2025
 
 **🔧 Improvements:**
