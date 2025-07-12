@@ -25,7 +25,7 @@ on:
     - cron: '0 21 * * 5'     # Runs at 5 AM Singapore time (21:00 UTC) every Saturday
 
 env:
-  SCHEME: "XLKit"
+  SCHEME: "XLKit-CI"
 
 jobs:
   macOS:
@@ -40,6 +40,10 @@ jobs:
       run: xcodebuild build -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "generic/platform=macOS,name=Any Mac" | xcbeautify && exit ${PIPESTATUS[0]}
     - name: Unit Tests
       run: xcodebuild test -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "platform=macOS" | xcbeautify && exit ${PIPESTATUS[0]}
+    - name: Test Runner
+      run: swift run XLKitTestRunner help
+    - name: Test Image Embedding
+      run: swift run XLKitTestRunner embed
   
   macOS-swift6:
     name: macOS (Swift 6)
@@ -54,4 +58,8 @@ jobs:
     - name: Build
       run: xcodebuild build -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "generic/platform=macOS,name=Any Mac" | xcbeautify && exit ${PIPESTATUS[0]}
     - name: Unit Tests
-      run: xcodebuild test -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "platform=macOS" | xcbeautify && exit ${PIPESTATUS[0]} 
+      run: xcodebuild test -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "platform=macOS" | xcbeautify && exit ${PIPESTATUS[0]}
+    - name: Test Runner
+      run: swift run XLKitTestRunner help
+    - name: Test Image Embedding
+      run: swift run XLKitTestRunner embed 

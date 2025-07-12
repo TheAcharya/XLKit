@@ -687,6 +687,45 @@ Key Features:
 - Validates files using CoreXLSX
 - Supports all Excel data types and formatting
 
+### Image Embedding Scaling API
+
+XLKit provides automatic image scaling with perfect aspect ratio preservation. The `embedImageAutoSized` method handles all sizing automatically.
+
+#### Default Parameters
+```swift
+func embedImageAutoSized(
+    _ data: Data,
+    at coordinate: String,
+    of workbook: Workbook,
+    format: ImageFormat? = nil,
+    maxCellWidth: CGFloat = 600,    // Default maximum width
+    maxCellHeight: CGFloat = 400,   // Default maximum height
+    scale: CGFloat = 0.5            // Default 50% scaling
+) throws -> Bool
+```
+
+#### Scale Control
+The `scale` parameter controls image size relative to maximum bounds:
+- `scale: 0.3` - 30% (very small images)
+- `scale: 0.5` - 50% (default, compact)
+- `scale: 0.7` - 70% (medium size)
+- `scale: 0.8` - 80% (larger images)
+- `scale: 1.0` - 100% (full size, maximum bounds)
+
+#### Automatic Sizing Process
+1. XLKit calculates display size within specified bounds
+2. Maintains perfect aspect ratio with zero distortion
+3. Automatically sets column width using `pixels / 8.0` formula
+4. Automatically sets row height using `pixels / 1.33` formula
+5. Handles all Excel compliance and EMU calculations
+
+#### Integration Best Practices
+- Let XLKit handle all sizing automatically using defaults
+- Call `embedImageAutoSized` after column width adjustments
+- XLKit will override image column with perfect sizing
+- Use `scale` parameter to control image size when needed
+- Avoid manual column width calculations for image columns
+
 ### Image Embedding
 
 XLKit supports pixel-perfect image embedding with automatic sizing and perfect aspect ratio preservation.

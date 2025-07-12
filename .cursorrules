@@ -511,6 +511,14 @@ Security operations are logged with structured data:
 - Excel Compliance: All generated files pass CoreXLSX validation with perfect aspect ratio preservation
 - Simplified API: Easy-to-use methods with automatic sizing and aspect ratio preservation
 
+## Scaling API Investigation and Fixes (2025-07-12)
+- Identified and resolved scaling inconsistencies between XLKit test and MarkersExtractor integration
+- Fixed XLKit test to use default parameters instead of manual overrides
+- Established consistent API usage pattern: let XLKit handle sizing automatically
+- Documented scale parameter options and best practices for image embedding
+- Verified perfect aspect ratio preservation across all implementations
+- Confirmed Excel compliance and CoreXLSX validation for all generated files
+
 ## Image Embedding Implementation (2025-07-07) - PERFECT ASPECT RATIO PRESERVATION
 
 ### Overview
@@ -536,6 +544,28 @@ Supported Aspect Ratios (Tested & Validated):
 - 1.37:1 (IMAX Film 15/70mm)
 
 All aspect ratios are preserved with pixel-perfect accuracy using empirically derived Excel formulas. See Tests/README.md for details and validation results.
+
+### Scaling API (2025-07-12)
+XLKit provides automatic image scaling with configurable size control through the `embedImageAutoSized` method.
+
+#### Default Parameters
+- `maxCellWidth: 600` - Default maximum width in pixels
+- `maxCellHeight: 400` - Default maximum height in pixels
+- `scale: 0.5` - Default 50% scaling for compact images
+
+#### Scale Control Options
+- `scale: 0.3` - 30% (very small images)
+- `scale: 0.5` - 50% (default, compact)
+- `scale: 0.7` - 70% (medium size)
+- `scale: 0.8` - 80% (larger images)
+- `scale: 1.0` - 100% (full size, maximum bounds)
+
+#### Integration Best Practices
+- Let XLKit handle all sizing automatically using defaults
+- Call `embedImageAutoSized` after column width adjustments
+- XLKit will override image column with perfect sizing
+- Use `scale` parameter to control image size when needed
+- Avoid manual column width calculations for image columns
 
 ### Key Features
 

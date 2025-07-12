@@ -1,5 +1,19 @@
 # Changelog
 
+### 1.0.3
+
+**Released:**
+- 12th July 2025
+
+**Improvements:**
+- Identified and resolved scaling inconsistencies between XLKit test and MarkersExtractor integration
+- Fixed XLKit test to use default parameters instead of manual overrides for consistent behavior
+- Established consistent API usage pattern: let XLKit handle sizing automatically
+- Documented scale parameter options and best practices for image embeddings
+- Updated documentation (AGENT.MD and .cursorrules) with scaling API details and integration guidelines
+
+---
+
 ### 1.0.2
 
 **🎉 Released:**
