@@ -5,7 +5,7 @@
 **Released:**
 - 12th July 2025
 
-**Improvements:**
+**🔧 Improvements:**
 - Identified and resolved scaling inconsistencies between XLKit test and MarkersExtractor integration
 - Fixed XLKit test to use default parameters instead of manual overrides for consistent behavior
 - Established consistent API usage pattern: let XLKit handle sizing automatically
