@@ -1,0 +1,41 @@
+name: Create Excel Generic Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.0'
+
+      - name: Build XLKit package
+        run: swift build -Xswiftc -Xfrontend -Xswiftc -disable-round-trip-debug-types
+
+      - name: Run Comprehensive API Demo
+        run: |
+          swift run -Xswiftc -Xfrontend -Xswiftc -disable-round-trip-debug-types XLKitTestRunner comprehensive
+
+      - name: Run Security Demo
+        run: |
+          swift run -Xswiftc -Xfrontend -Xswiftc -disable-round-trip-debug-types XLKitTestRunner security-demo
+
+      - name: Zip Comprehensive Demo Excel file
+        run: |
+          if [ -f "Test-Workflows/Comprehensive-Demo.xlsx" ]; then
+            zip Comprehensive-Demo.zip "Test-Workflows/Comprehensive-Demo.xlsx"
+          else
+            echo "Comprehensive Demo Excel file not found!" && exit 1
+          fi
+
+      - name: Upload Excel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Comprehensive Demo Excel File
+          path: Comprehensive-Demo.zip 
