@@ -17,7 +17,7 @@ import CryptoKit
 /// Represents an Excel workbook containing multiple sheets
 public final class Workbook {
     private var sheets: [Sheet] = []
-    private let nextSheetId: Int
+    private var nextSheetId: Int
     private var images: [ExcelImage] = []
     
     public init() {
@@ -29,6 +29,7 @@ public final class Workbook {
     public func addSheet(name: String) -> Sheet {
         let sheet = Sheet(name: name, id: nextSheetId)
         sheets.append(sheet)
+        nextSheetId += 1
         return sheet
     }
     

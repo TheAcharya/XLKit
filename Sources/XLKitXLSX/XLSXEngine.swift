@@ -684,9 +684,22 @@ public struct XLSXEngine {
         let rootRels = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/><Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/><Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\"/></Relationships>"
         try rootRels.write(to: tempDir.appendingPathComponent("_rels/.rels"), atomically: true, encoding: .utf8)
         
-        // Workbook relationships
-        let workbookRels = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/><Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/><Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\" Target=\"sharedStrings.xml\"/><Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/></Relationships>"
-        try workbookRels.write(to: xlDir.appendingPathComponent("_rels/workbook.xml.rels"), atomically: true, encoding: .utf8)
+        // Generate workbook relationships dynamically
+        var workbookRelsContent = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
+        
+        // Add worksheet relationships
+        for sheet in workbook.getSheets() {
+            workbookRelsContent += "<Relationship Id=\"rId\(sheet.id)\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet\(sheet.id).xml\"/>"
+        }
+        
+        // Add other workbook relationships
+        let nextId = workbook.getSheets().count + 1
+        workbookRelsContent += "<Relationship Id=\"rId\(nextId)\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>"
+        workbookRelsContent += "<Relationship Id=\"rId\(nextId + 1)\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\" Target=\"sharedStrings.xml\"/>"
+        workbookRelsContent += "<Relationship Id=\"rId\(nextId + 2)\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/>"
+        workbookRelsContent += "</Relationships>"
+        
+        try workbookRelsContent.write(to: xlDir.appendingPathComponent("_rels/workbook.xml.rels"), atomically: true, encoding: .utf8)
         
         // Worksheet relationships - check if sheet has images
         for sheet in workbook.getSheets() {

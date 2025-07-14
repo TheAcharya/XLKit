@@ -46,7 +46,7 @@ This codebase is developed using AI agents.
 - Type-Safe: Strong enums and structs for all data types
 - Excel Compliance: Full OpenXML compliance with CoreXLSX validation
 - No Dependencies: Pure Swift, macOS 12+, Swift 6.0+
-- Comprehensive Testing: 100% tested with automated validation
+- Comprehensive Testing: 46 tests with 100% API coverage and automated validation
 - Security Features: Comprehensive security features for production use
 
 ## Security Features
@@ -383,6 +383,38 @@ try XLKit.embedImage(
 )
 ```
 
+### Image Scaling API
+
+XLKit provides automatic image scaling with perfect aspect ratio preservation. The `embedImageAutoSized` method handles all sizing automatically.
+
+#### Default Parameters
+```swift
+func embedImageAutoSized(
+    _ data: Data,
+    at coordinate: String,
+    of workbook: Workbook,
+    format: ImageFormat? = nil,
+    maxCellWidth: CGFloat = 600,    // Default maximum width
+    maxCellHeight: CGFloat = 400,   // Default maximum height
+    scale: CGFloat = 0.5            // Default 50% scaling
+) throws -> Bool
+```
+
+#### Scale Control
+The `scale` parameter controls image size relative to maximum bounds:
+- `scale: 0.3` - 30% (very small images)
+- `scale: 0.5` - 50% (default, compact)
+- `scale: 0.7` - 70% (medium size)
+- `scale: 0.8` - 80% (larger images)
+- `scale: 1.0` - 100% (full size, maximum bounds)
+
+#### Automatic Sizing Process
+1. XLKit calculates display size within specified bounds
+2. Maintains perfect aspect ratio with zero distortion
+3. Automatically sets column width using `pixels / 8.0` formula
+4. Automatically sets row height using `pixels / 1.33` formula
+5. Handles all Excel compliance and EMU calculations
+
 ### Automatic Cell Sizing
 
 The `embedImageAutoSized` method automatically:
@@ -447,35 +479,25 @@ sheet.mergeCells("A1:C1")
 sheet.mergeCells("A5:C5")
 ```
 
-### Date Handling
+### Cell Formatting
 
 ```swift
-let sheet = workbook.addSheet(name: "Dates")
+let sheet = workbook.addSheet(name: "Formatted")
 
-// Add dates
-let today = Date()
-sheet.setCell("A1", value: .date(today))
+// Use predefined formats
+sheet.setCell("A1", cell: Cell.string("Header", format: CellFormat.header()))
+sheet.setCell("B1", cell: Cell.number(1234.56, format: CellFormat.currency()))
+sheet.setCell("C1", cell: Cell.number(0.85, format: CellFormat.percentage()))
 
-// Convert between Excel dates and Swift dates
-let excelNumber = XLKitUtils.excelNumberFromDate(today)
-let convertedDate = XLKitUtils.dateFromExcelNumber(excelNumber)
-
-// Format dates for display
-let formattedDate = XLKitUtils.formatDate(today)
-```
-
-### Column/Row Utilities
-
-```swift
-// Convert column numbers to letters
-XLKitUtils.columnLetter(from: 1)  // "A"
-XLKitUtils.columnLetter(from: 26) // "Z"
-XLKitUtils.columnLetter(from: 27) // "AA"
-
-// Convert letters to numbers
-XLKitUtils.columnNumber(from: "A")  // 1
-XLKitUtils.columnNumber(from: "Z")  // 26
-XLKitUtils.columnNumber(from: "AA") // 27
+// Custom formatting
+let customFormat = CellFormat(
+    fontName: "Arial",
+    fontSize: 14.0,
+    fontWeight: .bold,
+    backgroundColor: "#E0E0E0",
+    horizontalAlignment: .center
+)
+sheet.setCell("D1", cell: Cell.string("Custom", format: customFormat))
 ```
 
 ## Error Handling
@@ -504,6 +526,19 @@ do {
 
 XLKit includes comprehensive testing and validation capabilities with integrated security features:
 
+### Unit Tests
+
+The library includes 46 comprehensive unit tests covering:
+- Core Workbook & Sheet Tests: Creation, management, and operations
+- Cell Operations & Data Types: All cell value types and operations
+- Coordinate & Range Tests: Excel coordinate parsing and range operations
+- Image & Aspect Ratio Tests: All 17 professional aspect ratios with perfect preservation
+- CSV/TSV Import/Export: Complete import/export functionality
+- Cell Formatting: Predefined and custom formatting options
+- Column & Row Sizing: Automatic sizing and manual adjustments
+- File Operations: Async and sync workbook saving
+- Error Handling: Comprehensive error testing and edge cases
+
 ### XLKitTestRunner
 
 A modular command-line tool for generating Excel files for testing and demonstration:
@@ -513,6 +548,7 @@ A modular command-line tool for generating Excel files for testing and demonstra
 swift run XLKitTestRunner no-embeds
 swift run XLKitTestRunner embed
 swift run XLKitTestRunner comprehensive
+swift run XLKitTestRunner security-demo
 swift run XLKitTestRunner help
 ```
 
@@ -520,6 +556,7 @@ Available Test Types:
 - `no-embeds` / `no-images`: Generate Excel from CSV without images
 - `embed` / `with-embeds` / `with-images`: Generate Excel with embedded images from CSV data
 - `comprehensive` / `demo`: Comprehensive API demonstration with all features
+- `security-demo` / `security`: Demonstrate file path security restrictions
 - `help` / `-h` / `--help`: Show available commands
 
 Test Features:
@@ -548,6 +585,17 @@ Every generated Excel file is automatically validated using CoreXLSX to ensure:
 - Professional-quality exports for all video and cinema formats
 - Zero tolerance for distortion or stretching in embedded images
 - Security compliance and audit trail integrity
+
+### Test Output Structure
+
+Generated test files are saved to:
+```
+Test-Workflows/
+├── Embed-Test.xlsx          # From no-embeds test
+├── Embed-Test-Embed.xlsx    # From embed test (with images)
+├── Comprehensive-Demo.xlsx  # From comprehensive test
+└── [Your-Test].xlsx         # From custom tests
+```
 
 ### Test Coverage
 
