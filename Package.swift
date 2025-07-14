@@ -67,7 +67,8 @@ let package = Package(
             dependencies: ["XLKit", "CoreXLSX"],
             exclude: ["README.md", "Templates"],
             swiftSettings: [
-                .unsafeFlags(["-Xfrontend", "-disable-round-trip-debug-types"])
+                .unsafeFlags(["-Xfrontend", "-disable-round-trip-debug-types"]),
+                .unsafeFlags(["-Xfrontend", "-disable-availability-checking"])
             ]
         )
     ]

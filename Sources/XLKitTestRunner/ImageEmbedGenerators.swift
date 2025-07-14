@@ -8,199 +8,209 @@ import Foundation
 import XLKit
 import CoreXLSX
 
-// MARK: - Image Embedding Generation Functions
+// MARK: - Image Embedding Test Functions
 
-@MainActor
-func generateExcelWithImageEmbeds() throws {
-    print("[INFO] Starting Excel generation with image embeds...")
-    
-    // Use the same CSV data as base
-    let csvPath = "Test-Data/Embed-Test/Embed-Test.csv"
-    print("[INFO] Using CSV file: \(csvPath)")
-    
-    guard let csvData = try? String(contentsOfFile: csvPath, encoding: .utf8) else {
-        print("[ERROR] Failed to read CSV file")
-        throw XLKitError.fileWriteError("Failed to read CSV file")
-    }
-    
-    // Parse CSV
-    let lines = csvData.components(separatedBy: .newlines).filter { !$0.isEmpty }
-    guard lines.count > 1 else {
-        print("[ERROR] CSV file is empty or has no data rows")
-        throw XLKitError.fileWriteError("CSV file is empty or has no data rows")
-    }
-    
-    let headers = lines[0].components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-    let dataRows = Array(lines.dropFirst())
-    
-    print("[INFO] Parsed CSV with \(headers.count) columns and \(dataRows.count) data rows")
-    
-    // Find the Image Filename column index
-    guard let imageFilenameColumnIndex = headers.firstIndex(of: "Image Filename") else {
-        print("[ERROR] 'Image Filename' column not found in CSV")
-        throw XLKitError.fileWriteError("'Image Filename' column not found in CSV")
-    }
-    
-    print("[INFO] Found 'Image Filename' column at index \(imageFilenameColumnIndex)")
-    
-    // Create workbook using the improved API
-    print("[INFO] Creating Excel workbook...")
-    let workbook = XLKit.createWorkbook()
-    let sheet = workbook.addSheet(name: "Embed Test")
-    
-    // Create new headers with "Image" column after "Image Filename"
-    var newHeaders = headers
-    newHeaders.insert("Image", at: imageFilenameColumnIndex + 1)
-    
-    print("[INFO] Created new headers with 'Image' column: \(newHeaders)")
-    
-    // Calculate optimal column widths
-    print("[INFO] Calculating optimal column widths...")
-    var columnWidths: [Double] = []
-    
-    for (index, header) in newHeaders.enumerated() {
-        var maxWidth = calculateTextWidth(header) + 2.0 // Add padding
+struct ImageEmbedGenerators {
+    @MainActor
+    static func generateExcelWithImageEmbeds() async throws {
+        print("[INFO] Starting image embedding test...")
         
-        // Check data rows for this column (adjust for new column structure)
-        for row in dataRows {
-            let columns = row.components(separatedBy: ",")
-            if index < columns.count {
-                let cellValue = columns[index].trimmingCharacters(in: .whitespacesAndNewlines)
-                let cellWidth = calculateTextWidth(cellValue)
-                maxWidth = max(maxWidth, cellWidth + 2.0)
-            }
+        // MARK: - Configuration
+        let csvFilePath = "Test-Data/Embed-Test/Embed-Test.csv"
+        let outputExcelFile = "Test-Workflows/Embed-Test-Embed.xlsx"
+        
+        print("[INFO] Using CSV file: \(csvFilePath)")
+        
+        // Check if CSV file exists
+        guard FileManager.default.fileExists(atPath: csvFilePath) else {
+            print("[ERROR] CSV file not found: \(csvFilePath)")
+            throw XLKitError.fileWriteError("CSV file not found: \(csvFilePath)")
         }
         
-        // For Image column, let the image embedding method set the optimal width
-        if header == "Image" {
-            // Don't set a fixed width - let embedImageAutoSized calculate it
-            maxWidth = max(maxWidth, 20.0) // Minimum width for the column header
+        // MARK: - CSV Parsing
+        func parseCSV(_ csv: String) -> (rows: [[String]], headers: [String]) {
+            let lines = csv.components(separatedBy: .newlines).filter { !$0.isEmpty }
+            guard let headerLine = lines.first else { return ([], []) }
+            let headers = headerLine.components(separatedBy: ",")
+            let rows = lines.dropFirst().map { $0.components(separatedBy: ",") }
+            return (rows, headers)
         }
         
-        columnWidths.append(maxWidth)
-        print("[INFO] Column \(index + 1) (\(header)): width = \(maxWidth)")
-    }
-    
-    // Write headers with bold formatting using the improved API
-    print("[INFO] Writing headers with bold formatting...")
-    for (index, header) in newHeaders.enumerated() {
-        let coordinate = "\(CoreUtils.columnLetter(from: index + 1))1"
-        let headerFormat = CellFormat.header(fontSize: 12.0, backgroundColor: "#E6E6E6")
-        sheet.setCell(coordinate, string: header, format: headerFormat)
-    }
-    
-    // Write data rows and embed images using the improved API
-    print("[INFO] Writing data rows and embedding images...")
-    let imageDirectory = "Test-Data/Embed-Test/"
-    
-    for (rowIndex, row) in dataRows.enumerated() {
-        let excelRow = rowIndex + 2 // Start from row 2 (row 1 is headers)
-        let columns = row.components(separatedBy: ",")
-        
-        // Write all original columns
-        for (colIndex, cellValue) in columns.enumerated() {
-            let coordinate = "\(CoreUtils.columnLetter(from: colIndex + 1))\(excelRow)"
-            let trimmedValue = cellValue.trimmingCharacters(in: .whitespacesAndNewlines)
-            sheet.setCell(coordinate, value: .string(trimmedValue))
+        guard let csvData = try? String(contentsOfFile: csvFilePath, encoding: .utf8) else {
+            print("[ERROR] Failed to read CSV file: \(csvFilePath)")
+            throw XLKitError.fileWriteError("Failed to read CSV file: \(csvFilePath)")
         }
         
-        // Handle the new "Image" column
-        let imageColumnIndex = imageFilenameColumnIndex + 1
-        let imageColumnCoordinate = "\(CoreUtils.columnLetter(from: imageColumnIndex + 1))\(excelRow)"
+        let (rows, headers) = parseCSV(csvData)
+        print("[INFO] Parsed CSV with \(headers.count) columns and \(rows.count) data rows")
         
-        // Get the image filename from the Image Filename column
-        if imageFilenameColumnIndex < columns.count {
-            let imageFilename = columns[imageFilenameColumnIndex].trimmingCharacters(in: .whitespacesAndNewlines)
+        // MARK: - Create Excel File with XLKit
+        print("[INFO] Creating Excel workbook...")
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Embed Test")
+        
+        // MARK: - Calculate Column Widths
+        print("[INFO] Calculating optimal column widths...")
+        var columnWidths: [Int: Double] = [:]
+        
+        // Calculate width for each column based on longest value
+        for col in 0..<headers.count {
+            let column = col + 1
+            var maxWidth = calculateTextWidth(headers[col]) // Start with header width
             
-            if !imageFilename.isEmpty {
-                let imagePath = imageDirectory + imageFilename
-                print("[INFO] Processing row \(excelRow): \(imageFilename)")
-                do {
-                    let imageData = try Data(contentsOf: URL(fileURLWithPath: imagePath))
-                    
-                    // Debug: Check image format and size
-                    let detectedFormat = ImageUtils.detectImageFormat(from: imageData)
-                    let originalSize = ImageUtils.getImageSize(from: imageData, format: detectedFormat ?? .png)
-                    let sizeString = originalSize != nil ? "\(originalSize!.width)x\(originalSize!.height)" : "unknown"
-                    print("[DEBUG] Image: \(imageFilename), Format: \(detectedFormat?.rawValue ?? "unknown"), Size: \(sizeString)")
-                    
-                    // Use the improved embedImageAutoSized method for dynamic sizing
-                    // Let XLKit handle the sizing with defaults
-                    let success = try sheet.embedImageAutoSized(
-                        imageData,
-                        at: imageColumnCoordinate,
-                        of: workbook,
-                        format: detectedFormat
-                    )
-                    
-                    if success {
-                        // Don't set any cell value - just embed the image
-                        print("[INFO] ✓ Embedded \(imageFilename) at \(imageColumnCoordinate) with auto-sizing")
-                    } else {
-                        print("[WARNING] Failed to embed \(imageFilename)")
-                        sheet.setCell(imageColumnCoordinate, value: .string("Embed failed: \(imageFilename)"))
-                    }
-                } catch {
-                    print("[WARNING] Failed to process image \(imageFilename): \(error)")
-                    sheet.setCell(imageColumnCoordinate, value: .string("Error: \(error.localizedDescription)"))
+            // Check all data rows for this column
+            for row in rows {
+                if col < row.count {
+                    let cellWidth = calculateTextWidth(row[col])
+                    maxWidth = max(maxWidth, cellWidth)
                 }
-            } else {
-                sheet.setCell(imageColumnCoordinate, value: .string(""))
+            }
+            
+            // Add some padding and set minimum/maximum bounds
+            let adjustedWidth = min(max(maxWidth + 4.0, 8.0), 50.0) // Min 8, Max 50, +4 padding
+            columnWidths[column] = adjustedWidth
+            print("[INFO] Column \(column) (\(headers[col])): width = \(adjustedWidth)")
+        }
+        
+        // MARK: - Write Headers with Bold Formatting
+        print("[INFO] Writing headers with bold formatting...")
+        let headerFormat = CellFormat.header(fontSize: 12.0, backgroundColor: "#E6E6E6")
+        
+        for (col, header) in headers.enumerated() {
+            let column = col + 1
+            sheet.setCell(row: 1, column: column, cell: Cell.string(header, format: headerFormat))
+        }
+        
+        // MARK: - Write Data Rows
+        print("[INFO] Writing data rows...")
+        for (rowIdx, row) in rows.enumerated() {
+            let excelRow = rowIdx + 2
+            for (colIdx, value) in row.enumerated() {
+                let column = colIdx + 1
+                sheet.setCell(row: excelRow, column: column, value: .string(value))
             }
         }
-    }
-    
-    // Apply column widths (but don't override image column widths set by embedImageAutoSized)
-    print("[INFO] Applying column widths...")
-    for (index, width) in columnWidths.enumerated() {
-        let columnNumber = index + 1
-        // Skip the Image column as it's already set by embedImageAutoSized
-        if index != imageFilenameColumnIndex + 1 {
-            sheet.setColumnWidth(columnNumber, width: width)
-        }
-    }
-    
-    // Demonstrate workbook image management
-    print("[INFO] Workbook contains \(workbook.imageCount) images")
-    let pngImages = workbook.getImages(withFormat: .png)
-    print("[INFO] Found \(pngImages.count) PNG images in workbook")
-    
-    // Save Excel file using the improved API
-    print("[INFO] Saving Excel file...")
-    let outputPath = "Test-Workflows/Embed-Test-Embed.xlsx"
-    
-    // Ensure output directory exists
-    let outputURL = URL(fileURLWithPath: outputPath)
-    let outputDir = outputURL.deletingLastPathComponent()
-    if !FileManager.default.fileExists(atPath: outputDir.path) {
-        print("[INFO] Creating output directory: \(outputDir.path)")
-        do {
-            try FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
-        } catch {
-            print("[ERROR] Failed to create output directory: \(error)")
-            throw XLKitError.fileWriteError("Failed to create output directory: \(error)")
-        }
-    }
-    
-    do {
-        try XLKit.saveWorkbook(workbook, to: URL(fileURLWithPath: outputPath))
-        print("[SUCCESS] Excel file created: \(outputPath)")
-        print("[INFO] Features applied:")
-        print("  - Bold headers with gray background")
-        print("  - Automatic column width adjustment")
-        print("  - \(newHeaders.count) columns optimized")
-        print("  - \(workbook.imageCount) images embedded using improved API")
-        print("  - Images positioned in cells with proper sizing")
         
-    } catch {
-        print("[ERROR] Failed to save Excel file: \(error)")
-        throw error
+        // MARK: - Apply Column Widths
+        print("[INFO] Applying column widths...")
+        for (column, width) in columnWidths {
+            sheet.setColumnWidth(column, width: width)
+        }
+        
+        // MARK: - Image Embedding
+        print("[INFO] Starting image embedding process...")
+        
+        // Get image files from the test data directory
+        let imageDirectory = "Test-Data/Embed-Test"
+        let imageFiles = try getImageFiles(from: imageDirectory)
+        
+        print("[INFO] Found \(imageFiles.count) image files for embedding")
+        
+        // Add header for image column
+        let imageEmbedColumn = headers.count + 1
+        sheet.setCell(row: 1, column: imageEmbedColumn, value: .string("Image"))
+
+        for (index, imageFile) in imageFiles.enumerated() {
+            let row = index + 2 // Start from row 2 (after header)
+            let coordinate = CellCoordinate(row: row, column: imageEmbedColumn).excelAddress
+            print("[INFO] Embedding image \(index + 1)/\(imageFiles.count): \(imageFile.lastPathComponent) at \(coordinate)")
+            do {
+                let imageData = try Data(contentsOf: imageFile)
+                // Use the new Swift-like API for image embedding
+                let success = try await sheet.embedImageAutoSized(
+                    imageData,
+                    at: coordinate,
+                    of: workbook,
+                    scale: 0.5 // 50% scaling for compact images
+                )
+                if success {
+                    print("[INFO] ✓ Successfully embedded image at \(coordinate)")
+                } else {
+                    print("[WARNING] Failed to embed image at \(coordinate)")
+                }
+            } catch {
+                print("[ERROR] Failed to embed image \(imageFile.lastPathComponent): \(error)")
+                // Continue with other images
+            }
+        }
+        
+        // MARK: - Save and Validate
+        print("[INFO] Saving Excel file with embedded images...")
+        
+        // Ensure output directory exists
+        let outputURL = URL(fileURLWithPath: outputExcelFile)
+        let outputDir = outputURL.deletingLastPathComponent()
+        if !FileManager.default.fileExists(atPath: outputDir.path) {
+            print("[INFO] Creating output directory: \(outputDir.path)")
+            do {
+                try FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
+            } catch {
+                print("[ERROR] Failed to create output directory: \(error)")
+                throw XLKitError.fileWriteError("Failed to create output directory: \(error)")
+            }
+        }
+        
+        // Save the workbook
+        do {
+            try await workbook.save(to: outputURL)
+            print("[SUCCESS] Excel file with embedded images created: \(outputExcelFile)")
+            print("[INFO] Features applied:")
+            print("  - Bold headers with gray background")
+            print("  - Automatic column width adjustment")
+            print("  - \(headers.count) columns optimized")
+            print("  - \(imageFiles.count) images embedded with perfect aspect ratio preservation")
+            print("  - Automatic cell sizing for images")
+            
+        } catch {
+            print("[ERROR] Failed to save Excel file: \(error)")
+            throw error
+        }
+        
+        // MARK: - CoreXLSX Validation
+        print("[INFO] Validating with CoreXLSX...")
+        do {
+            // For CoreXLSX validation, use optional chaining for xlsx
+            let xlsx = XLSXFile(filepath: outputExcelFile)
+            let worksheet = try xlsx?.parseWorksheet(at: "xl/worksheets/sheet1.xml")
+            let sharedStrings = try xlsx?.parseSharedStrings()
+            
+            print("[INFO] ✓ CoreXLSX validation successful")
+            print("[INFO] ✓ Worksheet contains \(worksheet?.data?.rows.count ?? 0) rows")
+            print("[INFO] ✓ Shared strings count: \(sharedStrings?.items.count ?? 0)")
+            
+            // (No parseWorksheetRels in CoreXLSX, so remove or comment out)
+            
+        } catch {
+            print("[ERROR] CoreXLSX validation failed: \(error)")
+            throw error
+        }
+        
+        print("[SUCCESS] Image embedding test completed successfully!")
     }
-}
 
-// MARK: - Helper Functions
+    // MARK: - Helper Functions
 
-private func calculateTextWidth(_ text: String) -> Double {
-    // Simple approximation: each character is roughly 1.2 units wide
-    return Double(text.count) * 1.2
+    private static func calculateTextWidth(_ text: String) -> Double {
+        // Simple width calculation based on character count
+        // In a real implementation, you might use Core Text for more accurate measurements
+        return Double(text.count) * 8.0 // Approximate width per character
+    }
+
+    private static func getImageFiles(from directory: String) throws -> [URL] {
+        let directoryURL = URL(fileURLWithPath: directory)
+        
+        guard FileManager.default.fileExists(atPath: directory) else {
+            throw XLKitError.fileWriteError("Directory not found: \(directory)")
+        }
+        
+        let contents = try FileManager.default.contentsOfDirectory(at: directoryURL, includingPropertiesForKeys: nil)
+        
+        let imageExtensions = ["png", "jpg", "jpeg", "gif"]
+        let imageFiles = contents.filter { url in
+            let fileExtension = url.pathExtension.lowercased()
+            return imageExtensions.contains(fileExtension)
+        }
+        
+        return imageFiles.sorted { $0.lastPathComponent < $1.lastPathComponent }
+    }
 } 

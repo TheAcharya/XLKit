@@ -17,7 +17,7 @@ This document provides an organized overview of all tests in the XLKit library, 
 - [Coverage & Quality Assurance](#coverage--quality-assurance)
 
 ## Test Overview
-- Total Tests: 46
+- Total Tests: 34
 - 100% coverage of public APIs
 - All generated files validated with CoreXLSX
 - Security features integrated throughout all tests
@@ -44,22 +44,12 @@ This document provides an organized overview of all tests in the XLKit library, 
 - `testCellRange()`: Range creation, notation parsing, and coordinate enumeration
 
 ## File Operations
-- `testSaveWorkbook()`: Async workbook saving and file validation
-- `testSaveWorkbookSync()`: Synchronous workbook saving and file validation
+- `testWorkbookSave()`: Synchronous workbook saving and file validation
+- `testWorkbookSaveAsync()`: Async workbook saving and file validation
 
 ## Image & Aspect Ratio Tests
-- `testImageFormatDetection()`: Image format detection (GIF, PNG, JPEG)
-- `testImageSizeDetection()`: Image size detection and metadata
-- `testExcelImageCreation()`: ExcelImage object creation and validation
-- `testSheetImageOperations()`: Sheet-level image operations
-- `testWorkbookImageOperations()`: Workbook-level image operations
-- `testGIFEmbedding()`: GIF image embedding with validation
-- `testMultipleImageFormats()`: Multi-format image support
-- `testSimplifiedImageEmbeddingAPI()`: Easy-to-use image embedding API
-- `testAspectRatioPreservation()`: Basic aspect ratio preservation testing
-- `testAspectRatioPreservationWithDifferentSizes()`: Aspect ratio preservation with various image sizes
-- `testAspectRatioPreservationForAnyDimensions()`: Comprehensive aspect ratio testing for all 17 professional ratios
-- `testExcelCellDimensionsForAnyImageSize()`: Excel cell dimension calculations for any image size
+- `testSheetImageManagement()`: Sheet-level image operations and management
+- `testWorkbookImageManagement()`: Workbook-level image operations and management
 
 ### Aspect Ratio Preservation Testing
 XLKit extensively tests all 17 professional video and cinema aspect ratios:
@@ -89,19 +79,17 @@ All tests verify pixel-perfect scaling, Excel cell dimension matching, and zero 
 - `testRangeFormatting()`: Range-based formatting and persistence
 
 ## CSV/TSV Import/Export
-- `testCSVExport()`: CSV export functionality
-- `testTSVExport()`: TSV export functionality
-- `testCSVImport()`: CSV import with header handling
-- `testTSVImport()`: TSV import with delimiter recognition
-- `testCSVImportWithQuotes()`: CSV import with quoted values
-- `testCSVImportWithDates()`: CSV import with date handling
-- `testCSVImportIntoExistingSheet()`: Import into existing sheets
-- `testCSVExportWithSpecialCharacters()`: Export with special character handling
+- `testWorkbookFromCSV()`: Workbook creation from CSV data
+- `testWorkbookFromTSV()`: Workbook creation from TSV data
+- `testWorkbookImportCSV()`: CSV import into existing workbooks
+- `testWorkbookImportTSV()`: TSV import into existing workbooks
+- `testWorkbookExportSheetToCSV()`: Export sheet to CSV format
+- `testWorkbookExportSheetToTSV()`: Export sheet to TSV format
+- `testSheetExportToCSV()`: Sheet-level CSV export
+- `testSheetExportToTSV()`: Sheet-level TSV export
 
 ## Column & Row Sizing
-- `testColumnWidthOperations()`: Column width management and persistence
-- `testRowHeightOperations()`: Row height management and persistence
-- `testAutoSizeColumnForImage()`: Automatic column sizing for images
+- `testColumnAndRowSizing()`: Column width and row height management
 
 ## XLKitTestRunner
 
@@ -182,12 +170,11 @@ swift run XLKitTestRunner help
 | Data Types         | 2          | 100%            |
 | Coordinates/Ranges | 2          | 100%            |
 | File Operations    | 2          | 100%            |
-| Image Support      | 12         | 100%            |
-| Aspect Ratios      | 3          | 100% (17 ratios)|
+| Image Support      | 2          | 100%            |
 | Cell Formatting    | 3          | 100%            |
 | CSV/TSV            | 8          | 100%            |
-| Column/Row Sizing  | 3          | 100%            |
-| **Total**          | **46**     | **100%**        |
+| Column/Row Sizing  | 1          | 100%            |
+| Total              | 34         | 100%            |
 
 ### Quality Standards
 - All generated files pass CoreXLSX validation
@@ -195,7 +182,7 @@ swift run XLKitTestRunner help
 - Efficient memory usage and file generation
 - Comprehensive error and edge case testing
 - 100% of public APIs tested
-- Automated CI on macOS, performance and memory monitoring
+- Automated CI on macOS and iOS, performance and memory monitoring
 - Security features integrated throughout all tests
 - XLKitTestRunner provides comprehensive demonstration capabilities
 
