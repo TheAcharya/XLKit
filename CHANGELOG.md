@@ -1,5 +1,23 @@
 # Changelog
 
+### 1.0.4
+
+**🎉 Released:**
+- 14th July 2025
+
+**🔧 Improvements:**
+- Added iOS platform support with iOS 15+ targeting and cross-platform compatibility
+- Fixed iOS build error: `'homeDirectoryForCurrentUser' is unavailable in iOS`
+- Implemented platform-specific conditionals for file system operations using `#if os(macOS)`
+- Updated `allowedDirectories` in CoreTypes.swift to use platform-specific home directory access
+- Added iOS job to GitHub Actions workflow for continuous testing on iOS simulators
+- Added CodeQL security scanning workflow with Swift 6.0 support
+- Fixed comprehensive demo test with duplicate relationship IDs causing Excel file corruption
+- Implemented dynamic relationship ID generation to prevent conflicts in workbook.xml.rels and drawing1.xml.rels
+- Ensured all generated Excel files pass CoreXLSX validation and open without errors
+
+---
+
 ### 1.0.3
 
 **🎉 Released:**
