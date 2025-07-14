@@ -832,10 +832,15 @@ public struct CoreUtils {
     public static let maxExcelFileSize = 100 * 1024 * 1024
     
     /// Allowed directories for file operations
-    public static let allowedDirectories = [
-        FileManager.default.temporaryDirectory,
-        FileManager.default.homeDirectoryForCurrentUser
-    ]
+    public static let allowedDirectories: [URL] = {
+        var directories = [FileManager.default.temporaryDirectory]
+        
+        #if os(macOS)
+        directories.append(FileManager.default.homeDirectoryForCurrentUser)
+        #endif
+        
+        return directories
+    }()
     
     /// Validates file path for security
     @MainActor

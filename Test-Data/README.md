@@ -41,4 +41,4 @@ All images are in PNG format with 1920x1080 resolution for testing aspect ratio 
 
 ## Data Source
 
-The sample data was generated using [MarkerData](https://github.com/TheAcharya/MarkerData), which allows users to extract, convert & create databases from Final Cut Pro's Marker metadata effortlessly. MarkerData provides batch extraction and rendering of stills based on each Marker's timecode, making it perfect for creating test datasets for Excel generation tools like XLKit. 
+The sample data was generated using [Marker Data](https://github.com/TheAcharya/MarkerData), which allows users to extract, convert & create databases from Final Cut Pro's Marker metadata effortlessly. MarkerData provides batch extraction and rendering of stills based on each Marker's timecode, making it perfect for creating test datasets for Excel generation tools like XLKit. 
