@@ -18,6 +18,10 @@
   - [Workbook Operations](#workbook-operations)
   - [CSV/TSV Operations](#csvtsv-operations)
   - [Image Operations](#image-operations)
+- [Recent Improvements](#recent-improvements)
+  - [iOS Compatibility Fix](#ios-compatibility-fix-2025-07-14)
+  - [Perfect Aspect Ratio Preservation](#perfect-aspect-ratio-preservation-2025-07-07)
+  - [Scaling API Investigation and Fixes](#scaling-api-investigation-and-fixes-2025-07-12)
 - [Implementation Details](#implementation-details)
   - [XLSX Generation](#xlsx-generation)
   - [Image Embedding](#image-embedding)
@@ -29,7 +33,7 @@
 
 ## Project Overview
 
-XLKit is a modern Swift library for creating and manipulating Excel (.xlsx) files on macOS and iOS. Built with Swift 6.0, targeting macOS 12+ and iOS 15+, using modular Swift Package Manager architecture. Note: iOS support is available but not tested.
+XLKit is a modern Swift library for creating and manipulating Excel (.xlsx) files on macOS and iOS. Built with Swift 6.0, targeting macOS 12+ and iOS 15+, using modular Swift Package Manager architecture. iOS support is available and tested in CI/CD, with platform-specific code handling for iOS compatibility.
 
 ## Architecture
 
@@ -131,6 +135,12 @@ Swift 6.0 Compliance:
 - Note: Workbook and Sheet classes are not Sendable due to mutable state requirements
 - Use modern Swift idioms and features
 - Avoid force-unwraps and force-casts in public APIs
+
+Cross-Platform Compatibility:
+- Use platform-specific conditionals (`#if os(macOS)`, `#if os(iOS)`) for platform-specific APIs
+- Avoid iOS-unavailable APIs like `FileManager.default.homeDirectoryForCurrentUser`
+- Test builds on both macOS and iOS platforms
+- Ensure all file operations work on both platforms
 
 Code Style:
 - Use 4-space indentation (no tabs)
@@ -664,6 +674,33 @@ let excelImage = XLKit.createExcelImage(
 // Create ExcelImage from URL
 let excelImage = try XLKit.createExcelImage(from: imageURL)
 ```
+
+## Recent Improvements
+
+### iOS Compatibility Fix (2025-07-14)
+- Fixed iOS build error: `'homeDirectoryForCurrentUser' is unavailable in iOS`
+- Implemented platform-specific conditionals for file system operations
+- Updated `allowedDirectories` in CoreTypes.swift to use `#if os(macOS)` for home directory access
+- Maintained security features while ensuring cross-platform compatibility
+- Verified successful builds on both macOS and iOS platforms
+- Added iOS job to GitHub Actions workflow for continuous testing
+
+### Perfect Aspect Ratio Preservation (2025-07-07)
+- Implemented pixel-perfect image embedding with zero distortion
+- Empirically derived formulas: Column width `pixels / 8.0`, Row height `pixels / 1.33`
+- ImageSizingUtils: Centralized sizing logic with consistent formulas
+- EMU Coordinate System: Correct Excel internal format (1 pixel = 9525 EMUs)
+- Comprehensive testing of all 17 professional video and cinema aspect ratios
+- Excel compliance with CoreXLSX validation for all generated files
+- Simplified API with automatic sizing and aspect ratio preservation
+
+### Scaling API Investigation and Fixes (2025-07-12)
+- Identified and resolved scaling inconsistencies between XLKit test and MarkersExtractor integration
+- Fixed XLKit test to use default parameters instead of manual overrides
+- Established consistent API usage pattern: let XLKit handle sizing automatically
+- Documented scale parameter options and best practices for image embedding
+- Verified perfect aspect ratio preservation across all implementations
+- Confirmed Excel compliance and CoreXLSX validation for all generated files
 
 ## Implementation Details
 

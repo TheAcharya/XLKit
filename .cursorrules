@@ -1,7 +1,7 @@
 # XLKit - Cursor Rules for AI Agents
 
 ## Project Overview
-XLKit is a modern Swift library for creating and manipulating Excel (.xlsx) files on macOS and iOS. Built with Swift 6.0, targeting macOS 12+ and iOS 15+, using modular SPM architecture. Note: iOS support is available but not tested.
+XLKit is a modern Swift library for creating and manipulating Excel (.xlsx) files on macOS and iOS. Built with Swift 6.0, targeting macOS 12+ and iOS 15+, using modular SPM architecture. iOS support is available and tested in CI/CD, with platform-specific code handling for iOS compatibility.
 
 ## Architecture & Module Structure
 
@@ -178,6 +178,13 @@ require_csv_api = "XLKit static methods only"
 - Note: Workbook and Sheet classes are not Sendable due to mutable state requirements
 - Use modern Swift idioms and features
 - Avoid force-unwraps and force-casts in public APIs
+
+### Cross-Platform Compatibility
+- Use platform-specific conditionals (`#if os(macOS)`, `#if os(iOS)`) for platform-specific APIs
+- Avoid iOS-unavailable APIs like `FileManager.default.homeDirectoryForCurrentUser`
+- Test builds on both macOS and iOS platforms
+- Ensure all file operations work on both platforms
+- Use `FileManager.default.temporaryDirectory` for cross-platform file operations
 
 ### Code Style & Formatting
 - Use 4-space indentation (no tabs)
@@ -510,6 +517,14 @@ Security operations are logged with structured data:
 - Comprehensive Testing: All 17 professional video and cinema aspect ratios (16:9, 1:1, 9:16, 21:9, 3:4, 2.39:1, 1.85:1, 4:3, 18:9, 1.19:1, 1.5:1, 1.48:1, 1.25:1, 1.9:1, 1.32:1, 2.37:1, 1.37:1) tested and validated, including cinema and mobile formats
 - Excel Compliance: All generated files pass CoreXLSX validation with perfect aspect ratio preservation
 - Simplified API: Easy-to-use methods with automatic sizing and aspect ratio preservation
+
+## iOS Compatibility Fix (2025-07-14)
+- Fixed iOS build error: `'homeDirectoryForCurrentUser' is unavailable in iOS`
+- Implemented platform-specific conditionals for file system operations
+- Updated `allowedDirectories` in CoreTypes.swift to use `#if os(macOS)` for home directory access
+- Maintained security features while ensuring cross-platform compatibility
+- Verified successful builds on both macOS and iOS platforms
+- Added iOS job to GitHub Actions workflow for continuous testing
 
 ## Scaling API Investigation and Fixes (2025-07-12)
 - Identified and resolved scaling inconsistencies between XLKit test and MarkersExtractor integration
