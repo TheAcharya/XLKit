@@ -228,7 +228,7 @@ struct ExcelGenerators {
         // MARK: - Fluent API
         print("[INFO] Demonstrating fluent API...")
         
-        let fluentSheet = workbook.addSheet(name: "Fluent Demo")
+        _ = workbook.addSheet(name: "Fluent Demo")
             .setRow(1, strings: ["Header1", "Header2", "Header3"])
             .setRow(2, numbers: [1.5, 2.5, 3.5])
             .setRow(3, integers: [10, 20, 30])

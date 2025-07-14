@@ -87,10 +87,10 @@ public extension Sheet {
         maxCellHeight: CGFloat = 400,
         scale: CGFloat = 0.5
     ) async throws -> Bool {
-        let detected = await ImageUtils.detectImageFormat(from: data)
+        let detected = ImageUtils.detectImageFormat(from: data)
         let detectedFormat = format ?? detected
         guard let imageFormat = detectedFormat else { return false }
-        guard let originalSize = await ImageUtils.getImageSize(from: data, format: imageFormat) else { return false }
+        guard let originalSize = ImageUtils.getImageSize(from: data, format: imageFormat) else { return false }
 
         // Use new utility for sizing
         let displaySize = ImageSizingUtils.calculateDisplaySize(
@@ -155,7 +155,7 @@ public extension Sheet {
     @MainActor
     @discardableResult
     func embedImage(from url: URL, at coordinate: String, displaySize: CGSize? = nil) async throws -> Bool {
-        guard let image = try await ImageUtils.createExcelImage(from: url, displaySize: displaySize) else { return false }
+        guard let image = try ImageUtils.createExcelImage(from: url, displaySize: displaySize) else { return false }
         addImage(image, at: coordinate)
         return true
     }

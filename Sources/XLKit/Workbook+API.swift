@@ -31,7 +31,7 @@ public extension Workbook {
     /// Saves the workbook to a file asynchronously
     @MainActor
     func save(to url: URL) async throws {
-        try await XLSXEngine.generateXLSX(workbook: self, to: url)
+        try XLSXEngine.generateXLSX(workbook: self, to: url)
     }
     // MARK: - CSV/TSV Operations
     /// Imports CSV data into a sheet
