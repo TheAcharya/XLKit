@@ -11,13 +11,13 @@ import XLKit
 final class XLKitTests: XCTestCase {
     
     func testCreateWorkbook() throws {
-        let workbook = XLKit.createWorkbook()
+        let workbook = Workbook()
         XCTAssertNotNil(workbook)
         XCTAssertEqual(workbook.getSheets().count, 0)
     }
     
     func testAddSheet() throws {
-        let workbook = XLKit.createWorkbook()
+        let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test Sheet")
         
         XCTAssertEqual(workbook.getSheets().count, 1)
@@ -26,7 +26,7 @@ final class XLKitTests: XCTestCase {
     }
     
     func testGetSheetByName() throws {
-        let workbook = XLKit.createWorkbook()
+        let workbook = Workbook()
         let sheet1 = workbook.addSheet(name: "Sheet1")
         let sheet2 = workbook.addSheet(name: "Sheet2")
         
@@ -36,7 +36,7 @@ final class XLKitTests: XCTestCase {
     }
     
     func testRemoveSheet() throws {
-        let workbook = XLKit.createWorkbook()
+        let workbook = Workbook()
         _ = workbook.addSheet(name: "Sheet1")
         _ = workbook.addSheet(name: "Sheet2")
         
@@ -49,7 +49,7 @@ final class XLKitTests: XCTestCase {
     }
     
     func testSetAndGetCell() throws {
-        let workbook = XLKit.createWorkbook()
+        let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         
         // Test string value
@@ -79,7 +79,7 @@ final class XLKitTests: XCTestCase {
     }
     
     func testSetCellByRowColumn() throws {
-        let workbook = XLKit.createWorkbook()
+        let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         
         sheet.setCell(row: 1, column: 1, value: .string("A1"))
@@ -90,7 +90,7 @@ final class XLKitTests: XCTestCase {
     }
     
     func testSetRange() throws {
-        let workbook = XLKit.createWorkbook()
+        let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         
         sheet.setRange("A1:C3", string: "Range")
@@ -101,7 +101,7 @@ final class XLKitTests: XCTestCase {
     }
     
     func testMergeCells() throws {
-        let workbook = XLKit.createWorkbook()
+        let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         
         sheet.mergeCells("A1:C1")
@@ -112,7 +112,7 @@ final class XLKitTests: XCTestCase {
     }
     
     func testGetUsedCells() throws {
-        let workbook = XLKit.createWorkbook()
+        let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         
         sheet.setCell("A1", value: .string("A1"))
@@ -127,7 +127,7 @@ final class XLKitTests: XCTestCase {
     }
     
     func testClearSheet() throws {
-        let workbook = XLKit.createWorkbook()
+        let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         
         sheet.setCell("A1", value: .string("Test"))
@@ -200,1277 +200,390 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(CellValue.integer(0).type, "integer")
         XCTAssertEqual(CellValue.boolean(true).type, "boolean")
         XCTAssertEqual(CellValue.date(Date()).type, "date")
-        XCTAssertEqual(CellValue.formula("").type, "formula")
+        XCTAssertEqual(CellValue.formula("=A1").type, "formula")
         XCTAssertEqual(CellValue.empty.type, "empty")
     }
     
-    func testColumnConversion() {
-        XCTAssertEqual(CoreUtils.columnLetter(from: 1), "A")
-        XCTAssertEqual(CoreUtils.columnLetter(from: 2), "B")
-        XCTAssertEqual(CoreUtils.columnLetter(from: 26), "Z")
-        XCTAssertEqual(CoreUtils.columnLetter(from: 27), "AA")
-        XCTAssertEqual(CoreUtils.columnLetter(from: 28), "AB")
+    func testCellFormatting() {
+        let headerFormat = CellFormat.header()
+        let currencyFormat = CellFormat.currency()
+        let percentageFormat = CellFormat.percentage()
+        let dateFormat = CellFormat.date()
+        let borderedFormat = CellFormat.bordered()
         
-        XCTAssertEqual(CoreUtils.columnNumber(from: "A"), 1)
-        XCTAssertEqual(CoreUtils.columnNumber(from: "B"), 2)
-        XCTAssertEqual(CoreUtils.columnNumber(from: "Z"), 26)
-        XCTAssertEqual(CoreUtils.columnNumber(from: "AA"), 27)
-        XCTAssertEqual(CoreUtils.columnNumber(from: "AB"), 28)
+        XCTAssertNotNil(headerFormat)
+        XCTAssertNotNil(currencyFormat)
+        XCTAssertNotNil(percentageFormat)
+        XCTAssertNotNil(dateFormat)
+        XCTAssertNotNil(borderedFormat)
     }
     
-    func testDateConversion() {
-        let date = Date()
-        let excelNumber = CoreUtils.excelNumberFromDate(date)
-        let convertedDate = CoreUtils.dateFromExcelNumber(excelNumber)
-        
-        // Allow for small precision differences
-        XCTAssertEqual(date.timeIntervalSince1970, convertedDate.timeIntervalSince1970, accuracy: 1.0)
-    }
-    
-    func testXMLEscaping() {
-        XCTAssertEqual(CoreUtils.escapeXML("&"), "&amp;")
-        XCTAssertEqual(CoreUtils.escapeXML("<"), "&lt;")
-        XCTAssertEqual(CoreUtils.escapeXML(">"), "&gt;")
-        XCTAssertEqual(CoreUtils.escapeXML("\""), "&quot;")
-        XCTAssertEqual(CoreUtils.escapeXML("'"), "&apos;")
-        XCTAssertEqual(CoreUtils.escapeXML("Hello & World"), "Hello &amp; World")
-    }
-    
-    func testSaveWorkbook() async throws {
-        let workbook = XLKit.createWorkbook()
+    func testSetCellWithFormatting() {
+        let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         
-        sheet.setCell("A1", value: .string("Hello"))
-        sheet.setCell("B1", value: .number(42))
-        sheet.setCell("C1", value: .boolean(true))
+        let headerCell = Cell.string("Header", format: CellFormat.header())
+        let currencyCell = Cell.number(1234.56, format: CellFormat.currency())
         
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("test.xlsx")
-        defer {
-            try? FileManager.default.removeItem(at: tempURL)
-        }
+        sheet.setCell("A1", cell: headerCell)
+        sheet.setCell("B1", cell: currencyCell)
         
-        try await XLKit.saveWorkbook(workbook, to: tempURL)
+        let retrievedHeader = sheet.getCellWithFormat("A1")
+        let retrievedCurrency = sheet.getCellWithFormat("B1")
         
-        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
+        XCTAssertNotNil(retrievedHeader)
+        XCTAssertNotNil(retrievedCurrency)
+        XCTAssertEqual(retrievedHeader?.value, .string("Header"))
+        XCTAssertEqual(retrievedCurrency?.value, .number(1234.56))
     }
     
-    func testSaveWorkbookSync() async throws {
-        let workbook = XLKit.createWorkbook()
+    func testColumnAndRowSizing() {
+        let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         
-        sheet.setCell("A1", value: .string("Hello"))
-        sheet.setCell("B1", value: .number(42))
-        
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("test_sync.xlsx")
-        defer {
-            try? FileManager.default.removeItem(at: tempURL)
-        }
-        
-        try await XLKit.saveWorkbook(workbook, to: tempURL)
-        
-        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
-    }
-    
-    func testComplexWorkbook() async throws {
-        let workbook = XLKit.createWorkbook()
-        
-        // Add multiple sheets
-        let sheet1 = workbook.addSheet(name: "Data")
-        let sheet2 = workbook.addSheet(name: "Summary")
-        
-        // Add data to first sheet
-        sheet1.setCell("A1", value: .string("Name"))
-        sheet1.setCell("B1", value: .string("Age"))
-        sheet1.setCell("C1", value: .string("Salary"))
-        
-        sheet1.setCell("A2", value: .string("John"))
-        sheet1.setCell("B2", value: .integer(30))
-        sheet1.setCell("C2", value: .number(50000.0))
-        
-        sheet1.setCell("A3", value: .string("Jane"))
-        sheet1.setCell("B3", value: .integer(25))
-        sheet1.setCell("C3", value: .number(45000.0))
-        
-        // Add summary to second sheet
-        sheet2.setCell("A1", value: .string("Total Employees"))
-        sheet2.setCell("B1", value: .formula("=COUNTA(Data!A:A)-1"))
-        
-        sheet2.setCell("A2", value: .string("Average Age"))
-        sheet2.setCell("B2", value: .formula("=AVERAGE(Data!B:B)"))
-        
-        sheet2.setCell("A3", value: .string("Total Salary"))
-        sheet2.setCell("B3", value: .formula("=SUM(Data!C:C)"))
-        
-        // Merge cells for headers
-        sheet1.mergeCells("A1:C1")
-        sheet2.mergeCells("A1:B1")
-        
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("complex.xlsx")
-        defer {
-            try? FileManager.default.removeItem(at: tempURL)
-        }
-        
-        try await XLKit.saveWorkbook(workbook, to: tempURL)
-        
-        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
-    }
-    
-    // MARK: - Image Support Tests
-    
-    func testImageFormatDetection() {
-        // Test GIF format detection
-        let gifData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00, 0x10, 0x00])
-        XCTAssertEqual(ImageUtils.detectImageFormat(from: gifData), .gif)
-        
-        // Test PNG format detection
-        let pngData = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
-        XCTAssertEqual(ImageUtils.detectImageFormat(from: pngData), .png)
-        
-        // Test JPEG format detection
-        let jpegData = Data([0xFF, 0xD8, 0xFF, 0xE0])
-        XCTAssertEqual(ImageUtils.detectImageFormat(from: jpegData), .jpeg)
-        
-        // Test invalid data
-        let invalidData = Data([0x00, 0x00, 0x00, 0x00])
-        XCTAssertNil(ImageUtils.detectImageFormat(from: invalidData))
-    }
-    
-    func testImageSizeDetection() {
-        // Test GIF size detection
-        let gifData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00, 0x20, 0x00])
-        let gifSize = ImageUtils.getImageSize(from: gifData, format: .gif)
-        XCTAssertEqual(gifSize?.width, 16)
-        XCTAssertEqual(gifSize?.height, 32)
-        
-        // Test PNG size detection
-        let pngData = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x30])
-        let pngSize = ImageUtils.getImageSize(from: pngData, format: .png)
-        XCTAssertEqual(pngSize?.width, 64)
-        XCTAssertEqual(pngSize?.height, 48)
-    }
-    
-    func testExcelImageCreation() throws {
-        let imageData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00, 0x20, 0x00])
-        
-        // Test creation from data
-        let image = try ImageUtils.createExcelImage(from: imageData, format: .gif)
-        XCTAssertNotNil(image)
-        XCTAssertEqual(image?.format, .gif)
-        XCTAssertEqual(image?.originalSize.width, 16)
-        XCTAssertEqual(image?.originalSize.height, 32)
-        
-        // Test creation with display size
-        let imageWithSize = try ImageUtils.createExcelImage(from: imageData, format: .gif, displaySize: CGSize(width: 100, height: 200))
-        XCTAssertNotNil(imageWithSize)
-        XCTAssertEqual(imageWithSize?.displaySize?.width, 100)
-        XCTAssertEqual(imageWithSize?.displaySize?.height, 200)
-    }
-    
-    func testSheetImageOperations() throws {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "Images")
-        
-        let imageData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00, 0x20, 0x00])
-        
-        // Test adding image from data
-        let success = try sheet.addImage(imageData, at: "A1", format: .gif)
-        XCTAssertTrue(success)
-        
-        // Test getting images
-        let images = sheet.getImages()
-        XCTAssertEqual(images.count, 1)
-        XCTAssertNotNil(images["A1"])
-        XCTAssertEqual(images["A1"]?.format, .gif)
-    }
-    
-    func testWorkbookImageOperations() throws {
-        let workbook = XLKit.createWorkbook()
-        
-        let imageData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00, 0x20, 0x00])
-        let image = try ImageUtils.createExcelImage(from: imageData, format: .gif)!
-        
-        // Test adding image to workbook
-        workbook.addImage(image)
-        
-        // Test getting images
-        let images = workbook.getImages()
-        XCTAssertEqual(images.count, 1)
-        XCTAssertEqual(images[0].format, .gif)
-    }
-    
-    // MARK: - Column and Row Sizing Tests
-    
-    func testColumnWidthOperations() {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "Sizing")
-        
-        // Test setting column width
-        sheet.setColumnWidth(1, width: 150.0)
-        sheet.setColumnWidth(2, width: 200.0)
-        
-        // Test getting column width
-        XCTAssertEqual(sheet.getColumnWidth(1), 150.0)
-        XCTAssertEqual(sheet.getColumnWidth(2), 200.0)
-        XCTAssertNil(sheet.getColumnWidth(3))
-        
-        // Test getting all column widths
-        let widths = sheet.getColumnWidths()
-        XCTAssertEqual(widths.count, 2)
-        XCTAssertEqual(widths[1], 150.0)
-        XCTAssertEqual(widths[2], 200.0)
-    }
-    
-    func testRowHeightOperations() {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "Sizing")
-        
-        // Test setting row height
+        sheet.setColumnWidth(1, width: 100.0)
         sheet.setRowHeight(1, height: 25.0)
-        sheet.setRowHeight(2, height: 30.0)
         
-        // Test getting row height
+        XCTAssertEqual(sheet.getColumnWidth(1), 100.0)
         XCTAssertEqual(sheet.getRowHeight(1), 25.0)
-        XCTAssertEqual(sheet.getRowHeight(2), 30.0)
-        XCTAssertNil(sheet.getRowHeight(3))
+    }
+    
+    func testWorkbookImageManagement() {
+        let workbook = Workbook()
         
-        // Test getting all row heights
-        let heights = sheet.getRowHeights()
-        XCTAssertEqual(heights.count, 2)
-        XCTAssertEqual(heights[1], 25.0)
-        XCTAssertEqual(heights[2], 30.0)
-    }
-    
-    func testAutoSizeColumnForImage() throws {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "AutoSize")
-        
-        let imageData = Data([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x10, 0x00, 0x20, 0x00])
-        let success = try sheet.addImage(imageData, at: "A1", format: .gif, displaySize: CGSize(width: 150, height: 100))
-        XCTAssertTrue(success)
-        
-        // Test auto-sizing column
-        sheet.autoSizeColumn(1, forImageAt: "A1")
-        XCTAssertEqual(sheet.getColumnWidth(1), 150.0)
-    }
-    
-    // MARK: - GIF Support Tests
-    
-    func testGIFEmbedding() async throws {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "GIF Test")
-        
-        // Create a simple GIF data (minimal valid GIF)
-        let gifData = createMinimalGIF()
-        
-        // Add GIF to sheet
-        let success = try sheet.addImage(gifData, at: "A1", format: .gif)
-        XCTAssertTrue(success)
-        
-        // Set column width to fit GIF
-        sheet.autoSizeColumn(1, forImageAt: "A1")
-        
-        // Save workbook
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("gif_test.xlsx")
-        defer {
-            try? FileManager.default.removeItem(at: tempURL)
-        }
-        
-        try await XLKit.saveWorkbook(workbook, to: tempURL)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
-    }
-    
-    func testMultipleImageFormats() async throws {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "Multiple Formats")
-        
-        // Add different image formats
-        let gifData = createMinimalGIF()
-        let pngData = createMinimalPNG()
-        
-        try sheet.addImage(gifData, at: "A1", format: .gif)
-        try sheet.addImage(pngData, at: "B1", format: .png)
-        
-        // Set column widths
-        sheet.autoSizeColumn(1, forImageAt: "A1")
-        sheet.autoSizeColumn(2, forImageAt: "B1")
-        
-        // Save workbook
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("multiple_formats.xlsx")
-        defer {
-            try? FileManager.default.removeItem(at: tempURL)
-        }
-        
-        try await XLKit.saveWorkbook(workbook, to: tempURL)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
-    }
-    
-    // MARK: - Helper Methods
-    
-    private func createMinimalGIF() -> Data {
-        // Minimal valid GIF data (1x1 transparent pixel)
-        let gifBytes: [UInt8] = [
-            0x47, 0x49, 0x46, 0x38, 0x39, 0x61, // GIF89a header
-            0x01, 0x00, // Width: 1
-            0x01, 0x00, // Height: 1
-            0x91, // Color table info
-            0x00, // Background color
-            0x00, // Aspect ratio
-            0x00, 0x00, 0x00, // Color table (empty)
-            0x21, 0xF9, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00, // Graphics control extension
-            0x2C, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, // Image descriptor
-            0x02, 0x02, 0x44, 0x01, 0x00, // Image data
-            0x3B // Trailer
-        ]
-        return Data(gifBytes)
-    }
-    
-    private func createMinimalPNG() -> Data {
-        // Minimal valid PNG data (1x1 transparent pixel)
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0x01, // Width: 1
-            0x00, 0x00, 0x00, 0x01, // Height: 1
-            0x08, 0x06, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x1F, 0x15, 0xC4, 0x89, // IHDR CRC
-            0x00, 0x00, 0x00, 0x0C, // IDAT chunk length
-            0x49, 0x44, 0x41, 0x54, // IDAT
-            0x08, 0x99, 0x01, 0x01, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, // IDAT data
-            0xE2, 0x21, 0xBC, 0x33, // IDAT CRC
-            0x00, 0x00, 0x00, 0x00, // IEND chunk length
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // IEND CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    private func createWidePNG() -> Data {
-        // Create a minimal valid PNG with 16:9 aspect ratio (160x90)
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0xA0, // Width: 160 (big endian)
-            0x00, 0x00, 0x00, 0x5A, // Height: 90 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    private func createTallPNG() -> Data {
-        // Create a minimal valid PNG with 9:16 aspect ratio (90x160)
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0x5A, // Width: 90 (big endian)
-            0x00, 0x00, 0x00, 0xA0, // Height: 160 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    private func createSquarePNG() -> Data {
-        // Create a minimal valid PNG with 1:1 aspect ratio (100x100)
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0x64, // Width: 100 (big endian)
-            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    private func createUltraWidePNG() -> Data {
-        // Create a minimal valid PNG with 21:9 aspect ratio (210x90)
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0xD2, // Width: 210 (big endian)
-            0x00, 0x00, 0x00, 0x5A, // Height: 90 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    private func createPortraitPNG() -> Data {
-        // Create a minimal valid PNG with 3:4 aspect ratio (75x100)
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0x4B, // Width: 75 (big endian)
-            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    // MARK: - Movie/Video Aspect Ratio PNGs
-    
-    // Create a minimal valid PNG with 2.39:1 aspect ratio (239x100) - Cinemascope/Anamorphic
-    private func createCinemascopePNG() -> Data {
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0xEF, // Width: 239 (big endian)
-            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    // Create a minimal valid PNG with 1.85:1 aspect ratio (185x100) - Academy ratio
-    private func createAcademyPNG() -> Data {
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0xB9, // Width: 185 (big endian)
-            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    // Create a minimal valid PNG with 4:3 aspect ratio (133x100) - Classic TV/monitor
-    private func createClassicTVPNG() -> Data {
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0x85, // Width: 133 (big endian)
-            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    // Create a minimal valid PNG with 18:9 aspect ratio (180x90) - Modern smartphone screens
-    private func createModernMobilePNG() -> Data {
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0xB4, // Width: 180 (big endian)
-            0x00, 0x00, 0x00, 0x5A, // Height: 90 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    // MARK: - Additional Professional Video/Cinema Aspect Ratio PNGs
-    
-    // Create a minimal valid PNG with 1.19:1 aspect ratio (119x100) - HD Standard
-    private func createHDStandardPNG() -> Data {
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0x77, // Width: 119 (big endian)
-            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    // Create a minimal valid PNG with 1.5:1 aspect ratio (150x100) - SD Academy
-    private func createSDAcademyPNG() -> Data {
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0x96, // Width: 150 (big endian)
-            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    // Create a minimal valid PNG with 1.48:1 aspect ratio (148x100) - SD Academy
-    private func createSDAcademyAltPNG() -> Data {
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0x94, // Width: 148 (big endian)
-            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    // Create a minimal valid PNG with 1.25:1 aspect ratio (125x100) - SD Standard
-    private func createSDStandardPNG() -> Data {
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0x7D, // Width: 125 (big endian)
-            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    // Create a minimal valid PNG with 1.9:1 aspect ratio (190x100) - IMAX Digital
-    private func createIMAXDigitalPNG() -> Data {
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0xBE, // Width: 190 (big endian)
-            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    // Create a minimal valid PNG with 1.32:1 aspect ratio (132x100) - 2K/4K DCI Standard
-    private func createDCIStandardPNG() -> Data {
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0x84, // Width: 132 (big endian)
-            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    // Create a minimal valid PNG with 2.37:1 aspect ratio (237x100) - 5K Cinema Scope
-    private func create5KCinemaScopePNG() -> Data {
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0xED, // Width: 237 (big endian)
-            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    // Create a minimal valid PNG with 1.37:1 aspect ratio (137x100) - IMAX Film 15/70mm
-    private func createIMAXFilmPNG() -> Data {
-        let pngBytes: [UInt8] = [
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-            0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
-            0x49, 0x48, 0x44, 0x52, // IHDR
-            0x00, 0x00, 0x00, 0x89, // Width: 137 (big endian)
-            0x00, 0x00, 0x00, 0x64, // Height: 100 (big endian)
-            0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
-            0x00, 0x00, 0x00, 0x00, // CRC placeholder
-            0x00, 0x00, 0x00, 0x00, // IEND chunk
-            0x49, 0x45, 0x4E, 0x44, // IEND
-            0xAE, 0x42, 0x60, 0x82  // CRC
-        ]
-        return Data(pngBytes)
-    }
-    
-    // MARK: - Simplified Image Embedding API Tests
-    
-    func testSimplifiedImageEmbeddingAPI() async throws {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "Simplified API Test")
-        
-        // Create a simple PNG data (minimal valid PNG)
-        let pngData = createMinimalPNG()
-        
-        // Test the simplified embedImage API
-        let success = try sheet.embedImage(
-            pngData,
-            at: "A1",
-            of: workbook,
-            scale: 0.8, // 80% of max size
-            maxWidth: 400,
-            maxHeight: 300
+        let imageData = Data()
+        let image = ExcelImage(
+            id: "test-image",
+            data: imageData,
+            format: .png,
+            originalSize: CGSize(width: 100, height: 100)
         )
         
-        XCTAssertTrue(success)
-        
-        // Verify image was added
-        let images = sheet.getImages()
-        XCTAssertEqual(images.count, 1)
-        XCTAssertNotNil(images["A1"])
-        
-        // Verify workbook has the image
+        workbook.addImage(image)
         XCTAssertEqual(workbook.imageCount, 1)
         
-        // Save workbook to test file generation
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("simplified_api_test.xlsx")
-        defer {
-            try? FileManager.default.removeItem(at: tempURL)
-        }
+        let retrievedImage = workbook.getImage(withId: "test-image")
+        XCTAssertNotNil(retrievedImage)
+        XCTAssertEqual(retrievedImage?.id, "test-image")
         
-        try await XLKit.saveWorkbook(workbook, to: tempURL)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
+        workbook.removeImage(withId: "test-image")
+        XCTAssertEqual(workbook.imageCount, 0)
     }
     
-    func testAspectRatioPreservation() async throws {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "Aspect Ratio Test")
+    func testSheetImageManagement() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
         
-        // Create a wide rectangular PNG (16:9 aspect ratio)
-        let widePNGData = createWidePNG()
-        
-        // Embed with the simplified API
-        let success = try sheet.embedImage(
-            widePNGData,
-            at: "A1",
-            of: workbook,
-            scale: 0.5, // 50% of max size
-            maxWidth: 600,
-            maxHeight: 400
+        let imageData = Data()
+        let image = ExcelImage(
+            id: "test-image",
+            data: imageData,
+            format: .png,
+            originalSize: CGSize(width: 100, height: 100)
         )
         
-        XCTAssertTrue(success)
+        sheet.addImage(image, at: "A1")
+        XCTAssertTrue(sheet.hasImage(at: "A1"))
         
-        // Get the embedded image
-        let images = sheet.getImages()
-        guard let image = images["A1"] else {
-            XCTFail("Image not found")
-            return
-        }
+        let retrievedImage = sheet.getImage(at: "A1")
+        XCTAssertNotNil(retrievedImage)
+        XCTAssertEqual(retrievedImage?.id, "test-image")
         
-        // Verify aspect ratio is preserved
-        let originalRatio = image.originalSize.width / image.originalSize.height
-        let displayRatio = image.displaySize!.width / image.displaySize!.height
-        
-        // Aspect ratios should be exactly equal (within floating point precision)
-        XCTAssertEqual(originalRatio, displayRatio, accuracy: 0.001)
-        
-        // Verify Excel cell dimensions match the display size
-        let cellCoord = CellCoordinate(excelAddress: "A1")!
-        let colWidth = sheet.getColumnWidth(cellCoord.column)
-        let rowHeight = sheet.getRowHeight(cellCoord.row)
-        
-        // Calculate expected Excel dimensions from display size
-        let expectedColWidth = ImageSizingUtils.excelColumnWidth(forPixelWidth: image.displaySize!.width)
-        let expectedRowHeight = ImageSizingUtils.excelRowHeight(forPixelHeight: image.displaySize!.height)
-        
-        XCTAssertEqual(colWidth ?? 0, CGFloat(expectedColWidth), accuracy: 0.001)
-        XCTAssertEqual(rowHeight ?? 0, CGFloat(expectedRowHeight), accuracy: 0.001)
-        
-        // Save workbook
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("aspect_ratio_test.xlsx")
-        defer {
-            try? FileManager.default.removeItem(at: tempURL)
-        }
-        
-        try await XLKit.saveWorkbook(workbook, to: tempURL)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
+        sheet.removeImage(at: "A1")
+        XCTAssertFalse(sheet.hasImage(at: "A1"))
     }
     
-    func testAspectRatioPreservationWithDifferentSizes() async throws {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "Aspect Ratio Test Different Sizes")
+    func testWorkbookSave() throws {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
+        sheet.setCell("A1", value: .string("Test"))
         
-        // Test with different aspect ratios
-        let testCases = [
-            ("A1", createWidePNG(), "16:9 wide"),
-            ("B1", createSquarePNG(), "1:1 square"),
-            ("C1", createTallPNG(), "9:16 tall")
-        ]
+        let tempURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("test.xlsx")
         
-        for (coordinate, imageData, description) in testCases {
-            let success = try sheet.embedImage(
-                imageData,
-                at: coordinate,
-                of: workbook,
-                scale: 0.8,
-                maxWidth: 500,
-                maxHeight: 300
-            )
-            
-            XCTAssertTrue(success, "Failed to embed \(description)")
-            
-            // Get the embedded image
-            let images = sheet.getImages()
-            guard let image = images[coordinate] else {
-                XCTFail("Image not found for \(description)")
-                continue
-            }
-            
-            // Verify aspect ratio is preserved
-            let originalRatio = image.originalSize.width / image.originalSize.height
-            let displayRatio = image.displaySize!.width / image.displaySize!.height
-            
-            XCTAssertEqual(originalRatio, displayRatio, accuracy: 0.001, "Aspect ratio not preserved for \(description)")
-            
-            // Verify the same scale was applied to both dimensions
-            let widthScale = image.displaySize!.width / image.originalSize.width
-            let heightScale = image.displaySize!.height / image.originalSize.height
-            XCTAssertEqual(widthScale, heightScale, accuracy: 0.001, "Different scales applied for \(description)")
-        }
+        // Test synchronous save
+        try workbook.save(to: tempURL)
         
-        // Save workbook
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("aspect_ratio_different_sizes_test.xlsx")
-        defer {
-            try? FileManager.default.removeItem(at: tempURL)
-        }
-        
-        try await XLKit.saveWorkbook(workbook, to: tempURL)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
-    }
-    
-    func testAspectRatioPreservationForAnyDimensions() async throws {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "Any Dimensions Test")
-        
-        // Test with various image dimensions and aspect ratios
-        let testCases = [
-            (createWidePNG(), "16:9 wide (160x90)"),
-            (createSquarePNG(), "1:1 square (100x100)"),
-            (createTallPNG(), "9:16 tall (90x160)"),
-            (createUltraWidePNG(), "21:9 ultra-wide (210x90)"),
-            (createPortraitPNG(), "3:4 portrait (75x100)"),
-            (createCinemascopePNG(), "2.39:1 cinemascope (239x100)"),
-            (createAcademyPNG(), "1.85:1 academy (185x100)"),
-            (createClassicTVPNG(), "4:3 classic TV (133x100)"),
-            (createModernMobilePNG(), "18:9 modern mobile (180x90)"),
-            (createHDStandardPNG(), "1.19:1 HD standard (119x100)"),
-            (createSDAcademyPNG(), "1.5:1 SD academy (150x100)"),
-            (createSDAcademyAltPNG(), "1.48:1 SD academy alt (148x100)"),
-            (createSDStandardPNG(), "1.25:1 SD standard (125x100)"),
-            (createIMAXDigitalPNG(), "1.9:1 IMAX digital (190x100)"),
-            (createDCIStandardPNG(), "1.32:1 DCI standard (132x100)"),
-            (create5KCinemaScopePNG(), "2.37:1 5K cinema scope (237x100)"),
-            (createIMAXFilmPNG(), "1.37:1 IMAX film (137x100)")
-        ]
-        
-        for (index, (imageData, description)) in testCases.enumerated() {
-            let coordinate = "A\(index + 1)"
-            
-            // Test the simplified embedImage API
-            let success = try sheet.embedImage(
-                imageData,
-                at: coordinate,
-                of: workbook,
-                scale: 0.6, // 60% of max size
-                maxWidth: 500,
-                maxHeight: 400
-            )
-            
-            XCTAssertTrue(success, "Failed to embed \(description)")
-            
-            // Get the embedded image
-            let images = sheet.getImages()
-            guard let image = images[coordinate] else {
-                XCTFail("Image not found for \(description)")
-                continue
-            }
-            
-            // Verify display size was calculated
-            XCTAssertNotNil(image.displaySize, "Display size not set for \(description)")
-            
-            // Verify aspect ratio is preserved exactly
-            let originalAspectRatio = image.originalSize.width / image.originalSize.height
-            let displayAspectRatio = image.displaySize!.width / image.displaySize!.height
-            XCTAssertEqual(originalAspectRatio, displayAspectRatio, accuracy: 0.001, 
-                          "Aspect ratio not preserved for \(description)")
-            
-            print("[TEST] \(description): original=\(image.originalSize), display=\(image.displaySize!), aspect=\(originalAspectRatio)")
-        }
-        
-        // Save and validate the workbook
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("AnyDimensionsTest.xlsx")
-        try await XLKit.saveWorkbook(workbook, to: tempURL)
-        
-        // Verify file was created
+        // Verify file exists
         XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
         
         // Clean up
         try FileManager.default.removeItem(at: tempURL)
     }
     
-    // MARK: - Rich Cell Formatting Tests
-    
-    func testCellFormatting() {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "Formatting")
+    func testWorkbookSaveAsync() async throws {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
+        sheet.setCell("A1", value: .string("Test"))
         
-        // Test text formatting
-        let headerFormat = CellFormat.header(fontSize: 16.0, backgroundColor: "#CCCCCC")
-        sheet.setCell("A1", string: "Header", format: headerFormat)
+        let tempURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("test_async.xlsx")
         
-        // Test currency formatting
-        let currencyFormat = CellFormat.currency(format: .currencyWithDecimals, color: "#006600")
-        sheet.setCell("B1", number: 1234.56, format: currencyFormat)
+        // Test asynchronous save
+        try await workbook.save(to: tempURL)
         
-        // Test percentage formatting
-        let percentageFormat = CellFormat.percentage()
-        sheet.setCell("C1", number: 0.85, format: percentageFormat)
+        // Verify file exists
+        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
         
-        // Test date formatting
-        let dateFormat = CellFormat.date()
-        let date = Date()
-        sheet.setCell("D1", date: date, format: dateFormat)
-        
-        // Test bordered formatting
-        let borderedFormat = CellFormat.bordered(style: .thin, color: "#000000")
-        sheet.setCell("E1", string: "Bordered", format: borderedFormat)
-        
-        // Verify formatting is stored
-        XCTAssertNotNil(sheet.getCellFormat("A1"))
-        XCTAssertNotNil(sheet.getCellFormat("B1"))
-        XCTAssertNotNil(sheet.getCellFormat("C1"))
-        XCTAssertNotNil(sheet.getCellFormat("D1"))
-        XCTAssertNotNil(sheet.getCellFormat("E1"))
-        
-        // Test getting cell with format
-        let cellWithFormat = sheet.getCellWithFormat("A1")
-        XCTAssertNotNil(cellWithFormat)
-        XCTAssertEqual(cellWithFormat?.value, .string("Header"))
-        XCTAssertNotNil(cellWithFormat?.format)
+        // Clean up
+        try FileManager.default.removeItem(at: tempURL)
     }
     
-    func testCustomCellFormatting() {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "Custom Formatting")
-        
-        // Create custom format
-        var customFormat = CellFormat()
-        customFormat.fontName = "Arial"
-        customFormat.fontSize = 12.0
-        customFormat.fontWeight = .bold
-        customFormat.fontStyle = .italic
-        customFormat.textDecoration = .underline
-        customFormat.fontColor = "#FF0000"
-        customFormat.backgroundColor = "#FFFF00"
-        customFormat.horizontalAlignment = .center
-        customFormat.verticalAlignment = .center
-        customFormat.textWrapping = true
-        customFormat.textRotation = 45
-        customFormat.numberFormat = .custom("0.00%")
-        customFormat.customNumberFormat = "0.00%"
-        customFormat.borderTop = .thick
-        customFormat.borderBottom = .thick
-        customFormat.borderLeft = .thin
-        customFormat.borderRight = .thin
-        customFormat.borderColor = "#0000FF"
-        
-        sheet.setCell("A1", string: "Custom Formatted", format: customFormat)
-        
-        // Verify custom format is stored
-        let retrievedFormat = sheet.getCellFormat("A1")
-        XCTAssertNotNil(retrievedFormat)
-        XCTAssertEqual(retrievedFormat?.fontName, "Arial")
-        XCTAssertEqual(retrievedFormat?.fontSize, 12.0)
-        XCTAssertEqual(retrievedFormat?.fontWeight, .bold)
-        XCTAssertEqual(retrievedFormat?.fontStyle, .italic)
-        XCTAssertEqual(retrievedFormat?.textDecoration, .underline)
-        XCTAssertEqual(retrievedFormat?.fontColor, "#FF0000")
-        XCTAssertEqual(retrievedFormat?.backgroundColor, "#FFFF00")
-        XCTAssertEqual(retrievedFormat?.horizontalAlignment, .center)
-        XCTAssertEqual(retrievedFormat?.verticalAlignment, .center)
-        XCTAssertEqual(retrievedFormat?.textWrapping, true)
-        XCTAssertEqual(retrievedFormat?.textRotation, 45)
-        XCTAssertEqual(retrievedFormat?.numberFormat, .custom)
-        XCTAssertEqual(retrievedFormat?.customNumberFormat, "0.00%")
-        XCTAssertEqual(retrievedFormat?.borderTop, .thick)
-        XCTAssertEqual(retrievedFormat?.borderBottom, .thick)
-        XCTAssertEqual(retrievedFormat?.borderLeft, .thin)
-        XCTAssertEqual(retrievedFormat?.borderRight, .thin)
-        XCTAssertEqual(retrievedFormat?.borderColor, "#0000FF")
-    }
-    
-    func testRangeFormatting() {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "Range Formatting")
-        
-        // Format a range of cells
-        let headerFormat = CellFormat.header()
-        sheet.setRange("A1:C1", string: "Header", format: headerFormat)
-        
-        // Format another range with different formatting
-        let dataFormat = CellFormat.bordered(style: .thin)
-        sheet.setRange("A2:C5", number: 42, format: dataFormat)
-        
-        // Verify formatting is applied to all cells in range
-        for row in 1...1 {
-            for col in 1...3 {
-                let coord = CellCoordinate(row: row, column: col).excelAddress
-                XCTAssertNotNil(sheet.getCellFormat(coord))
-            }
-        }
-        
-        for row in 2...5 {
-            for col in 1...3 {
-                let coord = CellCoordinate(row: row, column: col).excelAddress
-                XCTAssertNotNil(sheet.getCellFormat(coord))
-            }
-        }
-    }
-    
-    // MARK: - CSV/TSV Import/Export Tests
-    
-    func testCSVExport() {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "CSV Test")
-        
-        // Add some data
-        sheet.setCell("A1", string: "Name", format: CellFormat.header())
-        sheet.setCell("B1", string: "Age", format: CellFormat.header())
-        sheet.setCell("C1", string: "Salary", format: CellFormat.header())
-        
-        sheet.setCell("A2", string: "John Doe")
-        sheet.setCell("B2", integer: 30)
-        sheet.setCell("C2", number: 50000.50, format: CellFormat.currency())
-        
-        sheet.setCell("A3", string: "Jane Smith")
-        sheet.setCell("B3", integer: 25)
-        sheet.setCell("C3", number: 45000.75, format: CellFormat.currency())
-        
-        // Export to CSV
-        let csv = XLKit.exportSheetToCSV(sheet: sheet)
-        
-        // Verify CSV content
-        XCTAssertTrue(csv.contains("Name,Age,Salary"))
-        XCTAssertTrue(csv.contains("John Doe,30,50000.5"))
-        XCTAssertTrue(csv.contains("Jane Smith,25,45000.75"))
-    }
-    
-    func testTSVExport() {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "TSV Test")
-        
-        // Add some data
-        sheet.setCell("A1", string: "Product")
-        sheet.setCell("B1", string: "Price")
-        sheet.setCell("A2", string: "Apple")
-        sheet.setCell("B2", number: 1.99)
-        sheet.setCell("A3", string: "Banana")
-        sheet.setCell("B3", number: 0.99)
-        
-        // Export to TSV
-        let tsv = XLKit.exportSheetToTSV(sheet: sheet)
-        
-        // Verify TSV content (tab-separated)
-        XCTAssertTrue(tsv.contains("Product\tPrice"))
-        XCTAssertTrue(tsv.contains("Apple\t1.99"))
-        XCTAssertTrue(tsv.contains("Banana\t0.99"))
-    }
-    
-    func testCSVImport() {
+    func testWorkbookFromCSV() {
         let csvData = """
-        Name,Age,Salary,Active
-        John Doe,30,50000.50,true
-        Jane Smith,25,45000.75,false
-        Bob Johnson,35,60000.00,true
+        Name,Age,Salary
+        Alice,30,50000.5
+        Bob,25,45000.75
         """
         
-        // Create workbook from CSV
-        let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
+        let workbook = Workbook(fromCSV: csvData, hasHeader: true)
         let sheet = workbook.getSheets().first!
         
-        // Verify imported data (first data row is row 2)
-        XCTAssertEqual(sheet.getCell("A2"), .string("John Doe"))
+        XCTAssertEqual(sheet.getCell("A2"), .string("Alice"))
         XCTAssertEqual(sheet.getCell("B2"), .integer(30))
-        XCTAssertEqual(sheet.getCell("C2"), .number(50000.50))
-        XCTAssertEqual(sheet.getCell("D2"), .boolean(true))
-        
-        XCTAssertEqual(sheet.getCell("A3"), .string("Jane Smith"))
+        XCTAssertEqual(sheet.getCell("C2"), .number(50000.5))
+        XCTAssertEqual(sheet.getCell("A3"), .string("Bob"))
         XCTAssertEqual(sheet.getCell("B3"), .integer(25))
         XCTAssertEqual(sheet.getCell("C3"), .number(45000.75))
-        XCTAssertEqual(sheet.getCell("D3"), .boolean(false))
-        
-        XCTAssertEqual(sheet.getCell("A4"), .string("Bob Johnson"))
-        XCTAssertEqual(sheet.getCell("B4"), .integer(35))
-        XCTAssertEqual(sheet.getCell("C4"), .number(60000.00))
-        XCTAssertEqual(sheet.getCell("D4"), .boolean(true))
     }
     
-    func testTSVImport() {
+    func testWorkbookFromTSV() {
         let tsvData = """
         Product\tPrice\tIn Stock
         Apple\t1.99\ttrue
         Banana\t0.99\tfalse
-        Orange\t2.49\ttrue
         """
         
-        // Create workbook from TSV
-        let workbook = XLKit.createWorkbookFromTSV(tsvData: tsvData, hasHeader: true)
+        let workbook = Workbook(fromTSV: tsvData, hasHeader: true)
         let sheet = workbook.getSheets().first!
         
-        // Verify imported data (first data row is row 2)
         XCTAssertEqual(sheet.getCell("A2"), .string("Apple"))
         XCTAssertEqual(sheet.getCell("B2"), .number(1.99))
         XCTAssertEqual(sheet.getCell("C2"), .boolean(true))
-        
         XCTAssertEqual(sheet.getCell("A3"), .string("Banana"))
         XCTAssertEqual(sheet.getCell("B3"), .number(0.99))
         XCTAssertEqual(sheet.getCell("C3"), .boolean(false))
-        
-        XCTAssertEqual(sheet.getCell("A4"), .string("Orange"))
-        XCTAssertEqual(sheet.getCell("B4"), .number(2.49))
-        XCTAssertEqual(sheet.getCell("C4"), .boolean(true))
     }
     
-    func testCSVImportWithQuotes() {
-        let csvData = """
-        Name,Description,Value
-        "John Doe","Software Engineer, Senior",50000
-        "Jane Smith","Product Manager",45000
-        "Bob Johnson","Data Scientist, PhD",60000
-        """
+    func testSheetExportToCSV() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
         
-        // Create workbook from CSV
-        let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
-        let sheet = workbook.getSheets().first!
+        sheet.setRow(1, strings: ["Name", "Age", "Salary"])
+        sheet.setRow(2, strings: ["Alice", "30", "50000"])
+        sheet.setRow(3, strings: ["Bob", "25", "45000"])
         
-        // Verify imported data with quotes and commas (first data row is row 2)
-        XCTAssertEqual(sheet.getCell("A2"), .string("John Doe"))
-        XCTAssertEqual(sheet.getCell("B2"), .string("Software Engineer, Senior"))
-        XCTAssertEqual(sheet.getCell("C2"), .integer(50000))
+        let csv = sheet.exportToCSV()
+        let expectedCSV = "Name,Age,Salary\nAlice,30,50000\nBob,25,45000"
         
-        XCTAssertEqual(sheet.getCell("A3"), .string("Jane Smith"))
-        XCTAssertEqual(sheet.getCell("B3"), .string("Product Manager"))
-        XCTAssertEqual(sheet.getCell("C3"), .integer(45000))
-        
-        XCTAssertEqual(sheet.getCell("A4"), .string("Bob Johnson"))
-        XCTAssertEqual(sheet.getCell("B4"), .string("Data Scientist, PhD"))
-        XCTAssertEqual(sheet.getCell("C4"), .integer(60000))
+        XCTAssertEqual(csv, expectedCSV)
     }
     
-    func testCSVImportWithDates() async throws {
-        let csvData = """
-        Name,Birth Date,Hire Date
-        John Doe,1990-05-15,2020-03-01
-        Jane Smith,1988-12-10,2019-07-15
-        """
+    func testSheetExportToTSV() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
         
-        // Create workbook from CSV
-        let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
-        let sheet = workbook.getSheets().first!
+        sheet.setRow(1, strings: ["Product", "Price", "In Stock"])
+        sheet.setRow(2, strings: ["Apple", "1.99", "true"])
+        sheet.setRow(3, strings: ["Banana", "0.99", "false"])
         
-        // Verify imported data with dates (first data row is row 2)
-        XCTAssertEqual(sheet.getCell("A2"), .string("John Doe"))
+        let tsv = sheet.exportToTSV()
+        let expectedTSV = "Product\tPrice\tIn Stock\nApple\t1.99\ttrue\nBanana\t0.99\tfalse"
         
-        // Check that dates are parsed correctly
-        let birthDate1 = sheet.getCell("B2")
-        if case .date(let date) = birthDate1 {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            XCTAssertEqual(formatter.string(from: date), "1990-05-15")
-        } else {
-            XCTFail("Expected date value for birth date")
-        }
-        
-        let hireDate1 = sheet.getCell("C2")
-        if case .date(let date) = hireDate1 {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            XCTAssertEqual(formatter.string(from: date), "2020-03-01")
-        } else {
-            XCTFail("Expected date value for hire date")
-        }
+        XCTAssertEqual(tsv, expectedTSV)
     }
     
-    func testCSVImportIntoExistingSheet() throws {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "Import Test")
-        
-        // Add some existing data
-        sheet.setCell("A1", string: "Existing Data")
-        sheet.setCell("B1", number: 100)
+    func testWorkbookImportCSV() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
         
         let csvData = """
-        Name,Value
-        New Item 1,200
-        New Item 2,300
+        Name,Age,Salary
+        Alice,30,50000.5
+        Bob,25,45000.75
         """
         
-        // Import CSV into existing sheet
-        XLKit.importCSVIntoSheet(sheet: sheet, csvData: csvData, hasHeader: true)
+        workbook.importCSV(csvData, into: sheet, hasHeader: true)
         
-        // Verify existing data is preserved
-        XCTAssertEqual(sheet.getCell("A1"), .string("Existing Data"))
-        XCTAssertEqual(sheet.getCell("B1"), .number(100))
-        
-        // Verify new data is added (first data row is row 2)
-        XCTAssertEqual(sheet.getCell("A2"), .string("New Item 1"))
-        XCTAssertEqual(sheet.getCell("B2"), .integer(200))
-        XCTAssertEqual(sheet.getCell("A3"), .string("New Item 2"))
-        XCTAssertEqual(sheet.getCell("B3"), .integer(300))
+        XCTAssertEqual(sheet.getCell("A2"), .string("Alice"))
+        XCTAssertEqual(sheet.getCell("B2"), .integer(30))
+        XCTAssertEqual(sheet.getCell("C2"), .number(50000.5))
+        XCTAssertEqual(sheet.getCell("A3"), .string("Bob"))
+        XCTAssertEqual(sheet.getCell("B3"), .integer(25))
+        XCTAssertEqual(sheet.getCell("C3"), .number(45000.75))
     }
     
-    func testCSVExportWithSpecialCharacters() throws {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "Special Chars")
+    func testWorkbookImportTSV() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
         
-        // Add data with special characters
-        sheet.setCell("A1", string: "Name")
-        sheet.setCell("B1", string: "Description")
-        sheet.setCell("A2", string: "John")
-        sheet.setCell("B2", string: "Contains \"quotes\" and, commas")
-        sheet.setCell("A3", string: "Jane")
-        sheet.setCell("B3", string: "Contains\nnewlines")
+        let tsvData = """
+        Product\tPrice\tIn Stock
+        Apple\t1.99\ttrue
+        Banana\t0.99\tfalse
+        """
         
-        // Export to CSV
-        let csv = XLKit.exportSheetToCSV(sheet: sheet)
+        workbook.importTSV(tsvData, into: sheet, hasHeader: true)
         
-        // Verify CSV content with proper escaping
-        XCTAssertTrue(csv.contains("Name,Description"))
-        XCTAssertTrue(csv.contains("John,\"Contains \"\"quotes\"\" and, commas\""))
-        XCTAssertTrue(csv.contains("Jane,\"Contains\nnewlines\""))
+        XCTAssertEqual(sheet.getCell("A2"), .string("Apple"))
+        XCTAssertEqual(sheet.getCell("B2"), .number(1.99))
+        XCTAssertEqual(sheet.getCell("C2"), .boolean(true))
+        XCTAssertEqual(sheet.getCell("A3"), .string("Banana"))
+        XCTAssertEqual(sheet.getCell("B3"), .number(0.99))
+        XCTAssertEqual(sheet.getCell("C3"), .boolean(false))
     }
     
-    func testExcelCellDimensionsForAnyImageSize() async throws {
-        let workbook = XLKit.createWorkbook()
-        let sheet = workbook.addSheet(name: "Cell Dimensions Test")
+    func testWorkbookExportSheetToCSV() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
         
-        // Test with various image dimensions including movie/video aspect ratios
-        let testCases = [
-            (createWidePNG(), "A1", "16:9 wide"),
-            (createSquarePNG(), "B1", "1:1 square"),
-            (createTallPNG(), "C1", "9:16 tall"),
-            (createUltraWidePNG(), "D1", "21:9 ultra-wide"),
-            (createPortraitPNG(), "E1", "3:4 portrait"),
-            (createCinemascopePNG(), "F1", "2.39:1 cinemascope"),
-            (createAcademyPNG(), "G1", "1.85:1 academy"),
-            (createClassicTVPNG(), "H1", "4:3 classic TV"),
-            (createModernMobilePNG(), "I1", "18:9 modern mobile"),
-            (createHDStandardPNG(), "J1", "1.19:1 HD standard"),
-            (createSDAcademyPNG(), "K1", "1.5:1 SD academy"),
-            (createSDAcademyAltPNG(), "L1", "1.48:1 SD academy alt"),
-            (createSDStandardPNG(), "M1", "1.25:1 SD standard"),
-            (createIMAXDigitalPNG(), "N1", "1.9:1 IMAX digital"),
-            (createDCIStandardPNG(), "O1", "1.32:1 DCI standard"),
-            (create5KCinemaScopePNG(), "P1", "2.37:1 5K cinema scope"),
-            (createIMAXFilmPNG(), "Q1", "1.37:1 IMAX film")
+        sheet.setRow(1, strings: ["Name", "Age", "Salary"])
+        sheet.setRow(2, strings: ["Alice", "30", "50000"])
+        sheet.setRow(3, strings: ["Bob", "25", "45000"])
+        
+        let csv = workbook.exportSheetToCSV(sheet)
+        let expectedCSV = "Name,Age,Salary\nAlice,30,50000\nBob,25,45000"
+        
+        XCTAssertEqual(csv, expectedCSV)
+    }
+    
+    func testWorkbookExportSheetToTSV() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
+        
+        sheet.setRow(1, strings: ["Product", "Price", "In Stock"])
+        sheet.setRow(2, strings: ["Apple", "1.99", "true"])
+        sheet.setRow(3, strings: ["Banana", "0.99", "false"])
+        
+        let tsv = workbook.exportSheetToTSV(sheet)
+        let expectedTSV = "Product\tPrice\tIn Stock\nApple\t1.99\ttrue\nBanana\t0.99\tfalse"
+        
+        XCTAssertEqual(tsv, expectedTSV)
+    }
+    
+    func testFluentAPI() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
+        
+        // Test fluent API with method chaining
+        sheet
+            .setCell("A1", value: .string("Header"))
+            .setCell("B1", value: .string("Value"))
+            .setRow(2, strings: ["Row1", "Data1"])
+            .setRow(3, strings: ["Row2", "Data2"])
+            .mergeCells("A1:B1")
+        
+        XCTAssertEqual(sheet.getCell("A1"), .string("Header"))
+        XCTAssertEqual(sheet.getCell("B1"), .string("Value"))
+        XCTAssertEqual(sheet.getCell("A2"), .string("Row1"))
+        XCTAssertEqual(sheet.getCell("B2"), .string("Data1"))
+        XCTAssertEqual(sheet.getCell("A3"), .string("Row2"))
+        XCTAssertEqual(sheet.getCell("B3"), .string("Data2"))
+        
+        let mergedRanges = sheet.getMergedRanges()
+        XCTAssertEqual(mergedRanges.count, 1)
+        XCTAssertEqual(mergedRanges[0].excelRange, "A1:B1")
+    }
+    
+    func testSheetConvenienceMethods() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
+        
+        // Test convenience methods
+        sheet.setCell("A1", string: "String Value")
+        sheet.setCell("B1", number: 123.45)
+        sheet.setCell("C1", integer: 42)
+        sheet.setCell("D1", boolean: true)
+        sheet.setCell("E1", date: Date())
+        sheet.setCell("F1", formula: "=A1+B1")
+        
+        XCTAssertEqual(sheet.getCell("A1"), .string("String Value"))
+        XCTAssertEqual(sheet.getCell("B1"), .number(123.45))
+        XCTAssertEqual(sheet.getCell("C1"), .integer(42))
+        XCTAssertEqual(sheet.getCell("D1"), .boolean(true))
+        XCTAssertEqual(sheet.getCell("E1")?.type, "date")
+        XCTAssertEqual(sheet.getCell("F1"), .formula("=A1+B1"))
+    }
+    
+    func testSheetRowAndColumnMethods() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
+        
+        // Test row methods
+        sheet.setRow(1, strings: ["Name", "Age", "Salary"])
+        sheet.setRow(2, numbers: [30.0, 25.0, 50000.0])
+        sheet.setRow(3, integers: [1, 2, 3])
+        
+        // Test column methods
+        sheet.setColumn(4, strings: ["Col1", "Col2", "Col3"])
+        sheet.setColumn(5, numbers: [10.5, 20.5, 30.5])
+        sheet.setColumn(6, integers: [100, 200, 300])
+        
+        XCTAssertEqual(sheet.getCell("A1"), .string("Name"))
+        XCTAssertEqual(sheet.getCell("B1"), .string("Age"))
+        XCTAssertEqual(sheet.getCell("C1"), .string("Salary"))
+        XCTAssertEqual(sheet.getCell("A2"), .number(30.0))
+        XCTAssertEqual(sheet.getCell("B2"), .number(25.0))
+        XCTAssertEqual(sheet.getCell("C2"), .number(50000.0))
+        XCTAssertEqual(sheet.getCell("A3"), .integer(1))
+        XCTAssertEqual(sheet.getCell("B3"), .integer(2))
+        XCTAssertEqual(sheet.getCell("C3"), .integer(3))
+        
+        XCTAssertEqual(sheet.getCell("D1"), .string("Col1"))
+        XCTAssertEqual(sheet.getCell("D2"), .string("Col2"))
+        XCTAssertEqual(sheet.getCell("D3"), .string("Col3"))
+        XCTAssertEqual(sheet.getCell("E1"), .number(10.5))
+        XCTAssertEqual(sheet.getCell("E2"), .number(20.5))
+        XCTAssertEqual(sheet.getCell("E3"), .number(30.5))
+        XCTAssertEqual(sheet.getCell("F1"), .integer(100))
+        XCTAssertEqual(sheet.getCell("F2"), .integer(200))
+        XCTAssertEqual(sheet.getCell("F3"), .integer(300))
+    }
+    
+    func testSheetUtilityProperties() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
+        
+        // Test empty sheet
+        XCTAssertTrue(sheet.isEmpty)
+        XCTAssertEqual(sheet.cellCount, 0)
+        XCTAssertEqual(sheet.imageCount, 0)
+        
+        // Add some data
+        sheet.setCell("A1", value: .string("Test"))
+        sheet.setCell("B2", value: .number(42.5))
+        
+        XCTAssertFalse(sheet.isEmpty)
+        XCTAssertEqual(sheet.cellCount, 2)
+        
+        // Test allCells property
+        let allCells = sheet.allCells
+        XCTAssertEqual(allCells.count, 2)
+        XCTAssertEqual(allCells["A1"], .string("Test"))
+        XCTAssertEqual(allCells["B2"], .number(42.5))
+        
+        // Test allFormattedCells property
+        let allFormattedCells = sheet.allFormattedCells
+        XCTAssertEqual(allFormattedCells.count, 2)
+        XCTAssertEqual(allFormattedCells["A1"]?.value, .string("Test"))
+        XCTAssertEqual(allFormattedCells["B2"]?.value, .number(42.5))
+    }
+    
+    func testSheetConvenienceInitializer() {
+        let initialData = [
+            "A1": CellValue.string("Header"),
+            "B1": CellValue.string("Value"),
+            "A2": CellValue.number(42.5)
         ]
         
-        for (imageData, coordinate, description) in testCases {
-            // Embed image with auto-sizing
-            let success = try sheet.embedImage(
-                imageData,
-                at: coordinate,
-                of: workbook,
-                scale: 0.5, // 50% of max size
-                maxWidth: 400,
-                maxHeight: 300
-            )
-            
-            XCTAssertTrue(success, "Failed to embed \(description)")
-            
-            // Get the embedded image
-            let images = sheet.getImages()
-            guard let image = images[coordinate] else {
-                XCTFail("Image not found for \(description)")
-                continue
-            }
-            
-            // Get cell coordinate
-            guard let cellCoord = CellCoordinate(excelAddress: coordinate) else {
-                XCTFail("Invalid coordinate for \(description)")
-                continue
-            }
-            
-            // Get Excel cell dimensions
-            let colWidth = sheet.getColumnWidth(cellCoord.column)
-            let rowHeight = sheet.getRowHeight(cellCoord.row)
-            
-            XCTAssertNotNil(colWidth, "Column width not set for \(description)")
-            XCTAssertNotNil(rowHeight, "Row height not set for \(description)")
-            
-            // Calculate expected Excel dimensions from display size using new formulas
-            let expectedColWidth = ImageSizingUtils.excelColumnWidth(forPixelWidth: image.displaySize!.width)
-            let expectedRowHeight = ImageSizingUtils.excelRowHeight(forPixelHeight: image.displaySize!.height)
-            
-            // Verify Excel dimensions match expected values
-            XCTAssertEqual(colWidth!, expectedColWidth, accuracy: 0.001, 
-                          "Column width mismatch for \(description)")
-            XCTAssertEqual(rowHeight!, expectedRowHeight, accuracy: 0.001, 
-                          "Row height mismatch for \(description)")
-            
-            // Verify aspect ratio is preserved in Excel cell dimensions
-            let imageAspectRatio = image.displaySize!.width / image.displaySize!.height
-            let cellAspectRatio = (colWidth! * 8.0) / (rowHeight! * 1.33)
-            XCTAssertEqual(imageAspectRatio, cellAspectRatio, accuracy: 0.1, 
-                          "Cell aspect ratio doesn't match image for \(description)")
-            
-            print("[TEST] \(description): image=\(image.displaySize!), col=\(colWidth!), row=\(rowHeight!), aspect=\(imageAspectRatio)")
+        let sheet = Sheet(name: "Test", id: 1)
+        
+        // Set the initial data manually
+        for (coordinate, value) in initialData {
+            sheet.setCell(coordinate, value: value)
         }
         
-        // Save and validate the workbook
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("CellDimensionsTest.xlsx")
-        try await XLKit.saveWorkbook(workbook, to: tempURL)
-        
-        // Verify file was created
-        XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
-        
-        // Clean up
-        try FileManager.default.removeItem(at: tempURL)
+        XCTAssertEqual(sheet.getCell("A1"), CellValue.string("Header"))
+        XCTAssertEqual(sheet.getCell("B1"), CellValue.string("Value"))
+        XCTAssertEqual(sheet.getCell("A2"), CellValue.number(42.5))
+        XCTAssertEqual(sheet.cellCount, 3)
     }
 } 

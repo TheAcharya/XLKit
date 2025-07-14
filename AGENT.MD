@@ -101,14 +101,15 @@ Available Test Types:
 - `no-embeds` / `no-images`: Generate Excel from CSV without images
 - `embed` / `with-embeds` / `with-images`: Generate Excel with embedded images from CSV data
 - `comprehensive` / `demo`: Comprehensive API demonstration with all features
+- `security-demo` / `security`: Demonstrate file path security restrictions
 - `help` / `-h` / `--help`: Show available commands
 
 Test Features:
-- **Security Integration**: All tests include security logging and validation
-- **CoreXLSX Validation**: Generated files are validated for Excel compliance
-- **Aspect Ratio Testing**: Image embedding tests all 17 professional aspect ratios
-- **Performance Testing**: Large dataset handling and memory optimization
-- **Error Handling**: Comprehensive error testing and edge case coverage
+- Security Integration: All tests include security logging and validation
+- CoreXLSX Validation: Generated files are validated for Excel compliance
+- Aspect Ratio Testing: Image embedding tests all 17 professional aspect ratios
+- Performance Testing: Large dataset handling and memory optimization
+- Error Handling: Comprehensive error testing and edge case coverage
 
 Output Structure:
 ```
@@ -120,11 +121,11 @@ Test-Workflows/
 ```
 
 Security Features in Tests:
-- **Rate Limiting**: Prevents test abuse and resource exhaustion
-- **Security Logging**: All test operations are logged for audit trails
-- **Input Validation**: All test inputs are validated for security
-- **File Quarantine**: Suspicious test files are automatically quarantined
-- **Checksum Verification**: Optional file integrity verification (disabled by default)
+- Rate Limiting: Prevents test abuse and resource exhaustion
+- Security Logging: All test operations are logged for audit trails
+- Input Validation: All test inputs are validated for security
+- File Quarantine: Suspicious test files are automatically quarantined
+- Checksum Verification: Optional file integrity verification (disabled by default)
 
 ## Development Standards
 
@@ -208,10 +209,10 @@ public struct SecurityManager {
 #### Rate Limiting
 
 Prevents abuse and resource exhaustion:
-- **Default**: 100 operations per minute
-- **Configurable**: Time window and operation limits
-- **Automatic**: Integrated into all file operations
-- **Logging**: Rate limit violations are logged
+- Default: 100 operations per minute
+- Configurable: Time window and operation limits
+- Automatic: Integrated into all file operations
+- Logging: Rate limit violations are logged
 
 ```swift
 // Check rate limit before operations
@@ -221,10 +222,10 @@ try SecurityManager.checkRateLimit()
 #### Security Logging
 
 Comprehensive audit trail of all security-relevant operations:
-- **Console logging**: Real-time security events
-- **File logging**: Persistent audit trail in temporary directory
-- **Structured data**: Timestamp, operation, details, user agent
-- **Operations logged**: File generation, checksums, quarantines, rate limits
+- Console logging: Real-time security events
+- File logging: Persistent audit trail in temporary directory
+- Structured data: Timestamp, operation, details, user agent
+- Operations logged: File generation, checksums, quarantines, rate limits
 
 ```swift
 // Log security operations
@@ -238,10 +239,10 @@ SecurityManager.logSecurityOperation("xlsx_generation_started", details: [
 #### File Quarantine
 
 Isolates suspicious files to prevent execution:
-- **Pattern detection**: Checks for malicious code patterns
-- **Size validation**: Prevents oversized files
-- **Format validation**: Validates image formats
-- **Automatic isolation**: Moves suspicious files to quarantine directory
+- Pattern detection: Checks for malicious code patterns
+- Size validation: Prevents oversized files
+- Format validation: Validates image formats
+- Automatic isolation: Moves suspicious files to quarantine directory
 
 ```swift
 // Check if file should be quarantined
@@ -253,10 +254,10 @@ if SecurityManager.shouldQuarantineFile(imageData, format: .png) {
 #### File Checksums
 
 Cryptographic integrity verification (optional):
-- **SHA-256 hashes**: Secure file integrity verification
-- **Configurable**: Can be enabled/disabled via `enableChecksumStorage`
-- **Tamper detection**: Identifies unauthorized file modifications
-- **Supply chain protection**: Ensures file authenticity
+- SHA-256 hashes: Secure file integrity verification
+- Configurable: Can be enabled/disabled via `enableChecksumStorage`
+- Tamper detection: Identifies unauthorized file modifications
+- Supply chain protection: Ensures file authenticity
 
 ```swift
 // Store file checksum (when enabled)
@@ -269,26 +270,26 @@ let isValid = SecurityManager.verifyFileChecksum(fileURL)
 #### Input Validation
 
 Comprehensive validation of all user inputs:
-- **File paths**: Validates and sanitizes file paths
-- **Image data**: Validates image formats and sizes
-- **CSV data**: Validates CSV structure and content
-- **Coordinates**: Validates Excel coordinate formats
+- File paths: Validates and sanitizes file paths
+- Image data: Validates image formats and sizes
+- CSV data: Validates CSV structure and content
+- Coordinates: Validates Excel coordinate formats
 
 #### Error Handling
 
 Secure error handling that doesn't expose sensitive information:
-- **Generic messages**: User-friendly error messages
-- **Detailed logging**: Internal error details logged for debugging
-- **Graceful degradation**: Continues operation when possible
-- **Security events**: Security-related errors trigger additional logging
+- Generic messages: User-friendly error messages
+- Detailed logging: Internal error details logged for debugging
+- Graceful degradation: Continues operation when possible
+- Security events: Security-related errors trigger additional logging
 
 #### Security Integration
 
 Security features are integrated throughout the codebase:
-- **XLSXEngine**: Rate limiting, logging, checksums for file generation
-- **ImageUtils**: Quarantine, validation for image processing
-- **XLKit API**: Input validation, security logging for all operations
-- **Test Runner**: Security validation for all test operations
+- XLSXEngine: Rate limiting, logging, checksums for file generation
+- ImageUtils: Quarantine, validation for image processing
+- XLKit API: Input validation, security logging for all operations
+- Test Runner: Security validation for all test operations
 
 #### Configuration
 
@@ -326,7 +327,7 @@ Test Patterns:
 ```swift
 func testFeatureName() {
     // Arrange
-    let workbook = XLKit.createWorkbook()
+    let workbook = Workbook()
     
     // Act
     let result = workbook.someOperation()
@@ -626,53 +627,35 @@ let images = workbook.getImages()
 Import Operations:
 ```swift
 // Create workbook from CSV
-let workbook = XLKit.createWorkbookFromCSV(
-    csvData: "Name,Age\nJohn,25\nJane,30",
-    sheetName: "Data",
-    separator: ",",
-    hasHeader: true
-)
+let workbook = Workbook(fromCSV: "Name,Age\nJohn,25\nJane,30", hasHeader: true)
 
 // Import into existing sheet
-XLKit.importCSVIntoSheet(
-    sheet: sheet,
-    csvData: "Name,Age\nJohn,25\nJane,30",
-    separator: ",",
-    hasHeader: true
-)
+sheet.importCSV("Name,Age\nJohn,25\nJane,30", hasHeader: true)
 ```
 
 Export Operations:
 ```swift
 // Export sheet to CSV
-let csv = XLKit.exportSheetToCSV(sheet: sheet, separator: ",")
+let csv = sheet.exportToCSV()
 
 // Export sheet to TSV
-let tsv = XLKit.exportSheetToTSV(sheet: sheet)
+let tsv = sheet.exportToTSV()
 ```
 
 ### Image Operations
 
-Format Detection:
+Image Embedding:
 ```swift
-// Detect image format
-let format = XLKit.detectImageFormat(from: imageData)
+// Embed image with automatic sizing and perfect aspect ratio
+try await sheet.embedImageAutoSized(imageData, at: "B2", of: workbook)
 
-// Get image size
-let size = XLKit.getImageSize(from: imageData, format: format)
-```
-
-Image Creation:
-```swift
-// Create ExcelImage from data
-let excelImage = XLKit.createExcelImage(
-    from: imageData,
-    format: format,
-    displaySize: CGSize(width: 100, height: 100)
+// Embed image with custom scaling
+try await sheet.embedImageAutoSized(
+    imageData,
+    at: "B2",
+    of: workbook,
+    scale: 0.7
 )
-
-// Create ExcelImage from URL
-let excelImage = try XLKit.createExcelImage(from: imageURL)
 ```
 
 ## Recent Improvements
@@ -822,7 +805,7 @@ XLKitError.xmlGenerationError("XML generation failed")
 Error Handling Patterns:
 ```swift
 do {
-    try XLKit.saveWorkbook(workbook, to: url)
+    try await workbook.save(to: url)
 } catch XLKitError.invalidCoordinate(let coord) {
     print("Invalid coordinate: \(coord)")
 } catch XLKitError.fileWriteError(let message) {

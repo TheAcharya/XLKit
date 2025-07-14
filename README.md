@@ -6,7 +6,7 @@
 
 <p align="center"><a href="https://github.com/TheAcharya/XLKit/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20iOS-lightgrey.svg?style=flat" alt="platform"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml"><img src="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml/badge.svg" alt="build"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit/actions/workflows/codeql.yml"><img src="https://github.com/TheAcharya/XLKit/actions/workflows/codeql.yml/badge.svg" alt="codeql"/></a></p>
 
-A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) files on macOS and iOS. XLKit provides a fluent, chainable API that makes Excel file generation effortless while supporting advanced features like image embedding, CSV/TSV import/export, cell formatting, and both synchronous and asynchronous operations. Built with Swift 6.0 and targeting macOS 12+ and iOS 15+, it offers type-safe operations, comprehensive error handling, and security features. Note: iOS support is available but not tested.
+A modern Swift library for creating and manipulating Excel (.xlsx) files on macOS and iOS. XLKit provides a fluent, chainable API that makes Excel file generation effortless while supporting advanced features like image embedding, CSV/TSV import/export, cell formatting, and both synchronous and asynchronous operations. Built with Swift 6.0 and targeting macOS 12+ and iOS 15+, it offers type-safe operations, comprehensive error handling, and security features. iOS support is available and tested in CI/CD.
 
 Purpose-built for [MarkersExtractor](https://github.com/TheAcharya/MarkersExtractor) - a tool for extracting markers from Final Cut Pro FCPXML files and generating comprehensive Excel reports with embedded images, CSV/TSV manifests, and structured data exports. Perfect for professional video editing workflows requiring pixel-perfect image embedding with all video and cinema aspect ratios.
 
@@ -47,7 +47,7 @@ This codebase is developed using AI agents.
 - Type-Safe: Strong enums and structs for all data types
 - Excel Compliance: Full OpenXML compliance with CoreXLSX validation
 - No Dependencies: Pure Swift, macOS 12+, Swift 6.0+
-- Comprehensive Testing: 46 tests with 100% API coverage and automated validation
+- Comprehensive Testing: 34 tests with 100% API coverage and automated validation
 - Security Features: Comprehensive security features for production use
 
 ## Security Features
@@ -175,12 +175,12 @@ Test that XLKit is working correctly:
 import XLKit
 
 // Create a simple workbook
-let workbook = XLKit.createWorkbook()
+let workbook = Workbook()
 let sheet = workbook.addSheet(name: "Test")
 sheet.setCell("A1", value: .string("Hello, XLKit!"))
 
 // Save to verify everything works
-try XLKit.saveWorkbook(workbook, to: URL(fileURLWithPath: "test.xlsx"))
+try workbook.save(to: URL(fileURLWithPath: "test.xlsx"))
 print("XLKit is working correctly!")
 ```
 
@@ -190,23 +190,23 @@ print("XLKit is working correctly!")
 import XLKit
 
 // 1. Create a workbook and sheet
-let workbook = XLKit.createWorkbook()
+let workbook = Workbook()
 let sheet = workbook.addSheet(name: "Employees")
 
 // 2. Add headers and data (fluent, chainable)
 sheet
-    .setRow(1, values: [.string("Name"), .string("Photo"), .string("Age")])
-    .setRow(2, values: [.string("Alice"), .empty, .number(30)])
-    .setRow(3, values: [.string("Bob"), .empty, .number(28)])
+    .setRow(1, strings: ["Name", "Photo", "Age"])
+    .setRow(2, strings: ["Alice", "", "30"])
+    .setRow(3, strings: ["Bob", "", "28"])
 
 // 3. Add a GIF image to a cell with perfect aspect ratio preservation
 let gifData = try Data(contentsOf: URL(fileURLWithPath: "alice.gif"))
-try sheet.embedImageAutoSized(gifData, at: "B2", workbook: workbook)
+try await sheet.embedImageAutoSized(gifData, at: "B2", of: workbook)
 
 // 4. Save the workbook (sync or async)
-try XLKit.saveWorkbook(workbook, to: URL(fileURLWithPath: "employees.xlsx"))
+try await workbook.save(to: URL(fileURLWithPath: "employees.xlsx"))
 // or
-// try await XLKit.saveWorkbook(workbook, to: url)
+// try workbook.save(to: url)
 ```
 
 ## Core Concepts
@@ -215,7 +215,7 @@ try XLKit.saveWorkbook(workbook, to: URL(fileURLWithPath: "employees.xlsx"))
 A workbook contains multiple sheets and represents the entire Excel file.
 
 ```swift
-let workbook = XLKit.createWorkbook()
+let workbook = Workbook()
 
 // Add sheets
 let sheet1 = workbook.addSheet(name: "Sheet1")
@@ -315,10 +315,10 @@ let range2 = CellRange(excelRange: "A1:B5")
 
 ### API Highlights
 
-- Workbook: `createWorkbook()`, `addSheet(name:)`, `save(to:)`
+- Workbook: `Workbook()`, `addSheet(name:)`, `save(to:)`
 - Sheet: `setCell`, `setRow`, `setColumn`, `setRange`, `mergeCells`, `embedImageAutoSized`, `setColumnWidth`
 - Images: GIF, PNG, JPEG with perfect aspect ratio preservation
-- CSV/TSV: `createWorkbookFromCSV`, `exportSheetToCSV`, `importCSVIntoSheet`
+- CSV/TSV: `Workbook(fromCSV:)`, `exportToCSV()`, `importCSVIntoSheet`
 - Fluent API: Most setters return `Self` for chaining
 - Bulk Data: `setRow`, `setColumn` for easy import
 - Doc Comments: All public APIs are documented for Xcode autocomplete
@@ -327,12 +327,12 @@ let range2 = CellRange(excelRange: "A1:B5")
 
 ```swift
 let sheet = workbook.addSheet(name: "Products")
-    .setRow(1, values: [.string("Product"), .string("Image"), .string("Price")])
-    .setRow(2, values: [.string("Apple"), .empty, .number(1.99)])
-    .setRow(3, values: [.string("Banana"), .empty, .number(0.99)])
+    .setRow(1, strings: ["Product", "Image", "Price"])
+    .setRow(2, strings: ["Apple", "", "1.99"])
+    .setRow(3, strings: ["Banana", "", "0.99"])
 
 let appleGif = try Data(contentsOf: URL(fileURLWithPath: "apple.gif"))
-try sheet.embedImageAutoSized(appleGif, at: "B2", workbook: workbook)
+try await sheet.embedImageAutoSized(appleGif, at: "B2", of: workbook)
 ```
 
 ### Cell Sizing
@@ -353,14 +353,14 @@ Name,Age,Salary
 John,30,50000.5
 Jane,25,45000.75
 """
-let workbook = XLKit.createWorkbookFromCSV(csvData: csvData, hasHeader: true)
+let workbook = Workbook(fromCSV: csvData, hasHeader: true)
 let sheet = workbook.getSheets().first!
 
 // Export a sheet to CSV
-let csv = XLKit.exportSheetToCSV(sheet: sheet)
+let csv = sheet.exportToCSV()
 
 // Import CSV into an existing sheet
-XLKit.importCSVIntoSheet(sheet: sheet, csvData: csvData, hasHeader: true)
+sheet.importCSV(csvData, hasHeader: true)
 
 // Create a workbook from TSV
 let tsvData = """
@@ -368,17 +368,17 @@ Product\tPrice\tIn Stock
 Apple\t1.99\ttrue
 Banana\t0.99\tfalse
 """
-let tsvWorkbook = XLKit.createWorkbookFromTSV(tsvData: tsvData, hasHeader: true)
+let tsvWorkbook = Workbook(fromTSV: tsvData, hasHeader: true)
 let tsvSheet = tsvWorkbook.getSheets().first!
 
 // Export a sheet to TSV
-let tsv = XLKit.exportSheetToTSV(sheet: tsvSheet)
+let tsv = tsvSheet.exportToTSV()
 
 // Import TSV into an existing sheet
-XLKit.importTSVIntoSheet(sheet: tsvSheet, tsvData: tsvData, hasHeader: true)
+tsvSheet.importTSV(tsvData, hasHeader: true)
 ```
 
-All CSV/TSV helpers are available as static methods on `XLKit` for convenience, and are powered by the `XLKitFormatters` module under the hood.
+All CSV/TSV helpers are available as instance methods on `Workbook` and `Sheet` classes for convenience, and are powered by the `XLKitFormatters` module under the hood.
 
 ## Image Support
 
@@ -417,15 +417,15 @@ All aspect ratios are preserved with pixel-perfect accuracy using empirically de
 ```swift
 // Add image with automatic cell sizing and aspect ratio preservation
 let imageData = try Data(contentsOf: URL(fileURLWithPath: "image.png"))
-try sheet.embedImageAutoSized(imageData, at: "A1", workbook: workbook)
+try await sheet.embedImageAutoSized(imageData, at: "A1", of: workbook)
 
 // Add image from URL with perfect aspect ratio
 let imageURL = URL(fileURLWithPath: "image.gif")
 let imageData = try Data(contentsOf: imageURL)
-try sheet.embedImageAutoSized(imageData, at: "B1", workbook: workbook)
+try await sheet.embedImageAutoSized(imageData, at: "B1", of: workbook)
 
 // XLKit convenience method with scaling options
-try XLKit.embedImage(
+try await XLKit.embedImage(
     imageData,
     at: "C1",
     in: sheet,
@@ -481,7 +481,7 @@ The `embedImageAutoSized` method automatically:
 ### Multiple Sheets with Formulas
 
 ```swift
-let workbook = XLKit.createWorkbook()
+let workbook = Workbook()
 
 // Data sheet
 let dataSheet = workbook.addSheet(name: "Data")
@@ -559,7 +559,7 @@ XLKit provides comprehensive error handling with specific error types:
 
 ```swift
 do {
-    try await XLKit.saveWorkbook(workbook, to: fileURL)
+    try await workbook.save(to: fileURL)
 } catch XLKitError.invalidCoordinate(let coord) {
     print("Invalid coordinate: \(coord)")
 } catch XLKitError.fileWriteError(let message) {
@@ -581,7 +581,7 @@ XLKit includes comprehensive testing and validation capabilities with integrated
 
 ### Unit Tests
 
-The library includes 46 comprehensive unit tests covering:
+The library includes 34 comprehensive unit tests covering:
 - Core Workbook & Sheet Tests: Creation, management, and operations
 - Cell Operations & Data Types: All cell value types and operations
 - Coordinate & Range Tests: Excel coordinate parsing and range operations

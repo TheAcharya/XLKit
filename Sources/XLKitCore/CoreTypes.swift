@@ -7,6 +7,7 @@
 import Foundation
 import CoreGraphics
 import CryptoKit
+// @preconcurrency import XLKitImages   // Removed to fix circular dependency
 
 /// Core types for XLKitCore
 // MARK: - Workbook, Sheet, Cell, CellValue, CellFormat, CellCoordinate, CellRange, XLKitError
@@ -23,6 +24,11 @@ public final class Workbook {
     public init() {
         self.nextSheetId = 1
     }
+    
+    /// Creates a workbook from CSV data
+    // Removed: public convenience init(fromCSV csvData: String, sheetName: String = "Sheet1", separator: String = ",", hasHeader: Bool = false) {
+    /// Creates a workbook from TSV data
+    // Removed: public convenience init(fromTSV tsvData: String, sheetName: String = "Sheet1", hasHeader: Bool = false) {
     
     /// Adds a new sheet to the workbook
     @discardableResult
@@ -82,18 +88,26 @@ public final class Workbook {
     public var imageCount: Int {
         return images.count
     }
+    
+    // MARK: - File Operations
+    
+    // Removed save(to:) methods to fix circular dependency. These are now in Workbook+API.swift.
+    
+    // MARK: - CSV/TSV Operations
+    
+    // Removed CSV/TSV import/export methods to fix circular dependency. These are now in Workbook+API.swift.
 }
 
 /// Represents a worksheet in an Excel workbook
 public final class Sheet: Equatable {
     public let name: String
     public let id: Int
-    private var cells: [String: CellValue] = [:]
-    private var mergedRanges: [CellRange] = []
-    private var columnWidths: [Int: Double] = [:]
-    private var rowHeights: [Int: Double] = [:]
-    private var images: [String: ExcelImage] = [:] // coordinate -> image
-    private var cellFormats: [String: CellFormat] = [:] // coordinate -> format
+    public var cells: [String: CellValue] = [:]
+    public var mergedRanges: [CellRange] = []
+    public var columnWidths: [Int: Double] = [:]
+    public var rowHeights: [Int: Double] = [:]
+    public var images: [String: ExcelImage] = [:] // coordinate -> image
+    public var cellFormats: [String: CellFormat] = [:] // coordinate -> format
     
     public init(name: String, id: Int) {
         self.name = name

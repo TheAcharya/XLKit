@@ -69,14 +69,15 @@ Available Test Types:
 - `no-embeds` / `no-images` - Generate Excel from CSV without images
 - `embed` / `with-embeds` / `with-images` - Generate Excel with embedded images from CSV data
 - `comprehensive` / `demo` - Comprehensive API demonstration with all features
+- `security-demo` / `security` - Demonstrate file path security restrictions
 - `help` / `-h` / `--help` - Show available commands
 
 Test Features:
-- **Security Integration**: All tests include security logging and validation
-- **CoreXLSX Validation**: Generated files are validated for Excel compliance
-- **Aspect Ratio Testing**: Image embedding tests all 17 professional aspect ratios
-- **Performance Testing**: Large dataset handling and memory optimization
-- **Error Handling**: Comprehensive error testing and edge case coverage
+- Security Integration: All tests include security logging and validation
+- CoreXLSX Validation: Generated files are validated for Excel compliance
+- Aspect Ratio Testing: Image embedding tests all 17 professional aspect ratios
+- Performance Testing: Large dataset handling and memory optimization
+- Error Handling: Comprehensive error testing and edge case coverage
 
 Adding New Tests:
 1. Copy template: `cp Sources/XLKitTestRunner/Templates/TestGeneratorTemplate.swift Sources/XLKitTestRunner/YourTestName.swift`
@@ -100,11 +101,11 @@ Test-Workflows/
 ```
 
 Security Features in Tests:
-- **Rate Limiting**: Prevents test abuse and resource exhaustion
-- **Security Logging**: All test operations are logged for audit trails
-- **Input Validation**: All test inputs are validated for security
-- **File Quarantine**: Suspicious test files are automatically quarantined
-- **Checksum Verification**: Optional file integrity verification (disabled by default)
+- Rate Limiting: Prevents test abuse and resource exhaustion
+- Security Logging: All test operations are logged for audit trails
+- Input Validation: All test inputs are validated for security
+- File Quarantine: Suspicious test files are automatically quarantined
+- Checksum Verification: Optional file integrity verification (disabled by default)
 
 ## File Organization & Paths
 
@@ -169,7 +170,7 @@ require_image_embedding_tests = true
 
 ### API Design Requirements
 require_easy_to_use_api = true
-require_csv_api = "XLKit static methods only"
+require_csv_api = "Instance methods on Workbook and Sheet classes"
 
 ## Coding Standards & Best Practices
 
@@ -223,7 +224,7 @@ import Foundation
 ## API Design Guidelines
 
 ### Main API (XLKit Module)
-- Provide static convenience methods
+- Provide instance methods on Workbook and Sheet classes
 - Use fluent API design with method chaining
 - Support both sync and async operations
 - Re-export functionality from submodules
@@ -238,7 +239,7 @@ import Foundation
 - CellFormat: Struct for comprehensive formatting
 
 ### CSV/TSV Operations (XLKitFormatters Module)
-- Use XLKit static methods, not direct CSVUtils
+- Use instance methods on Workbook and Sheet classes
 - Support header row handling
 - Auto-detect data types
 - Handle special characters and quotes
@@ -269,7 +270,7 @@ import Foundation
 ```swift
 func testFeatureName() {
     // Arrange
-    let workbook = XLKit.createWorkbook()
+    let workbook = Workbook()
     
     // Act
     let result = workbook.someOperation()
@@ -387,18 +388,18 @@ All code in this repository must be free from vulnerability injection, supply ch
 XLKit includes comprehensive security features implemented in SecurityManager:
 
 #### SecurityManager Components
-- **Rate Limiting**: 100 operations per minute, configurable limits
-- **Security Logging**: Comprehensive audit trail with structured data
-- **File Quarantine**: Automatic isolation of suspicious files
-- **File Checksums**: SHA-256 integrity verification (configurable)
-- **Input Validation**: Comprehensive validation of all user inputs
-- **Error Handling**: Secure error handling without information leakage
+- Rate Limiting: 100 operations per minute, configurable limits
+- Security Logging: Comprehensive audit trail with structured data
+- File Quarantine: Automatic isolation of suspicious files
+- File Checksums: SHA-256 integrity verification (configurable)
+- Input Validation: Comprehensive validation of all user inputs
+- Error Handling: Secure error handling without information leakage
 
 #### Security Integration Points
-- **XLSXEngine**: Rate limiting, logging, checksums for file generation
-- **ImageUtils**: Quarantine, validation for image processing
-- **XLKit API**: Input validation, security logging for all operations
-- **Test Runner**: Security validation for all test operations
+- XLSXEngine: Rate limiting, logging, checksums for file generation
+- ImageUtils: Quarantine, validation for image processing
+- XLKit API: Input validation, security logging for all operations
+- Test Runner: Security validation for all test operations
 
 #### Security Configuration
 ```swift
