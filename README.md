@@ -42,7 +42,7 @@ This codebase is developed using AI agents.
 - Perfect Image Embedding: Pixel-perfect image embedding with automatic aspect ratio preservation
 - Professional Video Support: All 17 video and cinema aspect ratios with zero distortion
 - Auto Cell Sizing: Automatic column width and row height calculation to perfectly fit images
-- Cell Formatting: Comprehensive formatting including font colors, backgrounds, borders, and alignment with proper XML generation
+- Cell Formatting: Comprehensive formatting including font colours, backgrounds, borders, and alignment with proper XML generation
 - CSV/TSV Import/Export: Built-in support for importing and exporting CSV/TSV data
 - Async & Sync Operations: Save workbooks with one line (async or sync)
 - Type-Safe: Strong enums and structs for all data types
@@ -151,7 +151,7 @@ Add XLKit to your `Package.swift` dependencies:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/TheAcharya/XLKit.git", from: "1.0.0")
+    .package(url: "https://github.com/TheAcharya/XLKit.git", from: "1.0.4")
 ]
 ```
 
@@ -200,7 +200,7 @@ sheet
     .setRow(2, strings: ["Alice", "", "30"])
     .setRow(3, strings: ["Bob", "", "28"])
 
-// 3. Add formatting with font colors
+// 3. Add formatting with font colours
 sheet.setCell("A1", string: "Name", format: CellFormat.header())
 sheet.setCell("B1", string: "Photo", format: CellFormat.header())
 sheet.setCell("C1", string: "Age", format: CellFormat.coloredText(color: "#FF0000"))
@@ -676,7 +676,7 @@ let customFormat = CellFormat(
 )
 sheet.setCell("H1", string: "Custom", format: customFormat)
 
-// Font color formatting
+// Font colour formatting
 let redTextFormat = CellFormat.coloredText(color: "#FF0000")
 let blueTextFormat = CellFormat.coloredText(color: "#0000FF")
 let currencyRedFormat = CellFormat.currency(format: .currencyWithDecimals, color: "#FF0000")
@@ -689,42 +689,42 @@ sheet.setCell("K1", number: 1234.56, format: currencyRedFormat)
 let cellWithFormat = sheet.getCellWithFormat("A1")
 let cellFormat = sheet.getCellFormat("A1")
 
-### Font Color Support
+### Font Colour Support
 
-XLKit provides comprehensive font color support with proper XML generation and theme color support:
+XLKit provides comprehensive font colour support with proper XML generation and theme colour support:
 
 ```swift
-// Basic font colors
+// Basic font colours
 let redText = CellFormat.coloredText(color: "#FF0000")
 let blueText = CellFormat.coloredText(color: "#0000FF")
 let greenText = CellFormat.coloredText(color: "#00FF00")
 
-// Font colors with other formatting
+// Font colours with other formatting
 let boldRedText = CellFormat(
     fontColor: "#FF0000",
     fontWeight: .bold,
     fontSize: 14.0
 )
 
-let coloredCurrency = CellFormat.currency(
+let colouredCurrency = CellFormat.currency(
     format: .currencyWithDecimals,
     color: "#FF0000"  // Red currency values
 )
 
-// Apply font colors to cells
+// Apply font colours to cells
 sheet.setCell("A1", string: "Red Header", format: redText)
-sheet.setCell("B1", number: 1234.56, format: coloredCurrency)
+sheet.setCell("B1", number: 1234.56, format: colouredCurrency)
 sheet.setCell("C1", string: "Bold Blue", format: boldRedText)
 
-// Font colors work with all cell types
+// Font colours work with all cell types
 sheet.setCell("D1", boolean: true, format: CellFormat.coloredText(color: "#FF6600"))
 sheet.setCell("E1", date: Date(), format: CellFormat.coloredText(color: "#6600FF"))
 ```
 
-Supported color formats:
-- Hex colors: `#FF0000`, `#00FF00`, `#0000FF`
-- Theme colors: Excel's built-in theme color system
-- All colors are properly converted to Excel's internal format
+Supported colour formats:
+- Hex colours: `#FF0000`, `#00FF00`, `#0000FF`
+- Theme colours: Excel's built-in theme colour system
+- All colours are properly converted to Excel's internal format
 ```
 
 ## Error Handling
@@ -761,7 +761,7 @@ The library includes 35 comprehensive unit tests covering:
 - Coordinate & Range Tests: Excel coordinate parsing and range operations
 - Image & Aspect Ratio Tests: All 17 professional aspect ratios with perfect preservation
 - CSV/TSV Import/Export: Complete import/export functionality
-- Cell Formatting: Predefined and custom formatting options
+- Cell Formatting: Predefined and custom formatting options including font colours
 - Column & Row Sizing: Automatic sizing and manual adjustments
 - File Operations: Async and sync workbook saving
 - Error Handling: Comprehensive error testing and edge cases
@@ -790,7 +790,7 @@ Test Features:
 - Security Integration: All tests include security logging and validation
 - CoreXLSX Validation: Generated files are validated for Excel compliance
 - Aspect Ratio Testing: Image embedding tests all 17 professional aspect ratios
-- Performance Testing: Large dataset handling and memory optimization
+- Performance Testing: Large dataset handling and memory optimisation
 - Error Handling: Comprehensive error testing and edge case coverage
 
 ### Security Features in Tests

@@ -17,13 +17,19 @@
 - Ensured all generated Excel files pass `CoreXLSX` validation and open without errors
 - Fixed async/await warnings by removing unnecessary await keywords from synchronous operations
 - Updated API documentation to show instance methods on Workbook and Sheet classes
+- Updated API documentation to use proper Swift naming conventions and parameter patterns
 - Fixed concurrency handling in test runner with proper Task and semaphore usage
-- Added font color support with proper XML generation in `XLSXEngine`
-- Updated `CellFormat` to properly apply font colors in Excel output
-- Added font color formatting tests to XLKitTests with comprehensive validation
-- Enhanced comprehensive demo with font color examples for all supported colors
-- Fixed "Image" column header formatting inconsistency in embed test output
+- Added font colour support with proper XML generation in `XLSXEngine`
+- Updated `CellFormat` to properly apply font colours in Excel output
+- Added font colour formatting tests to XLKitTests with comprehensive validation
+- Enhanced comprehensive demo with font colour examples for all supported colours
+- Fixed `Image` column header formatting inconsistency in embed test output
 - Ensured all generated Excel files maintain consistent header styling across all columns
+- Enhanced codebase with modern Swift 6.0 idioms and improved type safety
+- Improved error handling with more specific `XLKitError` types and meaningful error messages
+- Enhanced test suite organisation with better test categorisation and coverage documentation
+- Resolved test count discrepancies and ensured accurate documentation across all files
+- Improved code maintainability with consistent formatting and documentation standards
 
 ---
 
@@ -34,7 +40,7 @@
 
 **🔧 Improvements:**
 - Identified and resolved scaling inconsistencies between XLKit test and MarkersExtractor integration
-- Fixed XLKit test to use default parameters instead of manual overrides for consistent behavior
+- Fixed XLKit test to use default parameters instead of manual overrides for consistent behaviour
 - Established consistent API usage pattern: let XLKit handle sizing automatically
 - Documented scale parameter options and best practices for image embeddings
 - Updated documentation (AGENT.MD and .cursorrules) with scaling API details and integration guidelines

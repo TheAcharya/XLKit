@@ -75,7 +75,7 @@ All tests verify pixel-perfect scaling, Excel cell dimension matching, and zero 
 
 ## Cell Formatting
 - `testCellFormatting()`: Basic cell formatting with predefined styles
-- `testFontColorFormatting()`: Font color formatting with proper XML generation and theme color support
+- `testFontColorFormatting()`: Font colour formatting with proper XML generation and theme colour support
 - `testSetCellWithFormatting()`: Cell formatting with custom properties and persistence
 
 ## CSV/TSV Import/Export
@@ -106,7 +106,7 @@ A modular command-line tool for generating Excel files for testing and demonstra
 - Security Integration: All tests include security logging and validation
 - CoreXLSX Validation: Generated files are validated for Excel compliance
 - Aspect Ratio Testing: Image embedding tests all 17 professional aspect ratios
-- Performance Testing: Large dataset handling and memory optimization
+- Performance Testing: Large dataset handling and memory optimisation
 - Error Handling: Comprehensive error testing and edge case coverage
 
 ### Output Structure

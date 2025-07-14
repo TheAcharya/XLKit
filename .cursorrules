@@ -299,7 +299,7 @@ import Foundation
 - CellCoordinate: Struct for Excel-style coordinates
 - CellRange: Struct for cell ranges
 - Cell: Struct combining value and format
-- CellFormat: Struct for comprehensive formatting including font colors
+- CellFormat: Struct for comprehensive formatting including font colours
 
 ### CSV/TSV Operations (XLKitFormatters Module)
 - Use instance methods on Workbook and Sheet classes
@@ -318,7 +318,7 @@ import Foundation
 - Use temporary directories for file creation
 - Implement proper XML escaping
 - Support ZIP archive creation using ZIPFoundation
-- Generate proper font color XML with theme color support
+- Generate proper font colour XML with theme colour support
 
 ## Testing Standards
 
@@ -329,7 +329,7 @@ import Foundation
 - Test image format detection and embedding
 - Test XLSX file generation and saving
 - Test coordinate and range operations
-- Test font color formatting and XML generation
+- Test font colour formatting and XML generation
 
 ### Test Patterns
 ```swift
@@ -583,7 +583,7 @@ Security operations are logged with structured data:
 - Comprehensive Testing: All 17 professional video and cinema aspect ratios (16:9, 1:1, 9:16, 21:9, 3:4, 2.39:1, 1.85:1, 4:3, 18:9, 1.19:1, 1.5:1, 1.48:1, 1.25:1, 1.9:1, 1.32:1, 2.37:1, 1.37:1) tested and validated, including cinema and mobile formats
 - Excel Compliance: All generated files pass CoreXLSX validation with perfect aspect ratio preservation
 - Simplified API: Easy-to-use methods with automatic sizing and aspect ratio preservation
-- Font Color Support: Added comprehensive font color formatting with proper XML generation and theme color support
+- Font Colour Support: Added comprehensive font colour formatting with proper XML generation and theme colour support
 
 ## iOS Compatibility Fix (2025-07-14)
 - Fixed iOS build error: `'homeDirectoryForCurrentUser' is unavailable in iOS`

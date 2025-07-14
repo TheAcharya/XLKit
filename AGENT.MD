@@ -386,7 +386,7 @@ Test Coverage Requirements:
 - Test image format detection and embedding with all 17 aspect ratios
 - Test XLSX file generation and saving
 - Test coordinate and range operations
-- Test font color formatting and XML generation
+- Test font colour formatting and XML generation
 
 Test Patterns:
 ```swift
@@ -602,7 +602,7 @@ let value = sheet.getCell("A1")
 // Set cell with format
 sheet.setCell("A1", cell: Cell.string("Header", format: CellFormat.header()))
 
-// Set cell with font color
+// Set cell with font colour
 sheet.setCell("A1", cell: Cell.string("Red Text", format: CellFormat.coloredText(color: "#FF0000")))
 
 // Set range of cells
@@ -745,7 +745,7 @@ try await sheet.embedImageAutoSized(
 - Comprehensive testing of all 17 professional video and cinema aspect ratios
 - Excel compliance with CoreXLSX validation for all generated files
 - Simplified API with automatic sizing and aspect ratio preservation
-- Font Color Support: Added comprehensive font color formatting with proper XML generation and theme color support
+- Font Colour Support: Added comprehensive font colour formatting with proper XML generation and theme colour support
 
 ### Scaling API Investigation and Fixes (2025-07-12)
 - Identified and resolved scaling inconsistencies between XLKit test and MarkersExtractor integration
@@ -776,7 +776,7 @@ Key Features:
 - Generates Excel-compliant XML with proper escaping
 - Validates files using CoreXLSX
 - Supports all Excel data types and formatting
-- Generates proper font color XML with theme color support
+- Generates proper font colour XML with theme colour support
 
 ### Image Embedding Scaling API
 
