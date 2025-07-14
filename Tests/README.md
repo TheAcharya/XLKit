@@ -17,7 +17,7 @@ This document provides an organized overview of all tests in the XLKit library, 
 - [Coverage & Quality Assurance](#coverage--quality-assurance)
 
 ## Test Overview
-- Total Tests: 34
+- Total Tests: 35
 - 100% coverage of public APIs
 - All generated files validated with CoreXLSX
 - Security features integrated throughout all tests
@@ -75,8 +75,8 @@ All tests verify pixel-perfect scaling, Excel cell dimension matching, and zero 
 
 ## Cell Formatting
 - `testCellFormatting()`: Basic cell formatting with predefined styles
-- `testCustomCellFormatting()`: Custom formatting with full property customization
-- `testRangeFormatting()`: Range-based formatting and persistence
+- `testFontColorFormatting()`: Font color formatting with proper XML generation and theme color support
+- `testSetCellWithFormatting()`: Cell formatting with custom properties and persistence
 
 ## CSV/TSV Import/Export
 - `testWorkbookFromCSV()`: Workbook creation from CSV data
@@ -174,7 +174,7 @@ swift run XLKitTestRunner help
 | Cell Formatting    | 3          | 100%            |
 | CSV/TSV            | 8          | 100%            |
 | Column/Row Sizing  | 1          | 100%            |
-| Total              | 34         | 100%            |
+| Total              | 35         | 100%            |
 
 ### Quality Standards
 - All generated files pass CoreXLSX validation

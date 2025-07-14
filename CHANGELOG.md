@@ -13,11 +13,17 @@
 - Added iOS job to GitHub Actions workflow for continuous testing on iOS simulators
 - Added CodeQL security scanning workflow with Swift 6.0 support
 - Fixed comprehensive demo test with duplicate relationship IDs causing Excel file corruption
-- Implemented dynamic relationship ID generation to prevent conflicts in workbook.xml.rels and drawing1.xml.rels
-- Ensured all generated Excel files pass CoreXLSX validation and open without errors
+- Implemented dynamic relationship ID generation to prevent conflicts in `workbook.xml.rels` and `drawing1.xml.rels`
+- Ensured all generated Excel files pass `CoreXLSX` validation and open without errors
 - Fixed async/await warnings by removing unnecessary await keywords from synchronous operations
 - Updated API documentation to show instance methods on Workbook and Sheet classes
 - Fixed concurrency handling in test runner with proper Task and semaphore usage
+- Added font color support with proper XML generation in `XLSXEngine`
+- Updated `CellFormat` to properly apply font colors in Excel output
+- Added font color formatting tests to XLKitTests with comprehensive validation
+- Enhanced comprehensive demo with font color examples for all supported colors
+- Fixed "Image" column header formatting inconsistency in embed test output
+- Ensured all generated Excel files maintain consistent header styling across all columns
 
 ---
 

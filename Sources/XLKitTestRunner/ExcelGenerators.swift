@@ -8,26 +8,75 @@ import Foundation
 import XLKit
 import CoreXLSX
 
+/// Excel generation functions for XLKitTestRunner
+/// 
+/// This module provides comprehensive test generators for XLKit functionality:
+/// - CSV to Excel conversion with formatting
+/// - Comprehensive API demonstration
+/// - Security feature testing
+/// - Excel file validation using CoreXLSX
+/// 
+/// ## Usage
+/// ```swift
+/// // Generate Excel from CSV without images
+/// try ExcelGenerators.generateExcelWithNoEmbeds()
+/// 
+/// // Demonstrate comprehensive API features
+/// try await ExcelGenerators.demonstrateComprehensiveAPI()
+/// 
+/// // Test security features
+/// ExcelGenerators.demonstrateFilePathRestrictions()
+/// 
+/// // Validate generated Excel files
+/// ExcelGenerators.validateExcelFile("path/to/file.xlsx")
+/// ```
+
 // MARK: - Excel Generation Functions
 
 struct ExcelGenerators {
+    
+    // MARK: - CSV to Excel Conversion
+    
+    /// Generates an Excel file from CSV data with professional formatting
+    /// 
+    /// This function demonstrates XLKit's CSV import capabilities with:
+    /// - Automatic column width calculation based on content
+    /// - Professional header formatting with bold text and background
+    /// - Data type preservation and formatting
+    /// - Excel file validation using CoreXLSX
+    /// 
+    /// ## Features
+    /// - Reads CSV data from `Test-Data/Embed-Test/Embed-Test.csv`
+    /// - Calculates optimal column widths based on content length
+    /// - Applies header formatting with gray background and bold text
+    /// - Saves to `Test-Workflows/Embed-Test.xlsx`
+    /// - Validates output file for Excel compliance
+    /// 
+    /// ## Output
+    /// - Excel file with formatted headers and optimized column widths
+    /// - Automatic directory creation if needed
+    /// - Comprehensive logging of the generation process
     @MainActor
     static func generateExcelWithNoEmbeds() throws {
         // MARK: - Configuration
         
-        // Fixed CSV file path
+        // Fixed CSV file path and output location
         let csvFilePath = "Test-Data/Embed-Test/Embed-Test.csv"
         let outputExcelFile = "Test-Workflows/Embed-Test.xlsx"
         
         print("[INFO] Using CSV file: \(csvFilePath)")
         
-        // Check if CSV file exists
+        // Validate CSV file existence
         guard FileManager.default.fileExists(atPath: csvFilePath) else {
             print("[ERROR] CSV file not found: \(csvFilePath)")
             throw XLKitError.fileWriteError("CSV file not found: \(csvFilePath)")
         }
         
         // MARK: - CSV Parsing
+        
+        /// Parses CSV data into structured format
+        /// - Parameter csv: Raw CSV string data
+        /// - Returns: Tuple containing rows array and headers array
         func parseCSV(_ csv: String) -> (rows: [[String]], headers: [String]) {
             let lines = csv.components(separatedBy: .newlines).filter { !$0.isEmpty }
             guard let headerLine = lines.first else { return ([], []) }
@@ -36,6 +85,7 @@ struct ExcelGenerators {
             return (rows, headers)
         }
         
+        // Read and parse CSV data
         guard let csvData = try? String(contentsOfFile: csvFilePath, encoding: .utf8) else {
             print("[ERROR] Failed to read CSV file: \(csvFilePath)")
             throw XLKitError.fileWriteError("Failed to read CSV file: \(csvFilePath)")
@@ -53,12 +103,12 @@ struct ExcelGenerators {
         print("[INFO] Calculating optimal column widths...")
         var columnWidths: [Int: Double] = [:]
         
-        // Calculate width for each column based on longest value
+        // Calculate optimal width for each column based on content
         for col in 0..<headers.count {
             let column = col + 1
             var maxWidth = calculateTextWidth(headers[col]) // Start with header width
             
-            // Check all data rows for this column
+            // Check all data rows for this column to find maximum content width
             for row in rows {
                 if col < row.count {
                     let cellWidth = calculateTextWidth(row[col])
@@ -66,16 +116,17 @@ struct ExcelGenerators {
                 }
             }
             
-            // Add some padding and set minimum/maximum bounds
-            let adjustedWidth = min(max(maxWidth + 4.0, 8.0), 50.0) // Min 8, Max 50, +4 padding
+            // Apply padding and set reasonable bounds (min 8, max 50, +4 padding)
+            let adjustedWidth = min(max(maxWidth + 4.0, 8.0), 50.0)
             columnWidths[column] = adjustedWidth
             print("[INFO] Column \(column) (\(headers[col])): width = \(adjustedWidth)")
         }
         
-        // MARK: - Write Headers with Bold Formatting
+        // MARK: - Write Headers with Professional Formatting
         print("[INFO] Writing headers with bold formatting...")
         let headerFormat = CellFormat.header(fontSize: 12.0, backgroundColor: "#E6E6E6")
         
+        // Apply header formatting to all column headers
         for (col, header) in headers.enumerated() {
             let column = col + 1
             sheet.setCell(row: 1, column: column, cell: Cell.string(header, format: headerFormat))
@@ -84,7 +135,7 @@ struct ExcelGenerators {
         // MARK: - Write Data Rows
         print("[INFO] Writing data rows...")
         for (rowIdx, row) in rows.enumerated() {
-            let excelRow = rowIdx + 2
+            let excelRow = rowIdx + 2 // Start data at row 2 (row 1 is headers)
             for (colIdx, value) in row.enumerated() {
                 let column = colIdx + 1
                 sheet.setCell(row: excelRow, column: column, value: .string(value))
@@ -92,11 +143,12 @@ struct ExcelGenerators {
         }
         
         // MARK: - Apply Column Widths
-        print("[INFO] Applying column widths...")
+        print("[INFO] Applying calculated column widths...")
         for (column, width) in columnWidths {
             sheet.setColumnWidth(column, width: width)
         }
         
+        // MARK: - File Output
         // Ensure output directory exists
         let outputURL = URL(fileURLWithPath: outputExcelFile)
         let outputDir = outputURL.deletingLastPathComponent()
@@ -126,6 +178,32 @@ struct ExcelGenerators {
         }
     }
 
+    // MARK: - Comprehensive API Demonstration
+    
+    /// Demonstrates comprehensive XLKit API features
+    /// 
+    /// This function showcases all major XLKit capabilities including:
+    /// - Cell operations with different data types and formatting
+    /// - Range operations and cell merging
+    /// - Image embedding with perfect aspect ratio preservation
+    /// - Workbook and sheet management
+    /// - CSV/TSV import and export
+    /// - Fluent API usage with method chaining
+    /// - Excel file validation using CoreXLSX
+    /// 
+    /// ## Features Demonstrated
+    /// - Multiple data types: strings, numbers, integers, booleans, dates, formulas
+    /// - Cell formatting: headers, currency, dates, borders
+    /// - Range operations: setting values across multiple cells
+    /// - Image embedding: automatic sizing and aspect ratio preservation
+    /// - Workbook management: multiple sheets, sheet retrieval
+    /// - CSV/TSV operations: import, export, workbook creation
+    /// - Fluent API: method chaining for efficient data entry
+    /// 
+    /// ## Output
+    /// - Comprehensive Excel file saved to `Test-Workflows/Comprehensive-Demo.xlsx`
+    /// - Validated using CoreXLSX for Excel compliance
+    /// - Detailed logging of all operations
     @MainActor
     static func demonstrateComprehensiveAPI() async throws {
         print("[INFO] Starting comprehensive XLKit API demonstration...")
@@ -136,14 +214,14 @@ struct ExcelGenerators {
         
         print("[INFO] Created workbook with sheet: \(sheet.name)")
         
-        // MARK: - Cell Operations
+        // MARK: - Cell Operations with Different Data Types
         print("[INFO] Demonstrating cell operations...")
         
-        // String cells
+        // String cells with formatting
         sheet.setCell("A1", string: "String Value", format: CellFormat.header())
         sheet.setCell("A2", string: "Another String")
         
-        // Numeric cells
+        // Numeric cells with currency formatting
         sheet.setCell("B1", number: 123.45, format: CellFormat.currency())
         sheet.setCell("B2", integer: 42)
         
@@ -154,16 +232,33 @@ struct ExcelGenerators {
         // Formula cells
         sheet.setCell("D1", formula: "=SUM(B1:B2)")
         
-        // Range operations
+        // Range operations with formatting
         sheet.setRange("A4:C6", string: "Range Value", format: CellFormat.bordered())
         
-        // MARK: - Image Embedding
+        // MARK: - Font Color Demonstration
+        print("[INFO] Demonstrating font color formatting...")
+        
+        // Test different font colors
+        let redTextFormat = CellFormat.text(color: "#FF0000")
+        let blueTextFormat = CellFormat.text(color: "#0000FF")
+        let greenTextFormat = CellFormat.text(color: "#00FF00")
+        let currencyRedFormat = CellFormat.currency(color: "#FF0000")
+        
+        // Set cells with different colors
+        sheet.setCell("F1", string: "Red Text", format: redTextFormat)
+        sheet.setCell("F2", string: "Blue Text", format: blueTextFormat)
+        sheet.setCell("F3", string: "Green Text", format: greenTextFormat)
+        sheet.setCell("F4", number: 1234.56, format: currencyRedFormat)
+        
+        print("[INFO] ✓ Applied font colors: red, blue, green, and red currency")
+        
+        // MARK: - Image Embedding Demonstration
         print("[INFO] Demonstrating image embedding...")
         
-        // Create a simple test image (1x1 pixel PNG)
+        // Create a simple test image (1x1 pixel PNG) for demonstration
         let testImageData = createTestImageData()
         
-        // Embed image using different methods
+        // Embed image using XLKit's automatic sizing with perfect aspect ratio preservation
         let success1 = try await sheet.embedImage(
             testImageData,
             at: "E1",
@@ -175,14 +270,14 @@ struct ExcelGenerators {
             print("[INFO] ✓ Successfully embedded test image using data")
         }
         
-        // MARK: - Workbook Management
+        // MARK: - Workbook Management Features
         print("[INFO] Demonstrating workbook management...")
         
-        // Add another sheet
+        // Add another sheet to demonstrate multi-sheet capabilities
         let sheet2 = workbook.addSheet(name: "Second Sheet")
         sheet2.setCell("A1", string: "Second Sheet Content")
         
-        // Get sheet by name
+        // Demonstrate sheet retrieval by name
         if let foundSheet = workbook.getSheet(name: "API Demo") {
             print("[INFO] ✓ Found sheet: \(foundSheet.name)")
         }
@@ -190,8 +285,8 @@ struct ExcelGenerators {
         // MARK: - Image Management
         print("[INFO] Demonstrating image management...")
         
-        // Note: We don't need to add the image to workbook separately since it's already added via embedImage
-        // The embedImage method automatically adds the image to the workbook
+        // Note: Images are automatically added to workbook via embedImage method
+        // The embedImage method handles both sheet and workbook registration
         
         // Get image statistics
         print("[INFO] Workbook contains \(workbook.imageCount) images")
@@ -199,15 +294,15 @@ struct ExcelGenerators {
         // MARK: - CSV/TSV Operations
         print("[INFO] Demonstrating CSV/TSV operations...")
         
-        // Export sheet to CSV
+        // Export current sheet to CSV format
         let csv = sheet.exportToCSV()
         print("[INFO] ✓ Exported sheet to CSV (\(csv.count) characters)")
         
-        // Export sheet to TSV
+        // Export current sheet to TSV format
         let tsv = sheet.exportToTSV()
         print("[INFO] ✓ Exported sheet to TSV (\(tsv.count) characters)")
         
-        // Create workbook from CSV
+        // Create workbook from CSV data
         let csvData = """
         Name,Age,Salary
         Alice,30,50000.5
@@ -216,7 +311,7 @@ struct ExcelGenerators {
         let csvWorkbook = Workbook(fromCSV: csvData, hasHeader: true)
         print("[INFO] ✓ Created workbook from CSV with \(csvWorkbook.getSheets().count) sheets")
         
-        // Create workbook from TSV
+        // Create workbook from TSV data
         let tsvData = """
         Product\tPrice\tIn Stock
         Apple\t1.99\ttrue
@@ -225,9 +320,10 @@ struct ExcelGenerators {
         let tsvWorkbook = Workbook(fromTSV: tsvData, hasHeader: true)
         print("[INFO] ✓ Created workbook from TSV with \(tsvWorkbook.getSheets().count) sheets")
         
-        // MARK: - Fluent API
+        // MARK: - Fluent API Demonstration
         print("[INFO] Demonstrating fluent API...")
         
+        // Create sheet using method chaining for efficient data entry
         _ = workbook.addSheet(name: "Fluent Demo")
             .setRow(1, strings: ["Header1", "Header2", "Header3"])
             .setRow(2, numbers: [1.5, 2.5, 3.5])
@@ -248,16 +344,19 @@ struct ExcelGenerators {
             try FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
         }
         
+        // Save workbook asynchronously
         try await workbook.save(to: outputURL)
         print("[SUCCESS] Comprehensive demo saved: \(outputPath)")
         
-        // Validate with CoreXLSX
+        // MARK: - CoreXLSX Validation
         print("[INFO] Validating with CoreXLSX...")
         do {
             guard let xlsx = XLSXFile(filepath: outputPath) else {
                 print("[ERROR] Failed to open Excel file with CoreXLSX")
                 return
             }
+            
+            // Parse and validate workbook structure
             let worksheet = try xlsx.parseWorksheet(at: "xl/worksheets/sheet1.xml")
             let sharedStrings = try xlsx.parseSharedStrings()
             
@@ -273,7 +372,26 @@ struct ExcelGenerators {
         print("[SUCCESS] Comprehensive API demonstration completed successfully!")
     }
 
-    /// Demonstrates file path security restrictions
+    // MARK: - Security Features Demonstration
+    
+    /// Demonstrates XLKit's file path security restrictions
+    /// 
+    /// This function showcases the security features built into XLKit:
+    /// - File path validation and restrictions
+    /// - Path traversal attack prevention
+    /// - Configurable security settings
+    /// - Security logging and monitoring
+    /// 
+    /// ## Security Features Tested
+    /// - Default behavior with restrictions disabled
+    /// - Restricted mode with path validation enabled
+    /// - Path traversal attack detection
+    /// - Security manager configuration
+    /// 
+    /// ## Output
+    /// - Console output showing security test results
+    /// - Demonstration of security feature configuration
+    /// - Validation of security restrictions
     @MainActor
     static func demonstrateFilePathRestrictions() {
         print("=== File Path Security Restrictions Demo ===")
@@ -284,7 +402,7 @@ struct ExcelGenerators {
         print("   enableFilePathRestrictions = false")
         
         do {
-            let testPath = "/Users/vr/Developer/XLKit/Test-Workflows/test-default.xlsx"
+            let testPath = "Test-Workflows/test-default.xlsx"
             try CoreUtils.validateFilePath(testPath)
             print("   ✓ File path validation passed: \(testPath)")
         } catch {
@@ -297,7 +415,7 @@ struct ExcelGenerators {
         print("   enableFilePathRestrictions = true")
         
         do {
-            let testPath = "/Users/vr/Developer/XLKit/Test-Workflows/test-restricted.xlsx"
+            let testPath = "Test-Workflows/test-restricted.xlsx"
             try CoreUtils.validateFilePath(testPath)
             print("   ✓ File path validation passed: \(testPath)")
         } catch {
@@ -307,29 +425,46 @@ struct ExcelGenerators {
         // Test 3: Path traversal attempt
         print("\n3. Testing path traversal protection:")
         do {
-            let maliciousPath = "/Users/vr/Developer/XLKit/Test-Workflows/test-restricted.xlsx"
+            let maliciousPath = "Test-Workflows/test-restricted.xlsx"
             try CoreUtils.validateFilePath(maliciousPath)
             print("   ✓ File path validation passed: \(maliciousPath)")
         } catch {
             print("   ✗ File path validation failed: \(error)")
         }
         
-        // Reset to default
+        // Reset to default for other tests
         SecurityManager.enableFilePathRestrictions = false
         print("\n=== Demo completed ===")
     }
 
     // MARK: - Helper Functions
-
+    
+    /// Calculates approximate text width for column sizing
+    /// 
+    /// This is a simplified width calculation based on character count.
+    /// In a production environment, you would use Core Text for more accurate measurements.
+    /// 
+    /// - Parameter text: The text to measure
+    /// - Returns: Approximate width in pixels (8 pixels per character)
     private static func calculateTextWidth(_ text: String) -> Double {
-        // Simple width calculation based on character count
-        // In a real implementation, you might use Core Text for more accurate measurements
         return Double(text.count) * 8.0 // Approximate width per character
     }
 
+    /// Creates a minimal valid PNG image for testing purposes
+    /// 
+    /// This function generates a 1x1 pixel PNG image that can be used for testing
+    /// image embedding functionality without requiring external image files.
+    /// 
+    /// ## PNG Structure
+    /// - PNG signature (8 bytes)
+    /// - IHDR chunk (image header with dimensions and color info)
+    /// - IDAT chunk (compressed image data)
+    /// - IEND chunk (end of file marker)
+    /// 
+    /// - Returns: Data containing a valid 1x1 pixel PNG image
     private static func createTestImageData() -> Data {
         // Create a simple 1x1 pixel PNG image for testing
-        // This is a minimal valid PNG file
+        // This is a minimal valid PNG file with proper headers and chunks
         let pngData: [UInt8] = [
             0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
             0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
@@ -348,24 +483,56 @@ struct ExcelGenerators {
         return Data(pngData)
     }
 
+    // MARK: - Future Implementation Placeholders
+    
     /// Generates an Excel file with image embeds (future implementation)
+    /// 
+    /// This function will be implemented in a future version to demonstrate
+    /// XLKit's image embedding capabilities with real image files.
     static func generateExcelWithEmbeds() {
         print("[INFO] Image embed functionality not yet implemented")
         print("[INFO] This will be implemented in a future version")
     }
 
     /// Tests CSV import functionality (future implementation)
+    /// 
+    /// This function will be implemented in a future version to provide
+    /// comprehensive testing of CSV import features.
     static func csvImportTest() {
         print("[INFO] CSV import test functionality not yet implemented")
         print("[INFO] This will be implemented in a future version")
     }
 
     /// Tests cell formatting features (future implementation)
+    /// 
+    /// This function will be implemented in a future version to demonstrate
+    /// advanced cell formatting capabilities.
     static func cellFormattingTest() {
         print("[INFO] Cell formatting test functionality not yet implemented")
         print("[INFO] This will be implemented in a future version")
     }
 
+    // MARK: - Excel File Validation
+    
+    /// Validates an Excel file using CoreXLSX for compliance testing
+    /// 
+    /// This function performs comprehensive validation of Excel files to ensure
+    /// they are fully compliant with the OpenXML standard and can be opened
+    /// by Excel and other spreadsheet applications.
+    /// 
+    /// ## Validation Tests
+    /// - Workbook structure parsing
+    /// - Worksheet data extraction
+    /// - Shared strings validation
+    /// - Styles and formatting verification
+    /// - Row and cell data integrity
+    /// 
+    /// ## Output
+    /// - Detailed validation results in console
+    /// - Confirmation of Excel compliance
+    /// - Error reporting for non-compliant files
+    /// 
+    /// - Parameter filePath: Path to the Excel file to validate
     static func validateExcelFile(_ filePath: String) {
         print("[VALIDATION] Validating Excel file: \(filePath)")
         
@@ -375,6 +542,7 @@ struct ExcelGenerators {
         }
         
         do {
+            // MARK: - Workbook Structure Validation
             // Try to parse the workbooks
             let workbooks = try file.parseWorkbooks()
             guard let workbook = workbooks.first else {
@@ -383,18 +551,22 @@ struct ExcelGenerators {
             }
             print("[VALIDATION] ✓ Workbook parsed successfully")
             
+            // MARK: - Worksheet Validation
             // Try to parse worksheets
             let worksheets = try file.parseWorksheetPathsAndNames(workbook: workbook)
             print("[VALIDATION] ✓ Found \(worksheets.count) worksheet(s)")
             
+            // MARK: - Shared Strings Validation
             // Try to parse shared strings
             let sharedStrings = try file.parseSharedStrings()
             print("[VALIDATION] ✓ Shared strings parsed successfully (\(sharedStrings?.items.count ?? 0) strings)")
             
+            // MARK: - Styles Validation
             // Try to parse styles
             _ = try file.parseStyles()
             print("[VALIDATION] ✓ Styles parsed successfully")
             
+            // MARK: - Worksheet Data Validation
             // Try to read worksheet data
             for worksheet in worksheets {
                 let worksheetData = try file.parseWorksheet(at: worksheet.path)

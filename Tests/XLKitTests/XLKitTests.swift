@@ -218,6 +218,47 @@ final class XLKitTests: XCTestCase {
         XCTAssertNotNil(borderedFormat)
     }
     
+    func testFontColorFormatting() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Font Color Test")
+        
+        // Test different font colors
+        let redTextFormat = CellFormat.text(color: "#FF0000")
+        let blueTextFormat = CellFormat.text(color: "#0000FF")
+        let greenTextFormat = CellFormat.text(color: "#00FF00")
+        let currencyRedFormat = CellFormat.currency(color: "#FF0000")
+        
+        // Set cells with different colors
+        sheet.setCell("A1", string: "Red Text", format: redTextFormat)
+        sheet.setCell("A2", string: "Blue Text", format: blueTextFormat)
+        sheet.setCell("A3", string: "Green Text", format: greenTextFormat)
+        sheet.setCell("A4", number: 1234.56, format: currencyRedFormat)
+        
+        // Verify formats are applied
+        let redCell = sheet.getCellWithFormat("A1")
+        let blueCell = sheet.getCellWithFormat("A2")
+        let greenCell = sheet.getCellWithFormat("A3")
+        let currencyCell = sheet.getCellWithFormat("A4")
+        
+        XCTAssertNotNil(redCell)
+        XCTAssertNotNil(blueCell)
+        XCTAssertNotNil(greenCell)
+        XCTAssertNotNil(currencyCell)
+        
+        XCTAssertEqual(redCell?.format?.fontColor, "#FF0000")
+        XCTAssertEqual(blueCell?.format?.fontColor, "#0000FF")
+        XCTAssertEqual(greenCell?.format?.fontColor, "#00FF00")
+        XCTAssertEqual(currencyCell?.format?.fontColor, "#FF0000")
+        
+        // Test that the format key includes font color
+        if let redFormat = redCell?.format {
+            let formatKey = XLSXEngine.formatToKey(redFormat)
+            XCTAssertTrue(formatKey.contains("fontColor:#FF0000"))
+        } else {
+            XCTFail("Red cell format should not be nil")
+        }
+    }
+    
     func testSetCellWithFormatting() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")

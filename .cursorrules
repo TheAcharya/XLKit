@@ -109,6 +109,68 @@ Security Features in Tests:
 
 ## File Organization & Paths
 
+### Complete Directory Structure
+
+```
+XLKit/
+├── AGENT.MD                     # AI agent development guide
+├── .cursorrules                 # Cursor rules for AI agents
+├── CHANGELOG.md                 # Version history and changes
+├── LICENSE                      # MIT license
+├── Package.swift                # Swift Package Manager configuration
+├── Package.resolved             # Locked dependency versions
+├── README.md                    # Main documentation
+├── SECURITY.md                  # Security policy
+├── .gitignore                   # Git ignore patterns
+├── .swift-format                # Swift formatting configuration
+├── Assets/                      # Project assets
+│   └── XLKit_Icon.png          # Project icon
+├── Sources/                     # Source code modules
+│   ├── XLKit/                  # Main API module
+│   │   ├── XLKit.swift         # Main API exports (155 lines)
+│   │   ├── Sheet+API.swift     # Sheet operations API (190 lines)
+│   │   └── Workbook+API.swift  # Workbook operations API (53 lines)
+│   ├── XLKitCore/              # Core types and utilities
+│   │   ├── CoreTypes.swift     # Core data structures (1215 lines)
+│   │   └── SecurityManager.swift # Security features (282 lines)
+│   ├── XLKitFormatters/        # CSV/TSV functionality
+│   │   └── CSVUtils.swift      # CSV import/export utilities (199 lines)
+│   ├── XLKitImages/            # Image processing
+│   │   ├── ImageUtils.swift    # Image utilities (155 lines)
+│   │   └── ImageSizingUtils.swift # Image sizing logic (191 lines)
+│   ├── XLKitXLSX/              # XLSX generation engine
+│   │   └── XLSXEngine.swift    # XLSX file generation (759 lines)
+│   └── XLKitTestRunner/        # Test runner executable
+│       ├── main.swift          # Command-line interface (91 lines)
+│       ├── ExcelGenerators.swift # Excel generation tests (590 lines)
+│       ├── ImageEmbedGenerators.swift # Image embedding tests (228 lines)
+│       ├── README.md           # Test runner documentation (199 lines)
+│       └── Templates/          # Test templates
+│           └── TestGeneratorTemplate.swift # Template for new tests (224 lines)
+├── Tests/                      # Unit tests
+│   ├── README.md               # Test documentation (196 lines)
+│   └── XLKitTests/             # Test suite
+│       └── XLKitTests.swift    # All unit tests (630 lines, 35 tests)
+├── Test-Data/                  # Test data files
+│   ├── README.md               # Test data documentation (44 lines)
+│   └── Embed-Test/             # Image embedding test data
+│       ├── Embed-Test.csv      # CSV test data (5 lines)
+│       ├── Embed-Test_00-00-08-06.png # Test image 1 (681KB)
+│       ├── Embed-Test_00-00-22-07.png # Test image 2 (825KB)
+│       ├── Embed-Test_00-00-50-08.png # Test image 3 (779KB)
+│       └── Embed-Test_00-01-09-10.png # Test image 4 (703KB)
+├── Test-Workflows/             # Generated Excel files
+│   └── README.md               # Output documentation
+└── .github/                    # GitHub configuration
+    ├── FUNDING.yml             # Funding configuration
+    └── workflows/              # CI/CD workflows
+        ├── build.yml           # Main build and test workflow (85 lines)
+        ├── codeql.yml          # Security scanning workflow (116 lines)
+        ├── cli-embed.yml       # Image embedding test workflow (37 lines)
+        ├── cli-generic.yml     # Generic test workflow (41 lines)
+        └── cli-no-embeds.yml   # No-embeds test workflow (37 lines)
+```
+
 ### Allowed Paths for Code Changes
 allowed_paths = [
     "Sources/XLKit/",           # Main API module
@@ -171,6 +233,7 @@ require_image_embedding_tests = true
 ### API Design Requirements
 require_easy_to_use_api = true
 require_csv_api = "Instance methods on Workbook and Sheet classes"
+require_font_color_support = true
 
 ## Coding Standards & Best Practices
 
@@ -236,7 +299,7 @@ import Foundation
 - CellCoordinate: Struct for Excel-style coordinates
 - CellRange: Struct for cell ranges
 - Cell: Struct combining value and format
-- CellFormat: Struct for comprehensive formatting
+- CellFormat: Struct for comprehensive formatting including font colors
 
 ### CSV/TSV Operations (XLKitFormatters Module)
 - Use instance methods on Workbook and Sheet classes
@@ -255,6 +318,7 @@ import Foundation
 - Use temporary directories for file creation
 - Implement proper XML escaping
 - Support ZIP archive creation using ZIPFoundation
+- Generate proper font color XML with theme color support
 
 ## Testing Standards
 
@@ -265,6 +329,7 @@ import Foundation
 - Test image format detection and embedding
 - Test XLSX file generation and saving
 - Test coordinate and range operations
+- Test font color formatting and XML generation
 
 ### Test Patterns
 ```swift
@@ -518,6 +583,7 @@ Security operations are logged with structured data:
 - Comprehensive Testing: All 17 professional video and cinema aspect ratios (16:9, 1:1, 9:16, 21:9, 3:4, 2.39:1, 1.85:1, 4:3, 18:9, 1.19:1, 1.5:1, 1.48:1, 1.25:1, 1.9:1, 1.32:1, 2.37:1, 1.37:1) tested and validated, including cinema and mobile formats
 - Excel Compliance: All generated files pass CoreXLSX validation with perfect aspect ratio preservation
 - Simplified API: Easy-to-use methods with automatic sizing and aspect ratio preservation
+- Font Color Support: Added comprehensive font color formatting with proper XML generation and theme color support
 
 ## iOS Compatibility Fix (2025-07-14)
 - Fixed iOS build error: `'homeDirectoryForCurrentUser' is unavailable in iOS`

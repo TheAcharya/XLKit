@@ -196,7 +196,12 @@ public struct XLSXEngine {
                 content += "<sz val=\"11\"/>"
             }
             
-            content += "<color theme=\"1\"/>"
+            // Handle font color - use custom color if specified, otherwise use theme
+            if let fontColor = format.fontColor {
+                content += "<color rgb=\"\(fontColor.replacingOccurrences(of: "#", with: ""))\"/>"
+            } else {
+                content += "<color theme=\"1\"/>"
+            }
             
             if let fontName = format.fontName {
                 content += "<name val=\"\(fontName)\"/>"
@@ -250,7 +255,7 @@ public struct XLSXEngine {
             var xf = "<xf numFmtId=\"0\" fontId=\"\(fontId)\" fillId=\"\(fillId)\" borderId=\"0\" xfId=\"0\""
             
             var applyFont = false
-            if format.fontWeight == .bold || format.fontStyle != nil || format.fontName != nil || format.fontSize != nil {
+            if format.fontWeight == .bold || format.fontStyle != nil || format.fontName != nil || format.fontSize != nil || format.fontColor != nil {
                 applyFont = true
             }
             if applyFont {
@@ -490,7 +495,7 @@ public struct XLSXEngine {
         }
     }
     
-    private static func formatToKey(_ format: CellFormat) -> String {
+    public static func formatToKey(_ format: CellFormat) -> String {
         var key = ""
         key += "fontName:\(format.fontName ?? "nil")"
         key += "fontSize:\(format.fontSize ?? 0)"

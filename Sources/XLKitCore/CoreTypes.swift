@@ -7,30 +7,55 @@
 import Foundation
 import CoreGraphics
 import CryptoKit
-// @preconcurrency import XLKitImages   // Removed to fix circular dependency
 
-/// Core types for XLKitCore
-// MARK: - Workbook, Sheet, Cell, CellValue, CellFormat, CellCoordinate, CellRange, XLKitError
-// (Content will be filled in next step)
+/// Core types and data structures for XLKit
+/// 
+/// This file contains the fundamental types used throughout XLKit:
+/// - Workbook: Main container for Excel files with multiple sheets
+/// - Sheet: Individual worksheet with cells, formatting, and images
+/// - Cell, CellValue, CellFormat: Cell data and styling
+/// - CellCoordinate, CellRange: Excel coordinate system
+/// - ExcelImage, ImageFormat: Image embedding support
+/// - XLKitError: Error handling for all operations
+/// - CoreUtils: Utility functions for Excel operations
 
-// MARK: - Core Types for XLKit
+// MARK: - Workbook
 
-/// Represents an Excel workbook containing multiple sheets
+/// Represents an Excel workbook containing multiple sheets and images.
+/// 
+/// A workbook is the top-level container for Excel files, managing:
+/// - Multiple worksheets (Sheet objects)
+/// - Embedded images across all sheets
+/// - File operations (save, load)
+/// - CSV/TSV import/export functionality
+/// 
+/// ## Usage
+/// ```swift
+/// let workbook = Workbook()
+/// let sheet = workbook.addSheet(name: "Data")
+/// 
+/// // Add images to workbook
+/// let image = ExcelImage(id: "img1", data: imageData, format: .png, originalSize: size)
+/// workbook.addImage(image)
+/// 
+/// // Get workbook information
+/// let imageCount = workbook.imageCount
+/// let allImages = workbook.getImages()
+/// let pngImages = workbook.getImages(withFormat: .png)
+/// ```
 public final class Workbook {
     private var sheets: [Sheet] = []
     private var nextSheetId: Int
     private var images: [ExcelImage] = []
     
+    /// Creates a new empty workbook
     public init() {
         self.nextSheetId = 1
     }
     
-    /// Creates a workbook from CSV data
-    // Removed: public convenience init(fromCSV csvData: String, sheetName: String = "Sheet1", separator: String = ",", hasHeader: Bool = false) {
-    /// Creates a workbook from TSV data
-    // Removed: public convenience init(fromTSV tsvData: String, sheetName: String = "Sheet1", hasHeader: Bool = false) {
-    
     /// Adds a new sheet to the workbook
+    /// - Parameter name: The name of the sheet (must be unique)
+    /// - Returns: The newly created Sheet object
     @discardableResult
     public func addSheet(name: String) -> Sheet {
         let sheet = Sheet(name: name, id: nextSheetId)
@@ -40,41 +65,54 @@ public final class Workbook {
     }
     
     /// Gets all sheets in the workbook
+    /// - Returns: Array of all Sheet objects
     public func getSheets() -> [Sheet] {
         sheets
     }
     
     /// Gets a sheet by name
+    /// - Parameter name: The name of the sheet to find
+    /// - Returns: The Sheet object if found, nil otherwise
     public func getSheet(name: String) -> Sheet? {
         sheets.first { $0.name == name }
     }
     
     /// Removes a sheet by name
+    /// - Parameter name: The name of the sheet to remove
     public func removeSheet(name: String) {
         sheets.removeAll { $0.name == name }
     }
     
+    // MARK: - Image Management
+    
     /// Adds an image to the workbook
+    /// - Parameter image: The ExcelImage to add
     public func addImage(_ image: ExcelImage) {
         images.append(image)
     }
     
     /// Gets all images in the workbook
+    /// - Returns: Array of all ExcelImage objects
     public func getImages() -> [ExcelImage] {
         images
     }
     
     /// Gets an image by ID
+    /// - Parameter id: The unique identifier of the image
+    /// - Returns: The ExcelImage if found, nil otherwise
     public func getImage(withId id: String) -> ExcelImage? {
         return images.first { $0.id == id }
     }
     
     /// Removes an image by ID
+    /// - Parameter id: The unique identifier of the image to remove
     public func removeImage(withId id: String) {
         images.removeAll { $0.id == id }
     }
     
     /// Gets images by format
+    /// - Parameter format: The ImageFormat to filter by
+    /// - Returns: Array of ExcelImage objects with the specified format
     public func getImages(withFormat format: ImageFormat) -> [ExcelImage] {
         return images.filter { $0.format == format }
     }
@@ -91,30 +129,71 @@ public final class Workbook {
     
     // MARK: - File Operations
     
-    // Removed save(to:) methods to fix circular dependency. These are now in Workbook+API.swift.
+    // File operations (save, load) are implemented in Workbook+API.swift to avoid circular dependencies
     
     // MARK: - CSV/TSV Operations
     
-    // Removed CSV/TSV import/export methods to fix circular dependency. These are now in Workbook+API.swift.
+    // CSV/TSV operations are implemented in Workbook+API.swift to avoid circular dependencies
 }
 
 /// Represents a worksheet in an Excel workbook
+/// 
+/// A sheet contains cells, formatting, images, and layout information:
+/// - Cell data with various value types (string, number, date, etc.)
+/// - Cell formatting and styling
+/// - Merged cell ranges
+/// - Column widths and row heights
+/// - Embedded images positioned at specific coordinates
+/// 
+/// ## Usage
+/// ```swift
+/// let sheet = workbook.addSheet(name: "Data")
+/// 
+/// // Set cell values with convenience methods (recommended)
+/// sheet.setCell("A1", string: "Header", format: CellFormat.header())
+/// sheet.setCell("B1", number: 1234.56, format: CellFormat.currency())
+/// sheet.setCell("C1", integer: 100, format: CellFormat.number())
+/// 
+/// // Set ranges
+/// sheet.setRange("A2:C5", string: "Data", format: CellFormat.bordered())
+/// 
+/// // Merge cells
+/// sheet.mergeCells("A1:C1")
+/// 
+/// // Add images
+/// let image = ExcelImage(id: "img1", data: imageData, format: .png, originalSize: size)
+/// sheet.addImage(image, at: "D1")
+/// ```
 public final class Sheet: Equatable {
+    /// The name of the sheet
     public let name: String
+    /// The unique identifier of the sheet within the workbook
     public let id: Int
+    /// Dictionary mapping cell coordinates to their values
     public var cells: [String: CellValue] = [:]
+    /// Array of merged cell ranges
     public var mergedRanges: [CellRange] = []
+    /// Dictionary mapping column numbers to their widths in pixels
     public var columnWidths: [Int: Double] = [:]
+    /// Dictionary mapping row numbers to their heights in pixels
     public var rowHeights: [Int: Double] = [:]
-    public var images: [String: ExcelImage] = [:] // coordinate -> image
-    public var cellFormats: [String: CellFormat] = [:] // coordinate -> format
+    /// Dictionary mapping cell coordinates to embedded images
+    public var images: [String: ExcelImage] = [:]
+    /// Dictionary mapping cell coordinates to their formatting
+    public var cellFormats: [String: CellFormat] = [:]
     
     public init(name: String, id: Int) {
         self.name = name
         self.id = id
     }
     
-    /// Sets a cell value
+    // MARK: - Cell Operations
+    
+    /// Sets a cell value using the basic CellValue enum
+    /// - Parameters:
+    ///   - coordinate: Excel-style coordinate (e.g., "A1", "B2")
+    ///   - value: The cell value to set
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setCell(_ coordinate: String, value: CellValue) -> Self {
         cells[coordinate.uppercased()] = value
@@ -122,18 +201,24 @@ public final class Sheet: Equatable {
     }
     
     /// Gets a cell value
+    /// - Parameter coordinate: Excel-style coordinate (e.g., "A1", "B2")
+    /// - Returns: The cell value if it exists, nil otherwise
     public func getCell(_ coordinate: String) -> CellValue? {
         cells[coordinate.uppercased()]
     }
     
-    /// Gets a cell with formatting
+    /// Gets a cell with its formatting information
+    /// - Parameter coordinate: Excel-style coordinate (e.g., "A1", "B2")
+    /// - Returns: A Cell object containing both value and format, nil if cell doesn't exist
     public func getCellWithFormat(_ coordinate: String) -> Cell? {
         guard let value = cells[coordinate.uppercased()] else { return nil }
         let format = cellFormats[coordinate.uppercased()]
         return Cell(value, format: format)
     }
     
-    /// Gets cell formatting
+    /// Gets the formatting for a specific cell
+    /// - Parameter coordinate: Excel-style coordinate (e.g., "A1", "B2")
+    /// - Returns: The cell formatting if it exists, nil otherwise
     public func getCellFormat(_ coordinate: String) -> CellFormat? {
         cellFormats[coordinate.uppercased()]
     }
@@ -164,49 +249,87 @@ public final class Sheet: Equatable {
         return self
     }
     
-    /// Sets a cell with string value and formatting
+    // MARK: - Convenience Cell Methods
+    
+    /// Sets a cell with a string value and optional formatting
+    /// - Parameters:
+    ///   - coordinate: Excel-style coordinate (e.g., "A1", "B2")
+    ///   - string: The string value to set
+    ///   - format: Optional formatting to apply to the cell
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setCell(_ coordinate: String, string: String, format: CellFormat? = nil) -> Self {
         let cell = Cell.string(string, format: format)
         return setCell(coordinate, cell: cell)
     }
     
-    /// Sets a cell with number value and formatting
+    /// Sets a cell with a number value and optional formatting
+    /// - Parameters:
+    ///   - coordinate: Excel-style coordinate (e.g., "A1", "B2")
+    ///   - number: The double value to set
+    ///   - format: Optional formatting to apply to the cell
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setCell(_ coordinate: String, number: Double, format: CellFormat? = nil) -> Self {
         let cell = Cell.number(number, format: format)
         return setCell(coordinate, cell: cell)
     }
     
-    /// Sets a cell with integer value and formatting
+    /// Sets a cell with an integer value and optional formatting
+    /// - Parameters:
+    ///   - coordinate: Excel-style coordinate (e.g., "A1", "B2")
+    ///   - integer: The integer value to set
+    ///   - format: Optional formatting to apply to the cell
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setCell(_ coordinate: String, integer: Int, format: CellFormat? = nil) -> Self {
         let cell = Cell.integer(integer, format: format)
         return setCell(coordinate, cell: cell)
     }
     
-    /// Sets a cell with boolean value and formatting
+    /// Sets a cell with a boolean value and optional formatting
+    /// - Parameters:
+    ///   - coordinate: Excel-style coordinate (e.g., "A1", "B2")
+    ///   - boolean: The boolean value to set
+    ///   - format: Optional formatting to apply to the cell
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setCell(_ coordinate: String, boolean: Bool, format: CellFormat? = nil) -> Self {
         let cell = Cell.boolean(boolean, format: format)
         return setCell(coordinate, cell: cell)
     }
     
-    /// Sets a cell with date value and formatting
+    /// Sets a cell with a date value and optional formatting
+    /// - Parameters:
+    ///   - coordinate: Excel-style coordinate (e.g., "A1", "B2")
+    ///   - date: The date value to set
+    ///   - format: Optional formatting to apply to the cell
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setCell(_ coordinate: String, date: Date, format: CellFormat? = nil) -> Self {
         let cell = Cell.date(date, format: format)
         return setCell(coordinate, cell: cell)
     }
     
-    /// Sets a cell with formula and formatting
+    /// Sets a cell with a formula and optional formatting
+    /// - Parameters:
+    ///   - coordinate: Excel-style coordinate (e.g., "A1", "B2")
+    ///   - formula: The Excel formula to set (e.g., "=A1+B1", "=SUM(A1:A10)")
+    ///   - format: Optional formatting to apply to the cell
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setCell(_ coordinate: String, formula: String, format: CellFormat? = nil) -> Self {
         let cell = Cell.formula(formula, format: format)
         return setCell(coordinate, cell: cell)
     }
     
+    // MARK: - Range Operations
+    
     /// Sets a range of cells with the same value and formatting
+    /// - Parameters:
+    ///   - range: Excel-style range notation (e.g., "A1:C3", "B2:D5")
+    ///   - cell: The Cell object containing value and formatting
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setRange(_ range: String, cell: Cell) -> Self {
         guard let cellRange = CellRange(excelRange: range) else { return self }
@@ -216,49 +339,83 @@ public final class Sheet: Equatable {
         return self
     }
     
-    /// Sets a range of cells with string value and formatting
+    /// Sets a range of cells with a string value and optional formatting
+    /// - Parameters:
+    ///   - range: Excel-style range notation (e.g., "A1:C3", "B2:D5")
+    ///   - string: The string value to set in all cells in the range
+    ///   - format: Optional formatting to apply to all cells in the range
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setRange(_ range: String, string: String, format: CellFormat? = nil) -> Self {
         let cell = Cell.string(string, format: format)
         return setRange(range, cell: cell)
     }
     
-    /// Sets a range of cells with number value and formatting
+    /// Sets a range of cells with a number value and optional formatting
+    /// - Parameters:
+    ///   - range: Excel-style range notation (e.g., "A1:C3", "B2:D5")
+    ///   - number: The double value to set in all cells in the range
+    ///   - format: Optional formatting to apply to all cells in the range
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setRange(_ range: String, number: Double, format: CellFormat? = nil) -> Self {
         let cell = Cell.number(number, format: format)
         return setRange(range, cell: cell)
     }
     
-    /// Sets a range of cells with integer value and formatting
+    /// Sets a range of cells with an integer value and optional formatting
+    /// - Parameters:
+    ///   - range: Excel-style range notation (e.g., "A1:C3", "B2:D5")
+    ///   - integer: The integer value to set in all cells in the range
+    ///   - format: Optional formatting to apply to all cells in the range
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setRange(_ range: String, integer: Int, format: CellFormat? = nil) -> Self {
         let cell = Cell.integer(integer, format: format)
         return setRange(range, cell: cell)
     }
     
-    /// Sets a range of cells with boolean value and formatting
+    /// Sets a range of cells with a boolean value and optional formatting
+    /// - Parameters:
+    ///   - range: Excel-style range notation (e.g., "A1:C3", "B2:D5")
+    ///   - boolean: The boolean value to set in all cells in the range
+    ///   - format: Optional formatting to apply to all cells in the range
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setRange(_ range: String, boolean: Bool, format: CellFormat? = nil) -> Self {
         let cell = Cell.boolean(boolean, format: format)
         return setRange(range, cell: cell)
     }
     
-    /// Sets a range of cells with date value and formatting
+    /// Sets a range of cells with a date value and optional formatting
+    /// - Parameters:
+    ///   - range: Excel-style range notation (e.g., "A1:C3", "B2:D5")
+    ///   - date: The date value to set in all cells in the range
+    ///   - format: Optional formatting to apply to all cells in the range
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setRange(_ range: String, date: Date, format: CellFormat? = nil) -> Self {
         let cell = Cell.date(date, format: format)
         return setRange(range, cell: cell)
     }
     
-    /// Sets a range of cells with formula and formatting
+    /// Sets a range of cells with a formula and optional formatting
+    /// - Parameters:
+    ///   - range: Excel-style range notation (e.g., "A1:C3", "B2:D5")
+    ///   - formula: The Excel formula to set in all cells in the range
+    ///   - format: Optional formatting to apply to all cells in the range
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setRange(_ range: String, formula: String, format: CellFormat? = nil) -> Self {
         let cell = Cell.formula(formula, format: format)
         return setRange(range, cell: cell)
     }
     
-    /// Merges a range of cells
+    // MARK: - Cell Range Management
+    
+    /// Merges a range of cells into a single cell
+    /// - Parameter range: Excel-style range notation (e.g., "A1:C1", "B2:D5")
+    /// - Returns: Self for method chaining
     @discardableResult
     public func mergeCells(_ range: String) -> Self {
         guard let cellRange = CellRange(excelRange: range) else { return self }
@@ -267,50 +424,74 @@ public final class Sheet: Equatable {
     }
     
     /// Gets all cell coordinates that have values
+    /// - Returns: Array of Excel-style coordinates (e.g., ["A1", "B2", "C3"])
     public func getUsedCells() -> [String] {
         Array(cells.keys).sorted()
     }
     
-    /// Gets all merged ranges
+    /// Gets all merged cell ranges
+    /// - Returns: Array of CellRange objects representing merged areas
     public func getMergedRanges() -> [CellRange] {
         mergedRanges
     }
     
-    /// Sets column width in pixels
+    // MARK: - Column and Row Sizing
+    
+    /// Sets the width of a column in pixels
+    /// - Parameters:
+    ///   - column: Column number (1-based, where 1 = column A)
+    ///   - width: Width in pixels
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setColumnWidth(_ column: Int, width: Double) -> Self {
         columnWidths[column] = width
         return self
     }
     
-    /// Gets column width in pixels
+    /// Gets the width of a column in pixels
+    /// - Parameter column: Column number (1-based, where 1 = column A)
+    /// - Returns: Column width in pixels if set, nil otherwise
     public func getColumnWidth(_ column: Int) -> Double? {
         columnWidths[column]
     }
     
     /// Gets all column widths
+    /// - Returns: Dictionary mapping column numbers to their widths in pixels
     public func getColumnWidths() -> [Int: Double] {
         columnWidths
     }
     
-    /// Sets row height in pixels
+    /// Sets the height of a row in pixels
+    /// - Parameters:
+    ///   - row: Row number (1-based)
+    ///   - height: Height in pixels
+    /// - Returns: Self for method chaining
     @discardableResult
     public func setRowHeight(_ row: Int, height: Double) -> Self {
         rowHeights[row] = height
         return self
     }
     
-    /// Gets row height in pixels
+    /// Gets the height of a row in pixels
+    /// - Parameter row: Row number (1-based)
+    /// - Returns: Row height in pixels if set, nil otherwise
     public func getRowHeight(_ row: Int) -> Double? {
         rowHeights[row]
     }
     
     /// Gets all row heights
+    /// - Returns: Dictionary mapping row numbers to their heights in pixels
     public func getRowHeights() -> [Int: Double] {
         rowHeights
     }
     
-    /// Auto-sizes a column to fit an image
+    // MARK: - Image Management
+    
+    /// Auto-sizes a column to fit an image at a specific coordinate
+    /// - Parameters:
+    ///   - column: Column number to auto-size (1-based, where 1 = column A)
+    ///   - coordinate: Excel-style coordinate where the image is located
+    /// - Returns: Self for method chaining
     @discardableResult
     public func autoSizeColumn(_ column: Int, forImageAt coordinate: String) -> Self {
         guard let image = images[coordinate] else { return self }
@@ -319,14 +500,23 @@ public final class Sheet: Equatable {
         return self
     }
     
-    /// Adds an image to a cell
+    /// Adds an image to a cell at a specific coordinate
+    /// - Parameters:
+    ///   - image: The ExcelImage to add
+    ///   - coordinate: Excel-style coordinate (e.g., "A1", "B2")
+    /// - Returns: Self for method chaining
     @discardableResult
     public func addImage(_ image: ExcelImage, at coordinate: String) -> Self {
         images[coordinate.uppercased()] = image
         return self
     }
     
-    /// Adds an image to a cell by row and column
+    /// Adds an image to a cell at a specific row and column
+    /// - Parameters:
+    ///   - image: The ExcelImage to add
+    ///   - row: Row number (1-based)
+    ///   - column: Column number (1-based, where 1 = column A)
+    /// - Returns: Self for method chaining
     @discardableResult
     public func addImage(_ image: ExcelImage, at row: Int, column: Int) -> Self {
         let coordinate = CellCoordinate(row: row, column: column).excelAddress
@@ -334,47 +524,68 @@ public final class Sheet: Equatable {
     }
     
     /// Gets all images in the sheet
+    /// - Returns: Dictionary mapping cell coordinates to ExcelImage objects
     public func getImages() -> [String: ExcelImage] {
         images
     }
     
     /// Gets an image at a specific coordinate
+    /// - Parameter coordinate: Excel-style coordinate (e.g., "A1", "B2")
+    /// - Returns: The ExcelImage if found, nil otherwise
     public func getImage(at coordinate: String) -> ExcelImage? {
         return images[coordinate.uppercased()]
     }
     
     /// Gets an image at a specific row and column
+    /// - Parameters:
+    ///   - row: Row number (1-based)
+    ///   - column: Column number (1-based, where 1 = column A)
+    /// - Returns: The ExcelImage if found, nil otherwise
     public func getImage(at row: Int, column: Int) -> ExcelImage? {
         let coordinate = CellCoordinate(row: row, column: column).excelAddress
         return getImage(at: coordinate)
     }
     
-    /// Removes an image from a cell
+    /// Removes an image from a cell at a specific coordinate
+    /// - Parameter coordinate: Excel-style coordinate (e.g., "A1", "B2")
+    /// - Returns: Self for method chaining
     @discardableResult
     public func removeImage(at coordinate: String) -> Self {
         images.removeValue(forKey: coordinate.uppercased())
         return self
     }
     
-    /// Removes an image from a cell by row and column
+    /// Removes an image from a cell at a specific row and column
+    /// - Parameters:
+    ///   - row: Row number (1-based)
+    ///   - column: Column number (1-based, where 1 = column A)
+    /// - Returns: Self for method chaining
     @discardableResult
     public func removeImage(at row: Int, column: Int) -> Self {
         let coordinate = CellCoordinate(row: row, column: column).excelAddress
         return removeImage(at: coordinate)
     }
     
-    /// Checks if a cell has an image
+    /// Checks if a cell has an image at a specific coordinate
+    /// - Parameter coordinate: Excel-style coordinate (e.g., "A1", "B2")
+    /// - Returns: True if the cell contains an image, false otherwise
     public func hasImage(at coordinate: String) -> Bool {
         return images[coordinate.uppercased()] != nil
     }
     
-    /// Checks if a cell has an image by row and column
+    /// Checks if a cell has an image at a specific row and column
+    /// - Parameters:
+    ///   - row: Row number (1-based)
+    ///   - column: Column number (1-based, where 1 = column A)
+    /// - Returns: True if the cell contains an image, false otherwise
     public func hasImage(at row: Int, column: Int) -> Bool {
         let coordinate = CellCoordinate(row: row, column: column).excelAddress
         return hasImage(at: coordinate)
     }
     
-    /// Clears all data from the sheet
+    // MARK: - Utility Methods
+    
+    /// Clears all data from the sheet (cells, formatting, images, merged ranges, dimensions)
     public func clear() {
         cells.removeAll()
         mergedRanges.removeAll()
@@ -384,16 +595,39 @@ public final class Sheet: Equatable {
         cellFormats.removeAll()
     }
     
+    /// Equality comparison for Sheet objects (reference equality)
     public static func == (lhs: Sheet, rhs: Sheet) -> Bool {
         lhs === rhs // Reference equality
     }
 }
 
-/// Represents a cell coordinate (row, column)
+// MARK: - Cell Coordinate System
+
+/// Represents a cell coordinate in Excel notation
+/// 
+/// Provides conversion between Excel-style addresses (A1, B2) and row/column numbers.
+/// Supports both creation from row/column numbers and parsing from Excel addresses.
+/// 
+/// ## Usage
+/// ```swift
+/// // Create from row and column numbers
+/// let coord1 = CellCoordinate(row: 1, column: 1) // A1
+/// let coord2 = CellCoordinate(row: 2, column: 2) // B2
+/// 
+/// // Parse from Excel address
+/// let coord3 = CellCoordinate(excelAddress: "A1") // row: 1, column: 1
+/// let coord4 = CellCoordinate(excelAddress: "B2") // row: 2, column: 2
+/// 
+/// // Get Excel address
+/// print(coord1.excelAddress) // "A1"
+/// print(coord2.excelAddress) // "B2"
+/// ```
 public struct CellCoordinate: Hashable {
+    /// Row number (1-based)
     public let row: Int
+    /// Column number (1-based, where 1 = column A)
     public let column: Int
-    
+
     public init(row: Int, column: Int) {
         self.row = row
         self.column = column
@@ -405,6 +639,7 @@ public struct CellCoordinate: Hashable {
     }
     
     /// Creates a coordinate from Excel address
+    /// - Parameter excelAddress: Excel-style address (e.g., "A1", "B2", "AA10")
     public init?(excelAddress: String) {
         let pattern = "^([A-Z]+)([0-9]+)$"
         guard let regex = try? NSRegularExpression(pattern: pattern),
@@ -426,17 +661,44 @@ public struct CellCoordinate: Hashable {
     }
 }
 
-/// Represents a range of cells
+/// Represents a range of cells in Excel notation
+/// 
+/// Provides functionality for working with cell ranges, including creation from Excel range notation
+/// and iteration over all coordinates within the range.
+/// 
+/// ## Usage
+/// ```swift
+/// // Create from start and end coordinates
+/// let start = CellCoordinate(row: 1, column: 1) // A1
+/// let end = CellCoordinate(row: 3, column: 3)   // C3
+/// let range = CellRange(start: start, end: end) // A1:C3
+/// 
+/// // Parse from Excel range notation
+/// let range2 = CellRange(excelRange: "A1:B5") // A1 to B5
+/// 
+/// // Get all coordinates in range
+/// let coords = range.coordinates // [A1, A2, A3, B1, B2, B3, C1, C2, C3]
+/// 
+/// // Get Excel range notation
+/// print(range.excelRange) // "A1:C3"
+/// ```
 public struct CellRange: Hashable {
+    /// Starting coordinate of the range
     public let start: CellCoordinate
+    /// Ending coordinate of the range
     public let end: CellCoordinate
     
+    /// Creates a range from start and end coordinates
+    /// - Parameters:
+    ///   - start: Starting coordinate
+    ///   - end: Ending coordinate
     public init(start: CellCoordinate, end: CellCoordinate) {
         self.start = start
         self.end = end
     }
     
-    /// Creates a range from Excel range notation (e.g., "A1:B5")
+    /// Creates a range from Excel range notation
+    /// - Parameter excelRange: Excel-style range notation (e.g., "A1:B5", "C3:D10")
     public init?(excelRange: String) {
         let components = excelRange.components(separatedBy: ":")
         guard components.count == 2,
@@ -448,7 +710,8 @@ public struct CellRange: Hashable {
         self.end = end
     }
     
-    /// All coordinates in this range
+    /// All coordinates within this range
+    /// - Returns: Array of CellCoordinate objects representing all cells in the range
     public var coordinates: [CellCoordinate] {
         var result: [CellCoordinate] = []
         for row in start.row...end.row {
@@ -460,6 +723,7 @@ public struct CellRange: Hashable {
     }
     
     /// Excel range notation
+    /// - Returns: String representation of the range (e.g., "A1:C3")
     public var excelRange: String {
         return "\(start.excelAddress):\(end.excelAddress)"
     }

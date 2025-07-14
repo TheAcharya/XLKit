@@ -10,6 +10,7 @@
 - [Development Standards](#development-standards)
   - [Code Quality](#code-quality)
   - [Security Requirements](#security-requirements)
+  - [Security Features](#security-features)
   - [Testing Strategy](#testing-strategy)
   - [Documentation](#documentation)
 - [API Reference](#api-reference)
@@ -24,6 +25,7 @@
   - [Scaling API Investigation and Fixes](#scaling-api-investigation-and-fixes-2025-07-12)
 - [Implementation Details](#implementation-details)
   - [XLSX Generation](#xlsx-generation)
+  - [Image Embedding Scaling API](#image-embedding-scaling-api)
   - [Image Embedding](#image-embedding)
   - [Error Handling](#error-handling)
 - [Performance & Optimization](#performance--optimization)
@@ -46,6 +48,68 @@ The library is organized into five SPM modules:
 - **XLKitImages**: Image processing and embedding utilities
 - **XLKitXLSX**: XLSX file generation engine
 - **XLKit**: Main API that re-exports all submodules
+
+### Directory and File Structure
+
+```
+XLKit/
+├── AGENT.MD                     # AI agent development guide
+├── .cursorrules                 # Cursor rules for AI agents
+├── CHANGELOG.md                 # Version history and changes
+├── LICENSE                      # MIT license
+├── Package.swift                # Swift Package Manager configuration
+├── Package.resolved             # Locked dependency versions
+├── README.md                    # Main documentation
+├── SECURITY.md                  # Security policy
+├── .gitignore                   # Git ignore patterns
+├── .swift-format                # Swift formatting configuration
+├── Assets/                      # Project assets
+│   └── XLKit_Icon.png          # Project icon
+├── Sources/                     # Source code modules
+│   ├── XLKit/                  # Main API module
+│   │   ├── XLKit.swift         # Main API exports
+│   │   ├── Sheet+API.swift     # Sheet operations API
+│   │   └── Workbook+API.swift  # Workbook operations API
+│   ├── XLKitCore/              # Core types and utilities
+│   │   ├── CoreTypes.swift     # Core data structures (1215 lines)
+│   │   └── SecurityManager.swift # Security features (282 lines)
+│   ├── XLKitFormatters/        # CSV/TSV functionality
+│   │   └── CSVUtils.swift      # CSV import/export utilities (199 lines)
+│   ├── XLKitImages/            # Image processing
+│   │   ├── ImageUtils.swift    # Image utilities (155 lines)
+│   │   └── ImageSizingUtils.swift # Image sizing logic (191 lines)
+│   ├── XLKitXLSX/              # XLSX generation engine
+│   │   └── XLSXEngine.swift    # XLSX file generation (759 lines)
+│   └── XLKitTestRunner/        # Test runner executable
+│       ├── main.swift          # Command-line interface (91 lines)
+│       ├── ExcelGenerators.swift # Excel generation tests (590 lines)
+│       ├── ImageEmbedGenerators.swift # Image embedding tests (228 lines)
+│       ├── README.md           # Test runner documentation (199 lines)
+│       └── Templates/          # Test templates
+│           └── TestGeneratorTemplate.swift # Template for new tests (224 lines)
+├── Tests/                      # Unit tests
+│   ├── README.md               # Test documentation (196 lines)
+│   └── XLKitTests/             # Test suite
+│       └── XLKitTests.swift    # All unit tests (630 lines, 35 tests)
+├── Test-Data/                  # Test data files
+│   ├── README.md               # Test data documentation (44 lines)
+│   └── Embed-Test/             # Image embedding test data
+│       ├── Embed-Test.csv      # CSV test data (5 lines)
+│       ├── Embed-Test_00-00-08-06.png # Test image 1 (681KB)
+│       ├── Embed-Test_00-00-22-07.png # Test image 2 (825KB)
+│       ├── Embed-Test_00-00-50-08.png # Test image 3 (779KB)
+│       └── Embed-Test_00-01-09-10.png # Test image 4 (703KB)
+├── Test-Workflows/             # Generated Excel files
+│   └── README.md               # Output documentation
+└── .github/                    # GitHub configuration
+    ├── FUNDING.yml             # Funding configuration
+    └── workflows/              # CI/CD workflows
+        ├── build.yml           # Main build and test workflow (85 lines)
+        ├── codeql.yml          # Security scanning workflow (116 lines)
+        ├── cli-embed.yml       # Image embedding test workflow (37 lines)
+        ├── cli-generic.yml     # Generic test workflow (41 lines)
+        └── cli-no-embeds.yml   # No-embeds test workflow (37 lines)
+```
 
 ### Dependencies
 
@@ -322,6 +386,7 @@ Test Coverage Requirements:
 - Test image format detection and embedding with all 17 aspect ratios
 - Test XLSX file generation and saving
 - Test coordinate and range operations
+- Test font color formatting and XML generation
 
 Test Patterns:
 ```swift
@@ -478,6 +543,7 @@ public struct CellFormat {
     public static func percentage(format: NumberFormat = .percentageWithDecimals) -> CellFormat
     public static func date(format: NumberFormat = .date) -> CellFormat
     public static func bordered(style: BorderStyle = .thin, color: String? = nil) -> CellFormat
+    public static func coloredText(color: String) -> CellFormat
 }
 ```
 
@@ -535,6 +601,9 @@ let value = sheet.getCell("A1")
 
 // Set cell with format
 sheet.setCell("A1", cell: Cell.string("Header", format: CellFormat.header()))
+
+// Set cell with font color
+sheet.setCell("A1", cell: Cell.string("Red Text", format: CellFormat.coloredText(color: "#FF0000")))
 
 // Set range of cells
 sheet.setRange("A1:A10", value: .string("Batch"))
@@ -676,6 +745,7 @@ try await sheet.embedImageAutoSized(
 - Comprehensive testing of all 17 professional video and cinema aspect ratios
 - Excel compliance with CoreXLSX validation for all generated files
 - Simplified API with automatic sizing and aspect ratio preservation
+- Font Color Support: Added comprehensive font color formatting with proper XML generation and theme color support
 
 ### Scaling API Investigation and Fixes (2025-07-12)
 - Identified and resolved scaling inconsistencies between XLKit test and MarkersExtractor integration
@@ -706,6 +776,7 @@ Key Features:
 - Generates Excel-compliant XML with proper escaping
 - Validates files using CoreXLSX
 - Supports all Excel data types and formatting
+- Generates proper font color XML with theme color support
 
 ### Image Embedding Scaling API
 

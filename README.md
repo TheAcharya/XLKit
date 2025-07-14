@@ -42,12 +42,13 @@ This codebase is developed using AI agents.
 - Perfect Image Embedding: Pixel-perfect image embedding with automatic aspect ratio preservation
 - Professional Video Support: All 17 video and cinema aspect ratios with zero distortion
 - Auto Cell Sizing: Automatic column width and row height calculation to perfectly fit images
+- Cell Formatting: Comprehensive formatting including font colors, backgrounds, borders, and alignment with proper XML generation
 - CSV/TSV Import/Export: Built-in support for importing and exporting CSV/TSV data
 - Async & Sync Operations: Save workbooks with one line (async or sync)
 - Type-Safe: Strong enums and structs for all data types
 - Excel Compliance: Full OpenXML compliance with CoreXLSX validation
 - No Dependencies: Pure Swift, macOS 12+, Swift 6.0+
-- Comprehensive Testing: 34 tests with 100% API coverage and automated validation
+- Comprehensive Testing: 35 tests with 100% API coverage and automated validation
 - Security Features: Comprehensive security features for production use
 
 ## Security Features
@@ -199,11 +200,16 @@ sheet
     .setRow(2, strings: ["Alice", "", "30"])
     .setRow(3, strings: ["Bob", "", "28"])
 
-// 3. Add a GIF image to a cell with perfect aspect ratio preservation
+// 3. Add formatting with font colors
+sheet.setCell("A1", string: "Name", format: CellFormat.header())
+sheet.setCell("B1", string: "Photo", format: CellFormat.header())
+sheet.setCell("C1", string: "Age", format: CellFormat.coloredText(color: "#FF0000"))
+
+// 4. Add a GIF image to a cell with perfect aspect ratio preservation
 let gifData = try Data(contentsOf: URL(fileURLWithPath: "alice.gif"))
 try await sheet.embedImageAutoSized(gifData, at: "B2", of: workbook)
 
-// 4. Save the workbook (sync or async)
+// 5. Save the workbook (sync or async)
 try await workbook.save(to: URL(fileURLWithPath: "employees.xlsx"))
 // or
 // try workbook.save(to: url)
@@ -227,6 +233,14 @@ let specificSheet = workbook.getSheet(name: "Sheet1")
 
 // Remove sheets
 workbook.removeSheet(name: "Sheet1")
+
+// Image management
+workbook.addImage(excelImage)
+let image = workbook.getImage(withId: "image-id")
+workbook.removeImage(withId: "image-id")
+let pngImages = workbook.getImages(withFormat: .png)
+workbook.clearImages()
+let imageCount = workbook.imageCount
 ```
 
 ### Sheet
@@ -235,7 +249,7 @@ A sheet represents a worksheet within the workbook.
 ```swift
 let sheet = workbook.addSheet(name: "Data")
 
-// Set cell values
+// Set cell values (basic method)
 sheet.setCell("A1", value: .string("Hello"))
 sheet.setCell("B1", value: .number(42.5))
 sheet.setCell("C1", value: .integer(100))
@@ -243,23 +257,49 @@ sheet.setCell("D1", value: .boolean(true))
 sheet.setCell("E1", value: .date(Date()))
 sheet.setCell("F1", value: .formula("=A1+B1"))
 
+// Set cell values with convenience methods (recommended)
+sheet.setCell("A1", string: "Hello", format: CellFormat.header())
+sheet.setCell("B1", number: 42.5, format: CellFormat.currency())
+sheet.setCell("C1", integer: 100, format: CellFormat.number())
+sheet.setCell("D1", boolean: true, format: CellFormat.text())
+sheet.setCell("E1", date: Date(), format: CellFormat.date())
+sheet.setCell("F1", formula: "=A1+B1", format: CellFormat.text())
+
 // Get cell values
 let value = sheet.getCell("A1")
+let cellWithFormat = sheet.getCellWithFormat("A1")
 
 // Set cells by row/column
 sheet.setCell(row: 1, column: 1, value: .string("A1"))
+sheet.setCell(row: 1, column: 1, cell: Cell.string("A1", format: CellFormat.header()))
 
-// Set ranges
+// Set ranges (basic method)
 sheet.setRange("A1:C3", value: .string("Range"))
+
+// Set ranges with convenience methods (recommended)
+sheet.setRange("A1:C3", string: "Range", format: CellFormat.bordered())
+sheet.setRange("D1:F3", number: 42.5, format: CellFormat.currency())
+sheet.setRange("G1:I3", integer: 100, format: CellFormat.number())
+sheet.setRange("J1:L3", boolean: true, format: CellFormat.text())
+sheet.setRange("M1:O3", date: Date(), format: CellFormat.date())
+sheet.setRange("P1:R3", formula: "=A1+B1", format: CellFormat.text())
 
 // Merge cells
 sheet.mergeCells("A1:C1")
 
-// Get used cells
+// Get used cells and ranges
 let usedCells = sheet.getUsedCells()
+let mergedRanges = sheet.getMergedRanges()
 
 // Clear all data
 sheet.clear()
+
+// Utility properties
+let allCells = sheet.allCells                    // [String: CellValue]
+let allFormattedCells = sheet.allFormattedCells  // [String: Cell]
+let isEmpty = sheet.isEmpty                      // Bool
+let cellCount = sheet.cellCount                  // Int
+let imageCount = sheet.imageCount                // Int
 ```
 
 ### Cell Values
@@ -315,12 +355,14 @@ let range2 = CellRange(excelRange: "A1:B5")
 
 ### API Highlights
 
-- Workbook: `Workbook()`, `addSheet(name:)`, `save(to:)`
+- Workbook: `Workbook()`, `addSheet(name:)`, `save(to:)`, image management methods
 - Sheet: `setCell`, `setRow`, `setColumn`, `setRange`, `mergeCells`, `embedImageAutoSized`, `setColumnWidth`
+- Convenience Methods: Type-specific setters like `setCell(string:format:)`, `setRange(number:format:)`
 - Images: GIF, PNG, JPEG with perfect aspect ratio preservation
 - CSV/TSV: `Workbook(fromCSV:)`, `exportToCSV()`, `importCSVIntoSheet`
 - Fluent API: Most setters return `Self` for chaining
 - Bulk Data: `setRow`, `setColumn` for easy import
+- Utility Properties: `allCells`, `allFormattedCells`, `isEmpty`, `cellCount`, `imageCount`
 - Doc Comments: All public APIs are documented for Xcode autocomplete
 
 ### Example: Bulk Data and Images
@@ -331,15 +373,59 @@ let sheet = workbook.addSheet(name: "Products")
     .setRow(2, strings: ["Apple", "", "1.99"])
     .setRow(3, strings: ["Banana", "", "0.99"])
 
+// Add image with perfect aspect ratio preservation
 let appleGif = try Data(contentsOf: URL(fileURLWithPath: "apple.gif"))
 try await sheet.embedImageAutoSized(appleGif, at: "B2", of: workbook)
+
+// Alternative: Use convenience methods for better type safety
+sheet.setCell("A1", string: "Product", format: CellFormat.header())
+sheet.setCell("C1", string: "Price", format: CellFormat.header())
+sheet.setCell("A2", string: "Apple")
+sheet.setCell("C2", number: 1.99, format: CellFormat.currency())
+
+// Check sheet properties
+print("Sheet has \(sheet.cellCount) cells and \(sheet.imageCount) images")
+print("Sheet is empty: \(sheet.isEmpty)")
 ```
 
 ### Cell Sizing
 
 ```swift
 sheet.setColumnWidth(2, width: 200) // Set manually
+sheet.setRowHeight(1, height: 25.0)  // Set row height manually
+
+// Get current dimensions
+let colWidth = sheet.getColumnWidth(2)
+let rowHeight = sheet.getRowHeight(1)
+let allColWidths = sheet.getColumnWidths()
+let allRowHeights = sheet.getRowHeights()
+
 // Automatic sizing is handled by embedImageAutoSized for perfect fit
+sheet.autoSizeColumn(2, forImageAt: "B2") // Auto-size column for specific image
+```
+
+### Utility Properties and Methods
+
+```swift
+// Sheet utility properties
+let allCells = sheet.allCells                    // [String: CellValue] - All cells with values
+let allFormattedCells = sheet.allFormattedCells  // [String: Cell] - All cells with formatting
+let isEmpty = sheet.isEmpty                      // Bool - Check if sheet has any content
+let cellCount = sheet.cellCount                  // Int - Number of cells with values
+let imageCount = sheet.imageCount                // Int - Number of images in sheet
+
+// Workbook utility properties
+let workbookImageCount = workbook.imageCount     // Int - Total images in workbook
+
+// Get all images
+let sheetImages = sheet.getImages()              // [String: ExcelImage] - All images in sheet
+let workbookImages = workbook.getImages()        // [ExcelImage] - All images in workbook
+let pngImages = workbook.getImages(withFormat: .png) // [ExcelImage] - Images by format
+
+// Check image existence
+let hasImage = sheet.hasImage(at: "A1")          // Bool - Check if cell has image
+let image = sheet.getImage(at: "A1")             // ExcelImage? - Get image at coordinate
+let workbookImage = workbook.getImage(withId: "image-id") // ExcelImage? - Get image by ID
 ```
 
 ## CSV/TSV Import & Export
@@ -424,16 +510,37 @@ let imageURL = URL(fileURLWithPath: "image.gif")
 let imageData = try Data(contentsOf: imageURL)
 try await sheet.embedImageAutoSized(imageData, at: "B1", of: workbook)
 
-// XLKit convenience method with scaling options
-try await XLKit.embedImage(
+// Add image with scaling control
+try await sheet.embedImage(
     imageData,
     at: "C1",
-    in: sheet,
     of: workbook,
-    scale: 1.0,
+    scale: 0.7,
     maxWidth: 600,
     maxHeight: 400
 )
+
+// Add image from file URL
+try await sheet.embedImage(from: imageURL, at: "D1")
+
+// Add image from file path
+try await sheet.embedImage(from: "/path/to/image.png", at: "E1")
+
+// Manual image management
+let excelImage = ExcelImage(
+    id: "my-image",
+    data: imageData,
+    format: .png,
+    originalSize: CGSize(width: 100, height: 100),
+    displaySize: CGSize(width: 50, height: 50)
+)
+sheet.addImage(excelImage, at: "F1")
+workbook.addImage(excelImage)
+
+// Check if cell has image
+let hasImage = sheet.hasImage(at: "A1")
+let image = sheet.getImage(at: "A1")
+sheet.removeImage(at: "A1")
 ```
 
 ### Image Scaling API
@@ -518,8 +625,16 @@ summarySheet.mergeCells("A1:B1")
 ```swift
 let sheet = workbook.addSheet(name: "Range Test")
 
-// Set values in a range
+// Set values in a range (basic method)
 sheet.setRange("A1:C3", value: .string("Range"))
+
+// Set values in ranges with convenience methods (recommended)
+sheet.setRange("A1:C3", string: "Range", format: CellFormat.bordered())
+sheet.setRange("D1:F3", number: 42.5, format: CellFormat.currency())
+sheet.setRange("G1:I3", integer: 100, format: CellFormat.number())
+sheet.setRange("J1:L3", boolean: true, format: CellFormat.text())
+sheet.setRange("M1:O3", date: Date(), format: CellFormat.date())
+sheet.setRange("P1:R3", formula: "=A1+B1", format: CellFormat.text())
 
 // Create and work with ranges
 let range = CellRange(excelRange: "A1:B5")!
@@ -530,6 +645,9 @@ for coordinate in range.coordinates {
 // Merge multiple ranges
 sheet.mergeCells("A1:C1")
 sheet.mergeCells("A5:C5")
+
+// Get merged ranges
+let mergedRanges = sheet.getMergedRanges()
 ```
 
 ### Cell Formatting
@@ -537,10 +655,16 @@ sheet.mergeCells("A5:C5")
 ```swift
 let sheet = workbook.addSheet(name: "Formatted")
 
-// Use predefined formats
-sheet.setCell("A1", cell: Cell.string("Header", format: CellFormat.header()))
-sheet.setCell("B1", cell: Cell.number(1234.56, format: CellFormat.currency()))
-sheet.setCell("C1", cell: Cell.number(0.85, format: CellFormat.percentage()))
+// Use predefined formats with convenience methods (recommended)
+sheet.setCell("A1", string: "Header", format: CellFormat.header())
+sheet.setCell("B1", number: 1234.56, format: CellFormat.currency())
+sheet.setCell("C1", number: 0.85, format: CellFormat.percentage())
+sheet.setCell("D1", date: Date(), format: CellFormat.date())
+sheet.setCell("E1", boolean: true, format: CellFormat.text())
+
+// Use Cell struct for more control
+sheet.setCell("F1", cell: Cell.string("Header", format: CellFormat.header()))
+sheet.setCell("G1", cell: Cell.number(1234.56, format: CellFormat.currency()))
 
 // Custom formatting
 let customFormat = CellFormat(
@@ -550,7 +674,57 @@ let customFormat = CellFormat(
     backgroundColor: "#E0E0E0",
     horizontalAlignment: .center
 )
-sheet.setCell("D1", cell: Cell.string("Custom", format: customFormat))
+sheet.setCell("H1", string: "Custom", format: customFormat)
+
+// Font color formatting
+let redTextFormat = CellFormat.coloredText(color: "#FF0000")
+let blueTextFormat = CellFormat.coloredText(color: "#0000FF")
+let currencyRedFormat = CellFormat.currency(format: .currencyWithDecimals, color: "#FF0000")
+
+sheet.setCell("I1", string: "Red Text", format: redTextFormat)
+sheet.setCell("J1", string: "Blue Text", format: blueTextFormat)
+sheet.setCell("K1", number: 1234.56, format: currencyRedFormat)
+
+// Get cell with formatting
+let cellWithFormat = sheet.getCellWithFormat("A1")
+let cellFormat = sheet.getCellFormat("A1")
+
+### Font Color Support
+
+XLKit provides comprehensive font color support with proper XML generation and theme color support:
+
+```swift
+// Basic font colors
+let redText = CellFormat.coloredText(color: "#FF0000")
+let blueText = CellFormat.coloredText(color: "#0000FF")
+let greenText = CellFormat.coloredText(color: "#00FF00")
+
+// Font colors with other formatting
+let boldRedText = CellFormat(
+    fontColor: "#FF0000",
+    fontWeight: .bold,
+    fontSize: 14.0
+)
+
+let coloredCurrency = CellFormat.currency(
+    format: .currencyWithDecimals,
+    color: "#FF0000"  // Red currency values
+)
+
+// Apply font colors to cells
+sheet.setCell("A1", string: "Red Header", format: redText)
+sheet.setCell("B1", number: 1234.56, format: coloredCurrency)
+sheet.setCell("C1", string: "Bold Blue", format: boldRedText)
+
+// Font colors work with all cell types
+sheet.setCell("D1", boolean: true, format: CellFormat.coloredText(color: "#FF6600"))
+sheet.setCell("E1", date: Date(), format: CellFormat.coloredText(color: "#6600FF"))
+```
+
+Supported color formats:
+- Hex colors: `#FF0000`, `#00FF00`, `#0000FF`
+- Theme colors: Excel's built-in theme color system
+- All colors are properly converted to Excel's internal format
 ```
 
 ## Error Handling
@@ -581,7 +755,7 @@ XLKit includes comprehensive testing and validation capabilities with integrated
 
 ### Unit Tests
 
-The library includes 34 comprehensive unit tests covering:
+The library includes 35 comprehensive unit tests covering:
 - Core Workbook & Sheet Tests: Creation, management, and operations
 - Cell Operations & Data Types: All cell value types and operations
 - Coordinate & Range Tests: Excel coordinate parsing and range operations
