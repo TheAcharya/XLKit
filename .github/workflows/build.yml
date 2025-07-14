@@ -62,4 +62,23 @@ jobs:
     - name: Test Runner
       run: swift run XLKitTestRunner help
     - name: Test Image Embedding
-      run: swift run XLKitTestRunner embed 
+      run: swift run XLKitTestRunner embed
+
+  iOS:
+    name: iOS
+    runs-on: macos-15 # required for Xcode 16.x
+    steps:
+    - uses: actions/checkout@main
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+    - name: Build
+      run: xcodebuild build -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "generic/platform=iOS Simulator,name=Any iOS Device" | xcbeautify && exit ${PIPESTATUS[0]}
+    - name: Prepare Destination Device Name
+      shell: bash
+      run: |
+        DESTNAME=$(xcodebuild -showdestinations -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" | perl -nle 'if (m/iOS\sSimulator.*(iPhone\s[\d]{2}.*)\s\}\.*/g) { print $1; }' | sort -r | head -n 1)
+        echo Using device \"$DESTNAME\"
+        echo "DESTNAME=$DESTNAME" >> "$GITHUB_ENV"
+    - name: Unit Tests
+      run: xcodebuild test -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "$SCHEME" -destination "platform=iOS Simulator,name=$DESTNAME" | xcbeautify && exit ${PIPESTATUS[0]} 

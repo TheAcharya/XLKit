@@ -29,7 +29,7 @@
 
 ## Project Overview
 
-XLKit is a modern Swift library for creating and manipulating Excel (.xlsx) files on macOS. Built with Swift 6.0, targeting macOS 12+, using modular Swift Package Manager architecture.
+XLKit is a modern Swift library for creating and manipulating Excel (.xlsx) files on macOS and iOS. Built with Swift 6.0, targeting macOS 12+ and iOS 15+, using modular Swift Package Manager architecture. Note: iOS support is available but not tested.
 
 ## Architecture
 

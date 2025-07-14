@@ -1,7 +1,7 @@
 # XLKit - Cursor Rules for AI Agents
 
 ## Project Overview
-XLKit is a modern Swift library for creating and manipulating Excel (.xlsx) files on macOS. Built with Swift 6.0, targeting macOS 12+, using modular SPM architecture.
+XLKit is a modern Swift library for creating and manipulating Excel (.xlsx) files on macOS and iOS. Built with Swift 6.0, targeting macOS 12+ and iOS 15+, using modular SPM architecture. Note: iOS support is available but not tested.
 
 ## Architecture & Module Structure
 
@@ -144,10 +144,10 @@ allowed_extensions = [
 ### Platform Requirements
 require_swift_version = "6.0"
 require_macos_version = "12.0"
+require_ios_version = "15.0"
 
 ### Disallowed Platforms
 disallow_platforms = [
-    "iOS",
     "Linux", 
     "Windows",
     "Android",

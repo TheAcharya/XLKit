@@ -6,7 +6,7 @@ This folder contains sample datasets used by the XLKitTestRunner for testing and
 
 ### Embed-Test
 
-The `Embed-Test/` folder contains a sample dataset for testing image embedding functionality. This dataset was created using [MarkerData](https://github.com/TheAcharya/MarkerData).
+The `Embed-Test/` folder contains a sample dataset for testing image embedding functionality. This dataset was created using [Marker Data](https://github.com/TheAcharya/MarkerData).
 
 - Embed-Test.csv - CSV file with 22 columns and 4 data rows
 - Embed-Test_00-00-08-06.png - Sample PNG image (1920x1080)

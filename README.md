@@ -4,9 +4,9 @@
 </p>
 
 
-<p align="center"><a href="https://github.com/TheAcharya/XLKit/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit"><img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg?style=flat" alt="platform"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml"><img src="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml/badge.svg" alt="build"/></a></p>
+<p align="center"><a href="https://github.com/TheAcharya/XLKit/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20iOS-lightgrey.svg?style=flat" alt="platform"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml"><img src="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml/badge.svg" alt="build"/></a></p>
 
-A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) files on macOS. XLKit provides a fluent, chainable API that makes Excel file generation effortless while supporting advanced features like image embedding, CSV/TSV import/export, cell formatting, and both synchronous and asynchronous operations. Built with Swift 6.0 and targeting macOS 12+, it offers type-safe operations, comprehensive error handling, and security features.
+A modern, ultra-easy Swift library for creating and manipulating Excel (.xlsx) files on macOS and iOS. XLKit provides a fluent, chainable API that makes Excel file generation effortless while supporting advanced features like image embedding, CSV/TSV import/export, cell formatting, and both synchronous and asynchronous operations. Built with Swift 6.0 and targeting macOS 12+ and iOS 15+, it offers type-safe operations, comprehensive error handling, and security features. Note: iOS support is available but not tested.
 
 Purpose-built for [MarkersExtractor](https://github.com/TheAcharya/MarkersExtractor) - a tool for extracting markers from Final Cut Pro FCPXML files and generating comprehensive Excel reports with embedded images, CSV/TSV manifests, and structured data exports. Perfect for professional video editing workflows requiring pixel-perfect image embedding with all video and cinema aspect ratios.
 
@@ -129,6 +129,7 @@ Security features are integrated throughout the codebase:
 ## Requirements
 
 - macOS: 12.0+
+- iOS: 15.0+ (available but not tested)
 - Swift: 6.0+
 
 ## Quick Start
