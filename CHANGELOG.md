@@ -15,6 +15,9 @@
 - Fixed comprehensive demo test with duplicate relationship IDs causing Excel file corruption
 - Implemented dynamic relationship ID generation to prevent conflicts in workbook.xml.rels and drawing1.xml.rels
 - Ensured all generated Excel files pass CoreXLSX validation and open without errors
+- Fixed async/await warnings by removing unnecessary await keywords from synchronous operations
+- Updated API documentation to show instance methods on Workbook and Sheet classes
+- Fixed concurrency handling in test runner with proper Task and semaphore usage
 
 ---
 
