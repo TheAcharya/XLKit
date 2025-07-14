@@ -20,6 +20,7 @@ This codebase is developed using AI agents.
 - [Security Features](#security-features)
 - [Performance Considerations](#performance-considerations)
 - [Requirements](#requirements)
+- [Installing](#installing)
 - [File Format](#file-format)
 - [Quick Start](#quick-start)
 - [Core Concepts](#core-concepts)
@@ -131,6 +132,57 @@ Security features are integrated throughout the codebase:
 - macOS: 12.0+
 - iOS: 15.0+ (available but not tested)
 - Swift: 6.0+
+
+## Installing
+
+### Swift Package Manager
+
+XLKit is available through Swift Package Manager. Add it to your project dependencies:
+
+#### Xcode
+1. In Xcode, go to **File** → **Add Package Dependencies**
+2. Enter the repository URL: `https://github.com/TheAcharya/XLKit.git`
+3. Click **Add Package**
+4. Select the XLKit product and click **Add Package**
+
+#### Package.swift
+Add XLKit to your `Package.swift` dependencies:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/TheAcharya/XLKit.git", from: "1.0.0")
+]
+```
+
+#### Command Line
+```bash
+swift package add https://github.com/TheAcharya/XLKit.git
+```
+
+### Import
+
+Once installed, import XLKit in your Swift files:
+
+```swift
+import XLKit
+```
+
+### Verify Installation
+
+Test that XLKit is working correctly:
+
+```swift
+import XLKit
+
+// Create a simple workbook
+let workbook = XLKit.createWorkbook()
+let sheet = workbook.addSheet(name: "Test")
+sheet.setCell("A1", value: .string("Hello, XLKit!"))
+
+// Save to verify everything works
+try XLKit.saveWorkbook(workbook, to: URL(fileURLWithPath: "test.xlsx"))
+print("XLKit is working correctly!")
+```
 
 ## Quick Start
 
