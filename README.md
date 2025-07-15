@@ -27,6 +27,7 @@ This codebase is developed using AI agents.
 - [Basic Usage](#basic-usage)
 - [CSV/TSV Import & Export](#csvtsv-import--export)
 - [Image Support](#image-support)
+- [Text Alignment Support](#text-alignment-support)
 - [Advanced Usage](#advanced-usage)
 - [Error Handling](#error-handling)
 - [Testing & Validation](#testing--validation)
@@ -42,13 +43,13 @@ This codebase is developed using AI agents.
 - Perfect Image Embedding: Pixel-perfect image embedding with automatic aspect ratio preservation
 - Professional Video Support: All 17 video and cinema aspect ratios with zero distortion
 - Auto Cell Sizing: Automatic column width and row height calculation to perfectly fit images
-- Cell Formatting: Comprehensive formatting including font colours, backgrounds, borders, and alignment with proper XML generation
+- Cell Formatting: Comprehensive formatting including font colours, backgrounds, borders, and text alignment (all 6 alignment options) with proper XML generation
 - CSV/TSV Import/Export: Built-in support for importing and exporting CSV/TSV data
 - Async & Sync Operations: Save workbooks with one line (async or sync)
 - Type-Safe: Strong enums and structs for all data types
 - Excel Compliance: Full OpenXML compliance with CoreXLSX validation
 - No Dependencies: Pure Swift, macOS 12+, Swift 6.0+
-- Comprehensive Testing: 35 tests with 100% API coverage and automated validation
+- Comprehensive Testing: 40 tests with 100% API coverage, including all text alignment options (horizontal, vertical, combined), and automated validation
 - Security Features: Comprehensive security features for production use
 
 ## Security Features
@@ -725,6 +726,133 @@ Supported colour formats:
 - Hex colours: `#FF0000`, `#00FF00`, `#0000FF`
 - Theme colours: Excel's built-in theme colour system
 - All colours are properly converted to Excel's internal format
+
+### Text Alignment Support
+
+XLKit provides comprehensive text alignment support with all 6 alignment options available in Excel:
+
+#### Horizontal Alignment (5 options)
+```swift
+// Left alignment
+let leftAligned = CellFormat(horizontalAlignment: .left)
+
+// Center alignment
+let centerAligned = CellFormat(horizontalAlignment: .center)
+
+// Right alignment
+let rightAligned = CellFormat(horizontalAlignment: .right)
+
+// Justified alignment
+let justified = CellFormat(horizontalAlignment: .justify)
+
+// Distributed alignment
+let distributed = CellFormat(horizontalAlignment: .distributed)
+```
+
+#### Vertical Alignment (5 options)
+```swift
+// Top alignment
+let topAligned = CellFormat(verticalAlignment: .top)
+
+// Center alignment
+let centerVertically = CellFormat(verticalAlignment: .center)
+
+// Bottom alignment
+let bottomAligned = CellFormat(verticalAlignment: .bottom)
+
+// Justified alignment
+let justifiedVertically = CellFormat(verticalAlignment: .justify)
+
+// Distributed alignment
+let distributedVertically = CellFormat(verticalAlignment: .distributed)
+```
+
+#### Combined Alignment
+```swift
+// Center both horizontally and vertically
+let centerCenter = CellFormat(
+    horizontalAlignment: .center,
+    verticalAlignment: .center
+)
+
+// Top-right alignment
+let topRight = CellFormat(
+    horizontalAlignment: .right,
+    verticalAlignment: .top
+)
+
+// Bottom-left alignment
+let bottomLeft = CellFormat(
+    horizontalAlignment: .left,
+    verticalAlignment: .bottom
+)
+```
+
+#### Practical Examples
+```swift
+// Headers with center alignment
+let headerFormat = CellFormat(
+    fontWeight: .bold,
+    fontSize: 14.0,
+    backgroundColor: "#E6E6E6",
+    horizontalAlignment: .center
+)
+
+// Right-aligned numbers for better readability
+let numberFormat = CellFormat(
+    numberFormat: .currencyWithDecimals,
+    horizontalAlignment: .right
+)
+
+// Top-aligned text for multi-line content
+let multiLineFormat = CellFormat(
+    textWrapping: true,
+    verticalAlignment: .top
+)
+
+// Apply alignment to cells
+sheet.setCell("A1", string: "Centered Header", format: headerFormat)
+sheet.setCell("B1", number: 1234.56, format: numberFormat)
+sheet.setCell("C1", string: "Multi-line\ntext content", format: multiLineFormat)
+```
+
+#### Predefined Formats with Alignment
+```swift
+// Header format automatically centers text
+let header = CellFormat.header(fontSize: 14.0, backgroundColor: "#E6E6E6")
+// This sets horizontalAlignment = .center internally
+
+// Currency format with right alignment
+let currencyRight = CellFormat.currency(
+    format: .currencyWithDecimals,
+    color: "#FF0000"
+)
+// Add right alignment
+currencyRight.horizontalAlignment = .right
+```
+
+#### Alignment with Other Formatting
+```swift
+// Bold, red text, center-aligned
+let boldRedCenter = CellFormat(
+    fontWeight: .bold,
+    fontColor: "#FF0000",
+    horizontalAlignment: .center,
+    verticalAlignment: .center
+)
+
+// Bordered cells with distributed alignment
+let borderedDistributed = CellFormat(
+    borderTop: .thin,
+    borderBottom: .thin,
+    borderLeft: .thin,
+    borderRight: .thin,
+    horizontalAlignment: .distributed,
+    verticalAlignment: .distributed
+)
+```
+
+All alignment options are properly converted to Excel's OpenXML format and will display correctly in Excel, Google Sheets, LibreOffice Calc, and other spreadsheet applications.
 ```
 
 ## Error Handling
@@ -755,16 +883,17 @@ XLKit includes comprehensive testing and validation capabilities with integrated
 
 ### Unit Tests
 
-The library includes 35 comprehensive unit tests covering:
+The library includes 40 comprehensive unit tests covering:
 - Core Workbook & Sheet Tests: Creation, management, and operations
 - Cell Operations & Data Types: All cell value types and operations
 - Coordinate & Range Tests: Excel coordinate parsing and range operations
 - Image & Aspect Ratio Tests: All 17 professional aspect ratios with perfect preservation
 - CSV/TSV Import/Export: Complete import/export functionality
-- Cell Formatting: Predefined and custom formatting options including font colours
+- Cell Formatting: Predefined and custom formatting options including font colours and all text alignment options (horizontal, vertical, combined)
 - Column & Row Sizing: Automatic sizing and manual adjustments
 - File Operations: Async and sync workbook saving
 - Error Handling: Comprehensive error testing and edge cases
+- All text alignment options (horizontal, vertical, combined) are fully tested
 
 ### XLKitTestRunner
 
@@ -780,11 +909,11 @@ swift run XLKitTestRunner help
 ```
 
 Available Test Types:
-- `no-embeds` / `no-images`: Generate Excel from CSV without images
-- `embed` / `with-embeds` / `with-images`: Generate Excel with embedded images from CSV data
-- `comprehensive` / `demo`: Comprehensive API demonstration with all features
-- `security-demo` / `security`: Demonstrate file path security restrictions
-- `help` / `-h` / `--help`: Show available commands
+- no-embeds / no-images: Generate Excel from CSV without images
+- embed / with-embeds / with-images: Generate Excel with embedded images from CSV data
+- comprehensive / demo: Comprehensive API demonstration with all features
+- security-demo / security: Demonstrate file path security restrictions
+- help / -h / --help: Show available commands
 
 Test Features:
 - Security Integration: All tests include security logging and validation
@@ -833,6 +962,7 @@ Test-Workflows/
 - Performance Tests: Large dataset handling and memory management
 - Validation Tests: CoreXLSX compliance verification for all generated files
 - Security Tests: Rate limiting, input validation, file quarantine, and checksum verification
+- All text alignment options (horizontal, vertical, combined) are fully tested
 
 ## Code Style & Formatting
 

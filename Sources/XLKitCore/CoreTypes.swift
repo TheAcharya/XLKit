@@ -10,39 +10,12 @@ import CryptoKit
 
 /// Core types and data structures for XLKit
 /// 
-/// This file contains the fundamental types used throughout XLKit:
-/// - Workbook: Main container for Excel files with multiple sheets
-/// - Sheet: Individual worksheet with cells, formatting, and images
-/// - Cell, CellValue, CellFormat: Cell data and styling
-/// - CellCoordinate, CellRange: Excel coordinate system
-/// - ExcelImage, ImageFormat: Image embedding support
-/// - XLKitError: Error handling for all operations
-/// - CoreUtils: Utility functions for Excel operations
+/// Contains fundamental types: Workbook, Sheet, Cell, CellValue, CellFormat,
+/// CellCoordinate, CellRange, ExcelImage, ImageFormat, XLKitError, CoreUtils
 
 // MARK: - Workbook
 
-/// Represents an Excel workbook containing multiple sheets and images.
-/// 
-/// A workbook is the top-level container for Excel files, managing:
-/// - Multiple worksheets (Sheet objects)
-/// - Embedded images across all sheets
-/// - File operations (save, load)
-/// - CSV/TSV import/export functionality
-/// 
-/// ## Usage
-/// ```swift
-/// let workbook = Workbook()
-/// let sheet = workbook.addSheet(name: "Data")
-/// 
-/// // Add images to workbook
-/// let image = ExcelImage(id: "img1", data: imageData, format: .png, originalSize: size)
-/// workbook.addImage(image)
-/// 
-/// // Get workbook information
-/// let imageCount = workbook.imageCount
-/// let allImages = workbook.getImages()
-/// let pngImages = workbook.getImages(withFormat: .png)
-/// ```
+/// Represents an Excel workbook containing multiple sheets and images
 public final class Workbook {
     private var sheets: [Sheet] = []
     private var nextSheetId: Int
@@ -137,33 +110,6 @@ public final class Workbook {
 }
 
 /// Represents a worksheet in an Excel workbook
-/// 
-/// A sheet contains cells, formatting, images, and layout information:
-/// - Cell data with various value types (string, number, date, etc.)
-/// - Cell formatting and styling
-/// - Merged cell ranges
-/// - Column widths and row heights
-/// - Embedded images positioned at specific coordinates
-/// 
-/// ## Usage
-/// ```swift
-/// let sheet = workbook.addSheet(name: "Data")
-/// 
-/// // Set cell values with convenience methods (recommended)
-/// sheet.setCell("A1", string: "Header", format: CellFormat.header())
-/// sheet.setCell("B1", number: 1234.56, format: CellFormat.currency())
-/// sheet.setCell("C1", integer: 100, format: CellFormat.number())
-/// 
-/// // Set ranges
-/// sheet.setRange("A2:C5", string: "Data", format: CellFormat.bordered())
-/// 
-/// // Merge cells
-/// sheet.mergeCells("A1:C1")
-/// 
-/// // Add images
-/// let image = ExcelImage(id: "img1", data: imageData, format: .png, originalSize: size)
-/// sheet.addImage(image, at: "D1")
-/// ```
 public final class Sheet: Equatable {
     /// The name of the sheet
     public let name: String
@@ -604,24 +550,6 @@ public final class Sheet: Equatable {
 // MARK: - Cell Coordinate System
 
 /// Represents a cell coordinate in Excel notation
-/// 
-/// Provides conversion between Excel-style addresses (A1, B2) and row/column numbers.
-/// Supports both creation from row/column numbers and parsing from Excel addresses.
-/// 
-/// ## Usage
-/// ```swift
-/// // Create from row and column numbers
-/// let coord1 = CellCoordinate(row: 1, column: 1) // A1
-/// let coord2 = CellCoordinate(row: 2, column: 2) // B2
-/// 
-/// // Parse from Excel address
-/// let coord3 = CellCoordinate(excelAddress: "A1") // row: 1, column: 1
-/// let coord4 = CellCoordinate(excelAddress: "B2") // row: 2, column: 2
-/// 
-/// // Get Excel address
-/// print(coord1.excelAddress) // "A1"
-/// print(coord2.excelAddress) // "B2"
-/// ```
 public struct CellCoordinate: Hashable {
     /// Row number (1-based)
     public let row: Int
@@ -662,26 +590,6 @@ public struct CellCoordinate: Hashable {
 }
 
 /// Represents a range of cells in Excel notation
-/// 
-/// Provides functionality for working with cell ranges, including creation from Excel range notation
-/// and iteration over all coordinates within the range.
-/// 
-/// ## Usage
-/// ```swift
-/// // Create from start and end coordinates
-/// let start = CellCoordinate(row: 1, column: 1) // A1
-/// let end = CellCoordinate(row: 3, column: 3)   // C3
-/// let range = CellRange(start: start, end: end) // A1:C3
-/// 
-/// // Parse from Excel range notation
-/// let range2 = CellRange(excelRange: "A1:B5") // A1 to B5
-/// 
-/// // Get all coordinates in range
-/// let coords = range.coordinates // [A1, A2, A3, B1, B2, B3, C1, C2, C3]
-/// 
-/// // Get Excel range notation
-/// print(range.excelRange) // "A1:C3"
-/// ```
 public struct CellRange: Hashable {
     /// Starting coordinate of the range
     public let start: CellCoordinate

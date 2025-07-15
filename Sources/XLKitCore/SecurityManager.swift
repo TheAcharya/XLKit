@@ -9,58 +9,6 @@ import Foundation
 @MainActor
 public struct SecurityManager {
     
-    // MARK: - Security Features Overview
-    /*
-     XLKit Security Features
-     =======================
-     
-     This SecurityManager provides comprehensive protection against vulnerabilities,
-     supply chain attacks, and malicious code injection:
-     
-     Rate Limiting:
-     - Limits file operations to 100 per minute (not image embeddings per file)
-     - Prevents abuse and resource exhaustion
-     - Applies to: saveWorkbook(), createWorkbookFromCSV(), etc.
-     - Does NOT limit: number of images in a single Excel file
-     
-     Security Logging:
-     - Comprehensive audit trail of all security-relevant operations
-     - Console logging for real-time monitoring
-     - File logging for persistent audit trail
-     - Structured data with timestamps, operations, and details
-     
-     File Quarantine:
-     - Isolates suspicious files to prevent execution
-     - Pattern detection for malicious code
-     - Size validation for oversized files
-     - Format validation for images
-     - Automatic isolation to quarantine directory
-     
-     File Checksums:
-     - SHA-256 integrity verification (optional, disabled by default)
-     - Tamper detection for unauthorized modifications
-     - Supply chain protection for file authenticity
-     - Configurable via enableChecksumStorage flag
-     
-     File Path Restrictions:
-     - Directory-based file access restrictions (optional, disabled by default)
-     - Path traversal attack prevention
-     - Configurable via enableFilePathRestrictions flag
-     
-     Input Validation:
-     - Comprehensive validation of all user inputs
-     - File path sanitization and validation (configurable, disabled by default)
-     - Image format and size validation
-     - CSV structure and content validation
-     - Excel coordinate format validation
-     
-     Integration Points:
-     - XLSXEngine: Rate limiting, logging, checksums, path validation for file generation
-     - ImageUtils: Quarantine, validation, path validation for image processing
-     - XLKit API: Input validation, security logging for all operations
-     - Test Runner: Security validation for all test operations
-     */
-    
     // MARK: - Configuration
     
     /// Flag to enable/disable checksum file creation
@@ -73,11 +21,8 @@ public struct SecurityManager {
     
     // MARK: - Rate Limiting
     
-    /// Rate limiter for file operations
-    /// Note: This limits file operations (like saveWorkbook) to 100 per minute,
-    /// NOT the number of images that can be embedded in a single Excel file.
-    /// You can embed hundreds or thousands of images in one file without hitting this limit.
-    private static var operationLimiter = RateLimiter(maxOperations: 100, timeWindow: 60) // 100 ops per minute
+    /// Rate limiter for file operations (100 per minute)
+    private static var operationLimiter = RateLimiter(maxOperations: 100, timeWindow: 60)
     
     /// Checks if operation is allowed under rate limiting
     public static func checkRateLimit() throws {

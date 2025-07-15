@@ -8,9 +8,6 @@ import Foundation
 import CoreGraphics
 @preconcurrency import XLKitCore
 
-// MARK: - Image Utilities for XLKit
-
-/// Image utility functions for XLKit
 @MainActor
 public struct ImageUtils {
     
@@ -51,36 +48,35 @@ public struct ImageUtils {
         }
     }
     
-    /// Gets GIF image size
+    /// Gets GIF image size from header
     private static func getGIFSize(from data: Data) -> CGSize? {
         guard data.count >= 10 else { return nil }
         let bytes = [UInt8](data)
         
-        // GIF header: width (2 bytes) + height (2 bytes)
+        // Width and height at bytes 6-9
         let width = Int(bytes[6]) | (Int(bytes[7]) << 8)
         let height = Int(bytes[8]) | (Int(bytes[9]) << 8)
         
         return CGSize(width: Double(width), height: Double(height))
     }
     
-    /// Gets PNG image size
+    /// Gets PNG image size from IHDR chunk
     private static func getPNGSize(from data: Data) -> CGSize? {
         guard data.count >= 24 else { return nil }
         let bytes = [UInt8](data)
         
-        // PNG IHDR chunk: width (4 bytes) + height (4 bytes)
+        // Width and height at bytes 16-23
         let width = Int(bytes[16]) << 24 | Int(bytes[17]) << 16 | Int(bytes[18]) << 8 | Int(bytes[19])
         let height = Int(bytes[20]) << 24 | Int(bytes[21]) << 16 | Int(bytes[22]) << 8 | Int(bytes[23])
         
         return CGSize(width: Double(width), height: Double(height))
     }
     
-    /// Gets JPEG image size
+    /// Gets JPEG image size from SOF markers
     private static func getJPEGSize(from data: Data) -> CGSize? {
         guard data.count >= 2 else { return nil }
         let bytes = [UInt8](data)
         
-        // JPEG starts with 0xFF 0xD8
         guard bytes[0] == 0xFF && bytes[1] == 0xD8 else { return nil }
         
         var i = 2
@@ -101,12 +97,10 @@ public struct ImageUtils {
         return nil
     }
     
-    /// Creates an ExcelImage from Data
+    /// Creates ExcelImage from Data with security validation
     public static func createExcelImage(from data: Data, format: ImageFormat, displaySize: CGSize? = nil) throws -> ExcelImage? {
-        // Security checks
         try CoreUtils.validateImageFileSize(data)
         
-        // Check for suspicious files
         if SecurityManager.shouldQuarantineFile(data, format: format) {
             throw XLKitError.suspiciousFileDetected("Suspicious image file detected")
         }
@@ -114,7 +108,6 @@ public struct ImageUtils {
         guard let size = getImageSize(from: data, format: format) else { return nil }
         let id = "image_\(UUID().uuidString)"
         
-        // Log image processing
         SecurityManager.logSecurityOperation("image_processed", details: [
             "image_id": id,
             "format": format.rawValue,
@@ -125,9 +118,8 @@ public struct ImageUtils {
         return ExcelImage(id: id, data: data, format: format, originalSize: size, displaySize: displaySize)
     }
     
-    /// Creates an ExcelImage from a file URL
+    /// Creates ExcelImage from file URL with security validation
     public static func createExcelImage(from url: URL, displaySize: CGSize? = nil) throws -> ExcelImage? {
-        // Security checks
         try CoreUtils.validateFilePath(url.path)
         
         let data = try Data(contentsOf: url)
@@ -138,14 +130,15 @@ public struct ImageUtils {
 
 @MainActor
 public extension Sheet {
-    /// Adds an image from Data
+    /// Adds image from Data
     @discardableResult
     func addImage(_ data: Data, at coordinate: String, format: ImageFormat, displaySize: CGSize? = nil) throws -> Bool {
         guard let image = try ImageUtils.createExcelImage(from: data, format: format, displaySize: displaySize) else { return false }
         addImage(image, at: coordinate)
         return true
     }
-    /// Adds an image from file URL
+    
+    /// Adds image from file URL
     @discardableResult
     func addImage(from url: URL, at coordinate: String, displaySize: CGSize? = nil) throws -> Bool {
         guard let image = try ImageUtils.createExcelImage(from: url, displaySize: displaySize) else { return false }

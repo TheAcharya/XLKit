@@ -90,7 +90,7 @@ XLKit/
 ├── Tests/                      # Unit tests
 │   ├── README.md               # Test documentation (196 lines)
 │   └── XLKitTests/             # Test suite
-│       └── XLKitTests.swift    # All unit tests (630 lines, 35 tests)
+│       └── XLKitTests.swift    # All unit tests (630 lines, 40 tests)
 ├── Test-Data/                  # Test data files
 │   ├── README.md               # Test data documentation (44 lines)
 │   └── Embed-Test/             # Image embedding test data
@@ -387,6 +387,7 @@ Test Coverage Requirements:
 - Test XLSX file generation and saving
 - Test coordinate and range operations
 - Test font colour formatting and XML generation
+- Test all text alignment options (horizontal, vertical, combined)
 
 Test Patterns:
 ```swift
@@ -414,6 +415,15 @@ Performance Testing:
 - Test memory usage patterns
 - Test async operations
 - Test concurrent access
+
+Text Alignment Testing:
+- Test all 5 horizontal alignment options (left, center, right, justify, distributed)
+- Test all 5 vertical alignment options (top, center, bottom, justify, distributed)
+- Test combined horizontal and vertical alignment scenarios
+- Test alignment with other formatting options (font, background, etc.)
+- Test enum value correctness for all alignment options
+- Test format key generation includes alignment information
+- Test Excel-compliant XML generation for all alignment options
 
 ### Documentation
 
@@ -546,6 +556,13 @@ public struct CellFormat {
     public static func coloredText(color: String) -> CellFormat
 }
 ```
+
+Text Alignment Support:
+XLKit provides comprehensive text alignment support with all 6 alignment options available in Excel:
+- Horizontal Alignment: left, center, right, justify, distributed
+- Vertical Alignment: top, center, bottom, justify, distributed
+- Combined alignment scenarios for precise cell formatting
+- Excel-compliant XML generation for all alignment options
 
 ExcelImage Struct:
 ```swift

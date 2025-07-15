@@ -1,5 +1,19 @@
 # Changelog
 
+### 1.0.5
+
+**🎉 Released:**
+- 15th July 2025
+
+**🔧 Improvements:**
+- Added comprehensive text alignment testing with 5 new test functions covering all Excel alignment options
+- Increased test count from 35 to 40 tests with 100% API coverage including all text alignment options
+- Optimized code comments throughout the codebase for better maintainability and readability
+- Preserved essential API documentation and implementation details while removing unnecessary verbosity
+- Added detailed Text Alignment Support section in README.md with practical examples and usage patterns
+
+---
+
 ### 1.0.4
 
 **🎉 Released:**

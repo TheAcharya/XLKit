@@ -150,7 +150,7 @@ XLKit/
 ├── Tests/                      # Unit tests
 │   ├── README.md               # Test documentation (196 lines)
 │   └── XLKitTests/             # Test suite
-│       └── XLKitTests.swift    # All unit tests (630 lines, 35 tests)
+│       └── XLKitTests.swift    # All unit tests (630 lines, 40 tests)
 ├── Test-Data/                  # Test data files
 │   ├── README.md               # Test data documentation (44 lines)
 │   └── Embed-Test/             # Image embedding test data
@@ -299,7 +299,7 @@ import Foundation
 - CellCoordinate: Struct for Excel-style coordinates
 - CellRange: Struct for cell ranges
 - Cell: Struct combining value and format
-- CellFormat: Struct for comprehensive formatting including font colours
+- CellFormat: Struct for comprehensive formatting including font colours and text alignment
 
 ### CSV/TSV Operations (XLKitFormatters Module)
 - Use instance methods on Workbook and Sheet classes
@@ -330,6 +330,7 @@ import Foundation
 - Test XLSX file generation and saving
 - Test coordinate and range operations
 - Test font colour formatting and XML generation
+- Test all text alignment options (horizontal, vertical, combined)
 
 ### Test Patterns
 ```swift
@@ -357,6 +358,15 @@ func testFeatureNameWithInvalidInput() {
 - Test memory usage patterns
 - Test async operations
 - Test concurrent access
+
+### Text Alignment Testing
+- Test all 5 horizontal alignment options (left, center, right, justify, distributed)
+- Test all 5 vertical alignment options (top, center, bottom, justify, distributed)
+- Test combined horizontal and vertical alignment scenarios
+- Test alignment with other formatting options (font, background, etc.)
+- Test enum value correctness for all alignment options
+- Test format key generation includes alignment information
+- Test Excel-compliant XML generation for all alignment options
 
 ## Documentation Standards
 
@@ -584,6 +594,17 @@ Security operations are logged with structured data:
 - Excel Compliance: All generated files pass CoreXLSX validation with perfect aspect ratio preservation
 - Simplified API: Easy-to-use methods with automatic sizing and aspect ratio preservation
 - Font Colour Support: Added comprehensive font colour formatting with proper XML generation and theme colour support
+
+## Text Alignment Testing (2025-07-15)
+- Comprehensive text alignment testing added to XLKitTests.swift
+- All 5 horizontal alignment options tested (left, center, right, justify, distributed)
+- All 5 vertical alignment options tested (top, center, bottom, justify, distributed)
+- Combined alignment scenarios tested for complex formatting
+- Alignment with other formatting options tested (font, background, etc.)
+- Enum value correctness verified for all alignment options
+- Format key generation tested to include alignment information
+- Excel-compliant XML generation validated for all alignment options
+- Test count increased from 35 to 40 tests with 100% API coverage
 
 ## iOS Compatibility Fix (2025-07-14)
 - Fixed iOS build error: `'homeDirectoryForCurrentUser' is unavailable in iOS`

@@ -259,6 +259,240 @@ final class XLKitTests: XCTestCase {
         }
     }
     
+    func testHorizontalAlignment() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Horizontal Alignment Test")
+        
+        // Test all horizontal alignment options
+        var leftAlignFormat = CellFormat()
+        leftAlignFormat.horizontalAlignment = .left
+        
+        var centerAlignFormat = CellFormat()
+        centerAlignFormat.horizontalAlignment = .center
+        
+        var rightAlignFormat = CellFormat()
+        rightAlignFormat.horizontalAlignment = .right
+        
+        var justifyAlignFormat = CellFormat()
+        justifyAlignFormat.horizontalAlignment = .justify
+        
+        var distributedAlignFormat = CellFormat()
+        distributedAlignFormat.horizontalAlignment = .distributed
+        
+        // Set cells with different horizontal alignments
+        sheet.setCell("A1", string: "Left Aligned", format: leftAlignFormat)
+        sheet.setCell("A2", string: "Center Aligned", format: centerAlignFormat)
+        sheet.setCell("A3", string: "Right Aligned", format: rightAlignFormat)
+        sheet.setCell("A4", string: "Justify Aligned", format: justifyAlignFormat)
+        sheet.setCell("A5", string: "Distributed Aligned", format: distributedAlignFormat)
+        
+        // Verify alignments are applied
+        let leftCell = sheet.getCellWithFormat("A1")
+        let centerCell = sheet.getCellWithFormat("A2")
+        let rightCell = sheet.getCellWithFormat("A3")
+        let justifyCell = sheet.getCellWithFormat("A4")
+        let distributedCell = sheet.getCellWithFormat("A5")
+        
+        XCTAssertNotNil(leftCell)
+        XCTAssertNotNil(centerCell)
+        XCTAssertNotNil(rightCell)
+        XCTAssertNotNil(justifyCell)
+        XCTAssertNotNil(distributedCell)
+        
+        XCTAssertEqual(leftCell?.format?.horizontalAlignment, .left)
+        XCTAssertEqual(centerCell?.format?.horizontalAlignment, .center)
+        XCTAssertEqual(rightCell?.format?.horizontalAlignment, .right)
+        XCTAssertEqual(justifyCell?.format?.horizontalAlignment, .justify)
+        XCTAssertEqual(distributedCell?.format?.horizontalAlignment, .distributed)
+        
+        // Test that format keys include horizontal alignment
+        if let leftFormat = leftCell?.format {
+            let formatKey = XLSXEngine.formatToKey(leftFormat)
+            XCTAssertTrue(formatKey.contains("horizontalAlignment:left"))
+        }
+        
+        if let centerFormat = centerCell?.format {
+            let formatKey = XLSXEngine.formatToKey(centerFormat)
+            XCTAssertTrue(formatKey.contains("horizontalAlignment:center"))
+        }
+    }
+    
+    func testVerticalAlignment() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Vertical Alignment Test")
+        
+        // Test all vertical alignment options
+        var topAlignFormat = CellFormat()
+        topAlignFormat.verticalAlignment = .top
+        
+        var centerAlignFormat = CellFormat()
+        centerAlignFormat.verticalAlignment = .center
+        
+        var bottomAlignFormat = CellFormat()
+        bottomAlignFormat.verticalAlignment = .bottom
+        
+        var justifyAlignFormat = CellFormat()
+        justifyAlignFormat.verticalAlignment = .justify
+        
+        var distributedAlignFormat = CellFormat()
+        distributedAlignFormat.verticalAlignment = .distributed
+        
+        // Set cells with different vertical alignments
+        sheet.setCell("A1", string: "Top Aligned", format: topAlignFormat)
+        sheet.setCell("A2", string: "Center Aligned", format: centerAlignFormat)
+        sheet.setCell("A3", string: "Bottom Aligned", format: bottomAlignFormat)
+        sheet.setCell("A4", string: "Justify Aligned", format: justifyAlignFormat)
+        sheet.setCell("A5", string: "Distributed Aligned", format: distributedAlignFormat)
+        
+        // Verify alignments are applied
+        let topCell = sheet.getCellWithFormat("A1")
+        let centerCell = sheet.getCellWithFormat("A2")
+        let bottomCell = sheet.getCellWithFormat("A3")
+        let justifyCell = sheet.getCellWithFormat("A4")
+        let distributedCell = sheet.getCellWithFormat("A5")
+        
+        XCTAssertNotNil(topCell)
+        XCTAssertNotNil(centerCell)
+        XCTAssertNotNil(bottomCell)
+        XCTAssertNotNil(justifyCell)
+        XCTAssertNotNil(distributedCell)
+        
+        XCTAssertEqual(topCell?.format?.verticalAlignment, .top)
+        XCTAssertEqual(centerCell?.format?.verticalAlignment, .center)
+        XCTAssertEqual(bottomCell?.format?.verticalAlignment, .bottom)
+        XCTAssertEqual(justifyCell?.format?.verticalAlignment, .justify)
+        XCTAssertEqual(distributedCell?.format?.verticalAlignment, .distributed)
+        
+        // Test that format keys include vertical alignment
+        if let topFormat = topCell?.format {
+            let formatKey = XLSXEngine.formatToKey(topFormat)
+            XCTAssertTrue(formatKey.contains("verticalAlignment:top"))
+        }
+        
+        if let centerFormat = centerCell?.format {
+            let formatKey = XLSXEngine.formatToKey(centerFormat)
+            XCTAssertTrue(formatKey.contains("verticalAlignment:center"))
+        }
+    }
+    
+    func testCombinedAlignment() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Combined Alignment Test")
+        
+        // Test combinations of horizontal and vertical alignments
+        var topLeftFormat = CellFormat()
+        topLeftFormat.horizontalAlignment = .left
+        topLeftFormat.verticalAlignment = .top
+        
+        var centerCenterFormat = CellFormat()
+        centerCenterFormat.horizontalAlignment = .center
+        centerCenterFormat.verticalAlignment = .center
+        
+        var bottomRightFormat = CellFormat()
+        bottomRightFormat.horizontalAlignment = .right
+        bottomRightFormat.verticalAlignment = .bottom
+        
+        var justifyDistributedFormat = CellFormat()
+        justifyDistributedFormat.horizontalAlignment = .justify
+        justifyDistributedFormat.verticalAlignment = .distributed
+        
+        // Set cells with combined alignments
+        sheet.setCell("A1", string: "Top-Left", format: topLeftFormat)
+        sheet.setCell("A2", string: "Center-Center", format: centerCenterFormat)
+        sheet.setCell("A3", string: "Bottom-Right", format: bottomRightFormat)
+        sheet.setCell("A4", string: "Justify-Distributed", format: justifyDistributedFormat)
+        
+        // Verify combined alignments are applied
+        let topLeftCell = sheet.getCellWithFormat("A1")
+        let centerCenterCell = sheet.getCellWithFormat("A2")
+        let bottomRightCell = sheet.getCellWithFormat("A3")
+        let justifyDistributedCell = sheet.getCellWithFormat("A4")
+        
+        XCTAssertNotNil(topLeftCell)
+        XCTAssertNotNil(centerCenterCell)
+        XCTAssertNotNil(bottomRightCell)
+        XCTAssertNotNil(justifyDistributedCell)
+        
+        // Test horizontal alignments
+        XCTAssertEqual(topLeftCell?.format?.horizontalAlignment, .left)
+        XCTAssertEqual(centerCenterCell?.format?.horizontalAlignment, .center)
+        XCTAssertEqual(bottomRightCell?.format?.horizontalAlignment, .right)
+        XCTAssertEqual(justifyDistributedCell?.format?.horizontalAlignment, .justify)
+        
+        // Test vertical alignments
+        XCTAssertEqual(topLeftCell?.format?.verticalAlignment, .top)
+        XCTAssertEqual(centerCenterCell?.format?.verticalAlignment, .center)
+        XCTAssertEqual(bottomRightCell?.format?.verticalAlignment, .bottom)
+        XCTAssertEqual(justifyDistributedCell?.format?.verticalAlignment, .distributed)
+        
+        // Test that format keys include both alignments
+        if let topLeftFormat = topLeftCell?.format {
+            let formatKey = XLSXEngine.formatToKey(topLeftFormat)
+            XCTAssertTrue(formatKey.contains("horizontalAlignment:left"))
+            XCTAssertTrue(formatKey.contains("verticalAlignment:top"))
+        }
+        
+        if let centerCenterFormat = centerCenterCell?.format {
+            let formatKey = XLSXEngine.formatToKey(centerCenterFormat)
+            XCTAssertTrue(formatKey.contains("horizontalAlignment:center"))
+            XCTAssertTrue(formatKey.contains("verticalAlignment:center"))
+        }
+    }
+    
+    func testAlignmentWithOtherFormatting() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Alignment with Formatting Test")
+        
+        // Test alignment combined with other formatting options
+        var formattedAlignFormat = CellFormat()
+        formattedAlignFormat.horizontalAlignment = .center
+        formattedAlignFormat.verticalAlignment = .center
+        formattedAlignFormat.fontWeight = .bold
+        formattedAlignFormat.fontSize = 14.0
+        formattedAlignFormat.fontColor = "#FF0000"
+        formattedAlignFormat.backgroundColor = "#FFFF00"
+        
+        // Set cell with combined formatting
+        sheet.setCell("A1", string: "Formatted & Aligned", format: formattedAlignFormat)
+        
+        // Verify all formatting is applied
+        let formattedCell = sheet.getCellWithFormat("A1")
+        XCTAssertNotNil(formattedCell)
+        
+        XCTAssertEqual(formattedCell?.format?.horizontalAlignment, .center)
+        XCTAssertEqual(formattedCell?.format?.verticalAlignment, .center)
+        XCTAssertEqual(formattedCell?.format?.fontWeight, .bold)
+        XCTAssertEqual(formattedCell?.format?.fontSize, 14.0)
+        XCTAssertEqual(formattedCell?.format?.fontColor, "#FF0000")
+        XCTAssertEqual(formattedCell?.format?.backgroundColor, "#FFFF00")
+        
+        // Test that format key includes all formatting
+        if let format = formattedCell?.format {
+            let formatKey = XLSXEngine.formatToKey(format)
+            XCTAssertTrue(formatKey.contains("horizontalAlignment:center"))
+            XCTAssertTrue(formatKey.contains("verticalAlignment:center"))
+            XCTAssertTrue(formatKey.contains("fontWeight:bold"))
+            XCTAssertTrue(formatKey.contains("fontSize:14.0"))
+            XCTAssertTrue(formatKey.contains("fontColor:#FF0000"))
+            XCTAssertTrue(formatKey.contains("backgroundColor:#FFFF00"))
+        }
+    }
+    
+    func testAlignmentEnumValues() {
+        // Test that all alignment enum values are correct
+        XCTAssertEqual(HorizontalAlignment.left.rawValue, "left")
+        XCTAssertEqual(HorizontalAlignment.center.rawValue, "center")
+        XCTAssertEqual(HorizontalAlignment.right.rawValue, "right")
+        XCTAssertEqual(HorizontalAlignment.justify.rawValue, "justify")
+        XCTAssertEqual(HorizontalAlignment.distributed.rawValue, "distributed")
+        
+        XCTAssertEqual(VerticalAlignment.top.rawValue, "top")
+        XCTAssertEqual(VerticalAlignment.center.rawValue, "center")
+        XCTAssertEqual(VerticalAlignment.bottom.rawValue, "bottom")
+        XCTAssertEqual(VerticalAlignment.justify.rawValue, "justify")
+        XCTAssertEqual(VerticalAlignment.distributed.rawValue, "distributed")
+    }
+    
     func testSetCellWithFormatting() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")

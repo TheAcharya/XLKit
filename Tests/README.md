@@ -17,10 +17,11 @@ This document provides an organized overview of all tests in the XLKit library, 
 - [Coverage & Quality Assurance](#coverage--quality-assurance)
 
 ## Test Overview
-- Total Tests: 35
+- Total Tests: 40
 - 100% coverage of public APIs
 - All generated files validated with CoreXLSX
 - Security features integrated throughout all tests
+- Text alignment (horizontal, vertical, combined) is now fully tested
 
 ## Core Workbook & Sheet Tests
 - `testCreateWorkbook()`: Basic workbook creation and initialization
@@ -77,6 +78,15 @@ All tests verify pixel-perfect scaling, Excel cell dimension matching, and zero 
 - `testCellFormatting()`: Basic cell formatting with predefined styles
 - `testFontColorFormatting()`: Font colour formatting with proper XML generation and theme colour support
 - `testSetCellWithFormatting()`: Cell formatting with custom properties and persistence
+- `testHorizontalAlignment()`: All five horizontal alignment options (left, center, right, justify, distributed)
+- `testVerticalAlignment()`: All five vertical alignment options (top, center, bottom, justify, distributed)
+- `testCombinedAlignment()`: Combined horizontal and vertical alignment scenarios
+- `testAlignmentWithOtherFormatting()`: Alignment with other formatting (font, background, etc.)
+- `testAlignmentEnumValues()`: Enum value correctness for all alignment options
+
+## Text Alignment Coverage:
+- All horizontal and vertical alignment options are tested for correct API behavior and Excel-compliant output.
+- Combined and formatting-with-alignment scenarios are validated.
 
 ## CSV/TSV Import/Export
 - `testWorkbookFromCSV()`: Workbook creation from CSV data
@@ -171,10 +181,10 @@ swift run XLKitTestRunner help
 | Coordinates/Ranges | 2          | 100%            |
 | File Operations    | 2          | 100%            |
 | Image Support      | 2          | 100%            |
-| Cell Formatting    | 3          | 100%            |
+| Cell Formatting    | 8          | 100%            |
 | CSV/TSV            | 8          | 100%            |
 | Column/Row Sizing  | 1          | 100%            |
-| Total              | 35         | 100%            |
+| Total              | 40         | 100%            |
 
 ### Quality Standards
 - All generated files pass CoreXLSX validation
@@ -182,6 +192,7 @@ swift run XLKitTestRunner help
 - Efficient memory usage and file generation
 - Comprehensive error and edge case testing
 - 100% of public APIs tested
+- All text alignment options (horizontal, vertical, combined) are fully tested
 - Automated CI on macOS and iOS, performance and memory monitoring
 - Security features integrated throughout all tests
 - XLKitTestRunner provides comprehensive demonstration capabilities

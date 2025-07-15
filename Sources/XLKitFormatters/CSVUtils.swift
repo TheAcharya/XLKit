@@ -7,8 +7,6 @@
 import Foundation
 @preconcurrency import XLKitCore
 
-// MARK: - CSV/TSV Utilities for XLKit
-
 /// CSV/TSV import/export utilities for XLKit
 public struct CSVUtils {
     
@@ -16,7 +14,7 @@ public struct CSVUtils {
     public static func exportToCSV(sheet: Sheet, separator: String = ",") -> String {
         var csv = ""
         
-        // Get all used cells and find max row/column
+        // Find max row/column from used cells
         let usedCells = sheet.getUsedCells()
         var maxRow = 0
         var maxColumn = 0
@@ -101,10 +99,11 @@ public struct CSVUtils {
     
     // MARK: - Private Helper Methods
     
+    /// Formats cell value for CSV with proper quoting and escaping
     private static func formatCellValueForCSV(_ cellValue: CellValue, separator: String) -> String {
         let stringValue = cellValue.stringValue
         
-        // Check if we need to quote the value
+        // Quote if contains separator, quotes, or newlines
         let needsQuoting = stringValue.contains(separator) || 
                           stringValue.contains("\"") || 
                           stringValue.contains("\n") || 
@@ -119,6 +118,7 @@ public struct CSVUtils {
         }
     }
     
+    /// Parses CSV value to appropriate CellValue type
     private static func parseCSVValue(_ value: String) -> CellValue {
         let trimmed = value.trimmingCharacters(in: .whitespaces)
         
@@ -139,7 +139,7 @@ public struct CSVUtils {
             return .number(doubleValue)
         }
         
-        // Check for date (simple format: yyyy-MM-dd)
+        // Check for date (yyyy-MM-dd format)
         if trimmed.matches(pattern: "^\\d{4}-\\d{2}-\\d{2}$") {
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
@@ -152,6 +152,7 @@ public struct CSVUtils {
         return .string(trimmed)
     }
     
+    /// Parses CSV line handling quoted fields and escaped quotes
     private static func parseCSVLine(_ line: String, separator: String) -> [String] {
         var result: [String] = []
         var currentField = ""
@@ -194,6 +195,4 @@ private extension String {
     func matches(pattern: String) -> Bool {
         return range(of: pattern, options: .regularExpression) != nil
     }
-}
-
-// (Insert CSVUtils and related helpers here, as previously defined) 
+} 

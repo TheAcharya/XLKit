@@ -8,16 +8,13 @@ import Foundation
 import XLKit
 import CoreXLSX
 
-// MARK: - ImageEmbedGenerators
-
 /// ImageEmbedGenerators
 ///
 /// Provides test routines for embedding images into Excel files using XLKit.
-/// This module demonstrates pixel-perfect image embedding, automatic sizing,
-/// and Excel compliance validation using CoreXLSX. Used by the test runner
-/// to validate image embedding features and aspect ratio preservation.
+/// Demonstrates pixel-perfect image embedding, automatic sizing, and Excel
+/// compliance validation using CoreXLSX.
 ///
-/// ## Features Demonstrated
+/// Features:
 /// - CSV-driven Excel file generation
 /// - Automatic column width calculation
 /// - Bold header formatting
@@ -26,16 +23,14 @@ import CoreXLSX
 /// - Output to `Test-Workflows/Embed-Test-Embed.xlsx`
 /// - CoreXLSX validation for Excel compliance
 struct ImageEmbedGenerators {
-    /// Generates an Excel file with images embedded in a dedicated column.
+    /// Generates Excel file with images embedded in a dedicated column
     ///
-    /// - Reads data from a CSV file in `Test-Data/Embed-Test/Embed-Test.csv`
+    /// - Reads data from CSV file in `Test-Data/Embed-Test/Embed-Test.csv`
     /// - Embeds all images found in `Test-Data/Embed-Test/` (PNG, JPG, JPEG, GIF)
     /// - Applies bold formatting to headers and auto-sizes columns
     /// - Embeds each image in a new row, preserving aspect ratio and sizing
-    /// - Saves the result to `Test-Workflows/Embed-Test-Embed.xlsx`
-    /// - Validates the output file using CoreXLSX
-    ///
-    /// Throws: `XLKitError` if file operations or embedding fail
+    /// - Saves to `Test-Workflows/Embed-Test-Embed.xlsx`
+    /// - Validates output file using CoreXLSX
     @MainActor
     static func generateExcelWithImageEmbeds() async throws {
         print("[INFO] Starting image embedding test...")
@@ -46,16 +41,12 @@ struct ImageEmbedGenerators {
         
         print("[INFO] Using CSV file: \(csvFilePath)")
         
-        // Ensure CSV file exists
         guard FileManager.default.fileExists(atPath: csvFilePath) else {
             print("[ERROR] CSV file not found: \(csvFilePath)")
             throw XLKitError.fileWriteError("CSV file not found: \(csvFilePath)")
         }
         
         // MARK: - CSV Parsing
-        /// Parses a CSV string into rows and headers.
-        /// - Parameter csv: The CSV file contents as a string.
-        /// - Returns: Tuple of (rows, headers)
         func parseCSV(_ csv: String) -> (rows: [[String]], headers: [String]) {
             let lines = csv.components(separatedBy: .newlines).filter { !$0.isEmpty }
             guard let headerLine = lines.first else { return ([], []) }
@@ -72,7 +63,7 @@ struct ImageEmbedGenerators {
         let (rows, headers) = parseCSV(csvData)
         print("[INFO] Parsed CSV with \(headers.count) columns and \(rows.count) data rows")
         
-        // MARK: - Create Excel File with XLKit
+        // MARK: - Create Excel File
         print("[INFO] Creating Excel workbook...")
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Embed Test")
@@ -81,7 +72,6 @@ struct ImageEmbedGenerators {
         print("[INFO] Calculating optimal column widths...")
         var columnWidths: [Int: Double] = [:]
         
-        // Calculate width for each column based on longest value (header or data)
         for col in 0..<headers.count {
             let column = col + 1
             var maxWidth = calculateTextWidth(headers[col])
@@ -91,13 +81,12 @@ struct ImageEmbedGenerators {
                     maxWidth = max(maxWidth, cellWidth)
                 }
             }
-            // Add padding, clamp to min/max
             let adjustedWidth = min(max(maxWidth + 4.0, 8.0), 50.0)
             columnWidths[column] = adjustedWidth
             print("[INFO] Column \(column) (\(headers[col])): width = \(adjustedWidth)")
         }
         
-        // MARK: - Write Headers with Bold Formatting
+        // MARK: - Write Headers
         print("[INFO] Writing headers with bold formatting...")
         let headerFormat = CellFormat.header(fontSize: 12.0, backgroundColor: "#E6E6E6")
         for (col, header) in headers.enumerated() {
@@ -127,23 +116,22 @@ struct ImageEmbedGenerators {
         let imageFiles = try getImageFiles(from: imageDirectory)
         print("[INFO] Found \(imageFiles.count) image files for embedding")
         
-        // Add header for image column with consistent formatting
+        // Add header for image column
         let imageEmbedColumn = headers.count + 1
         sheet.setCell(row: 1, column: imageEmbedColumn, cell: Cell.string("Image", format: headerFormat))
 
-        // Embed each image in a new row, preserving aspect ratio
+        // Embed each image in a new row
         for (index, imageFile) in imageFiles.enumerated() {
-            let row = index + 2 // Start from row 2 (after header)
+            let row = index + 2
             let coordinate = CellCoordinate(row: row, column: imageEmbedColumn).excelAddress
             print("[INFO] Embedding image \(index + 1)/\(imageFiles.count): \(imageFile.lastPathComponent) at \(coordinate)")
             do {
                 let imageData = try Data(contentsOf: imageFile)
-                // Use the XLKit API for image embedding with automatic sizing
                 let success = try await sheet.embedImageAutoSized(
                     imageData,
                     at: coordinate,
                     of: workbook,
-                    scale: 0.5 // 50% scaling for compact images
+                    scale: 0.5
                 )
                 if success {
                     print("[INFO] ✓ Successfully embedded image at \(coordinate)")
@@ -152,7 +140,6 @@ struct ImageEmbedGenerators {
                 }
             } catch {
                 print("[ERROR] Failed to embed image \(imageFile.lastPathComponent): \(error)")
-                // Continue with other images
             }
         }
         
@@ -201,17 +188,12 @@ struct ImageEmbedGenerators {
 
     // MARK: - Helper Functions
 
-    /// Calculates an approximate text width for column sizing.
-    /// - Parameter text: The text to measure.
-    /// - Returns: Approximate width in pixels (8 pixels per character).
+    /// Calculates approximate text width for column sizing (8 pixels per character)
     private static func calculateTextWidth(_ text: String) -> Double {
         return Double(text.count) * 8.0
     }
 
-    /// Returns a sorted list of image file URLs from a directory.
-    /// - Parameter directory: Directory path to search for images.
-    /// - Returns: Array of image file URLs (PNG, JPG, JPEG, GIF).
-    /// - Throws: `XLKitError` if the directory does not exist or cannot be read.
+    /// Returns sorted list of image file URLs from directory (PNG, JPG, JPEG, GIF)
     private static func getImageFiles(from directory: String) throws -> [URL] {
         let directoryURL = URL(fileURLWithPath: directory)
         guard FileManager.default.fileExists(atPath: directory) else {
