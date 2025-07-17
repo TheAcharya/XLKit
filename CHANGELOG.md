@@ -1,5 +1,19 @@
 # Changelog
 
+### 1.0.6
+
+**🎉 Released:**
+- 18th July 2025
+
+**🔧 Improvements:**
+- Fixed iOS "ZIP creation error" issue where users couldn't save Excel files on iOS (#5)
+- Implemented iOS-specific file operations using copy instead of move for better sandbox compatibility
+- Added `CoreUtils.safeFileURL()` helper method for iOS-safe file paths
+- Updated file path validation to be more permissive on iOS while maintaining security on macOS
+- Added iOS compatibility test to XLKitTestRunner for continuous validation
+
+---
+
 ### 1.0.5
 
 **🎉 Released:**

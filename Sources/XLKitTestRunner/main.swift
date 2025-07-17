@@ -48,6 +48,11 @@ let mainTask = Task {
             print("[DEBUG] About to call demonstrateFilePathRestrictions()")
             ExcelGenerators.demonstrateFilePathRestrictions()
             print("[DEBUG] demonstrateFilePathRestrictions() completed")
+        case "ios-test", "ios":
+            print("Executing: iOS Compatibility Test")
+            print("[DEBUG] About to call testIOSCompatibility()")
+            try await ExcelGenerators.testIOSCompatibility()
+            print("[DEBUG] testIOSCompatibility() completed")
         case "help", "-h", "--help":
             printHelp()
         default:
@@ -79,11 +84,13 @@ func printHelp() {
       with-embeds, with-images, embed - Generate Excel file with image embeds
       comprehensive, demo     - Comprehensive API demonstration
       security-demo, security - Demonstrate file path security restrictions
+      ios-test, ios           - Test iOS file system compatibility
       help, -h, --help        - Show this help message
     
     Examples:
       swift run XLKitTestRunner no-embeds
       swift run XLKitTestRunner security-demo
+      swift run XLKitTestRunner ios-test
       swift run XLKitTestRunner help
     
     

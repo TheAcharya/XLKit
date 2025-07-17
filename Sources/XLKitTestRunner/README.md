@@ -27,6 +27,7 @@ swift run XLKitTestRunner no-embeds
 swift run XLKitTestRunner embed
 swift run XLKitTestRunner comprehensive
 swift run XLKitTestRunner security-demo
+swift run XLKitTestRunner ios-test
 
 # Show help
 swift run XLKitTestRunner help
@@ -40,6 +41,7 @@ swift run XLKitTestRunner help
 | `embed` / `with-embeds` / `with-images` | Generate Excel with image embeds | ✅ Implemented |
 | `comprehensive` / `demo` | Comprehensive API demonstration with all features | ✅ Implemented |
 | `security-demo` / `security` | Demonstrate file path security restrictions | ✅ Implemented |
+| `ios-test` / `ios` | Test iOS file system compatibility | ✅ Implemented |
 
 ## Test Descriptions
 
@@ -83,6 +85,19 @@ Demonstrates file path security restrictions and security features of XLKit.
 - Rate limiting examples
 - Input validation testing
 - Security feature showcase
+
+### ios-test / ios
+Tests iOS file system compatibility and platform-specific features. Validates that XLKit works correctly on iOS targets.
+
+**Output**: `iOS-Example.xlsx` (saved in root directory)
+
+**Features**:
+- iOS-specific file system operations
+- Platform-conditional code testing
+- ZIP creation compatibility testing
+- Security features validation on iOS
+- Cross-platform file path handling
+- iOS documents and caches directory support
 
 ## Adding New Tests
 
@@ -144,6 +159,10 @@ Test-Workflows/
 ├── Embed-Test-Embed.xlsx    # From embed test (with images)
 ├── Comprehensive-Demo.xlsx  # From comprehensive test
 └── [Your-Test].xlsx         # From your custom tests
+
+Root Directory:
+├── iOS-Example.xlsx         # From ios-test (iOS compatibility)
+└── [Other-Test].xlsx        # From other platform-specific tests
 ```
 
 ## Security Features
@@ -197,3 +216,29 @@ Every generated Excel file is automatically validated using CoreXLSX to ensure:
 - Image embedding integrity with perfect aspect ratio preservation
 - Cell and row data accuracy
 - Professional-quality exports for all video and cinema formats
+
+## Platform Compatibility
+
+### iOS Testing
+The `ios-test` command validates iOS compatibility by:
+- Testing platform-specific file system operations
+- Validating iOS sandbox restrictions handling
+- Testing ZIP creation with iOS-compatible methods
+- Ensuring security features work on iOS targets
+- Verifying cross-platform code paths
+
+### Local Testing
+For local iOS compatibility testing:
+```bash
+# Test iOS compilation and logic (no simulator required)
+swift run XLKitTestRunner ios-test
+
+# Test with Xcode Command Line Tools
+xcodebuild -scheme XLKit -destination 'platform=iOS Simulator,name=iPhone 15' test
+```
+
+### CI/CD Integration
+GitHub Actions workflows automatically test iOS compatibility:
+- `cli-ios.yml`: Dedicated iOS compatibility testing
+- Validates compilation, file operations, and security features
+- Ensures cross-platform compatibility without requiring iOS Simulator

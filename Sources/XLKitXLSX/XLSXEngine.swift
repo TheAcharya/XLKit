@@ -676,7 +676,16 @@ public struct XLSXEngine {
                 try archive.addEntry(with: relativePath, fileURL: fileURL)
             }
             
+            // On iOS, we need to handle file system restrictions differently
+            #if os(iOS)
+            // For iOS, try to copy the file instead of moving it
+            // This works better with iOS sandbox restrictions
+            try FileManager.default.copyItem(at: tempZipURL, to: destinationURL)
+            try FileManager.default.removeItem(at: tempZipURL)
+            #else
+            // On macOS, we can move the file directly
             try FileManager.default.moveItem(at: tempZipURL, to: destinationURL)
+            #endif
             
         } catch {
             try? FileManager.default.removeItem(at: tempZipURL)

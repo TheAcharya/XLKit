@@ -381,6 +381,37 @@ struct ExcelGenerators {
         print("[INFO] This will be implemented in a future version")
     }
 
+    // MARK: - iOS Compatibility Test
+    
+    /// Tests iOS-specific file system compatibility
+    @MainActor
+    static func testIOSCompatibility() async throws {
+        print("[INFO] Testing iOS file system compatibility...")
+        
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "iOS Test")
+        
+        // Add some test data
+        sheet.setCell("A1", string: "iOS Compatibility Test", format: CellFormat.header())
+        sheet.setCell("A2", string: "This file was created using iOS-safe file operations")
+        sheet.setCell("A3", string: "Date: \(Date())")
+        
+        // Test using CoreUtils.safeFileURL
+        let safeURL = CoreUtils.safeFileURL(for: "ios-compatibility-test.xlsx")
+        print("[INFO] Using safe file URL: \(safeURL.path)")
+        
+        try await workbook.save(to: safeURL)
+        print("[SUCCESS] iOS compatibility test completed successfully!")
+        print("[INFO] File saved to: \(safeURL.path)")
+        
+        // Verify the file exists
+        if FileManager.default.fileExists(atPath: safeURL.path) {
+            print("[INFO] ✓ File exists and is accessible")
+        } else {
+            print("[ERROR] File was not created successfully")
+        }
+    }
+
     // MARK: - Excel File Validation
     
     /// Validates Excel file using CoreXLSX for compliance testing
