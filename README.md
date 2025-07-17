@@ -20,6 +20,7 @@ This codebase is developed using AI agents.
 - [Security Features](#security-features)
 - [Performance Considerations](#performance-considerations)
 - [Requirements](#requirements)
+- [iOS Support](#ios-support)
 - [Installing](#installing)
 - [File Format](#file-format)
 - [Quick Start](#quick-start)
