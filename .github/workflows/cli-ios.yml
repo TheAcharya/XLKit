@@ -2,6 +2,9 @@ name: Create Excel iOS Tests
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - potential-ios-compatibility-test
 
 jobs:
   ios-test:
