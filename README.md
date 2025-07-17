@@ -160,6 +160,28 @@ if let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .use
 // try await workbook.save(to: URL(fileURLWithPath: "employees.xlsx")) // May fail
 ```
 
+#### iOS Configuration Requirements
+
+To enable document browser access and allow users to load Excel files from the Files app on iOS, add the following to your app's Info.plist or target configuration:
+
+**Info.plist:**
+```xml
+<key>UIFileSharingEnabled</key>
+<true/>
+<key>LSSupportsOpeningDocumentsInPlace</key>
+<true/>
+```
+
+**Or in Xcode target settings:**
+- Set "Supports Document Browser" to `YES`
+- Set "Application supports iTunes file sharing" to `YES`
+
+This configuration allows users to:
+- Access Excel files in the Files app
+- Import Excel files from other apps
+- Share Excel files through the system share sheet
+- Use the document browser to manage Excel files
+
 ### iOS-Specific Features
 
 - Automatic sandbox compliance: XLKit automatically uses iOS-appropriate directories
