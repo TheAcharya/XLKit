@@ -108,7 +108,8 @@ XLKit/
         ├── codeql.yml          # Security scanning workflow (116 lines)
         ├── cli-embed.yml       # Image embedding test workflow (37 lines)
         ├── cli-generic.yml     # Generic test workflow (41 lines)
-        └── cli-no-embeds.yml   # No-embeds test workflow (37 lines)
+        ├── cli-no-embeds.yml   # No-embeds test workflow (37 lines)
+        └── cli-ios.yml         # iOS compatibility test workflow (37 lines)
 ```
 
 ### Dependencies
@@ -166,6 +167,7 @@ Available Test Types:
 - `embed` / `with-embeds` / `with-images`: Generate Excel with embedded images from CSV data
 - `comprehensive` / `demo`: Comprehensive API demonstration with all features
 - `security-demo` / `security`: Demonstrate file path security restrictions
+- `ios-test` / `ios`: Test iOS file system compatibility and platform-specific features
 - `help` / `-h` / `--help`: Show available commands
 
 Test Features:
@@ -174,6 +176,7 @@ Test Features:
 - Aspect Ratio Testing: Image embedding tests all 17 professional aspect ratios
 - Performance Testing: Large dataset handling and memory optimization
 - Error Handling: Comprehensive error testing and edge case coverage
+- Platform Testing: iOS compatibility validation and sandbox restrictions testing
 
 Output Structure:
 ```
@@ -182,6 +185,10 @@ Test-Workflows/
 ├── Embed-Test-Embed.xlsx    # From embed test (with images)
 ├── Comprehensive-Demo.xlsx  # From comprehensive test
 └── [Your-Test].xlsx         # From custom tests
+
+Root Directory:
+├── iOS-Example.xlsx         # From ios-test (iOS compatibility)
+└── [Other-Test].xlsx        # From other platform-specific tests
 ```
 
 Security Features in Tests:
@@ -388,6 +395,7 @@ Test Coverage Requirements:
 - Test coordinate and range operations
 - Test font colour formatting and XML generation
 - Test all text alignment options (horizontal, vertical, combined)
+- Test platform compatibility and iOS-specific features
 
 Test Patterns:
 ```swift

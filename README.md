@@ -939,6 +939,7 @@ The library includes 40 comprehensive unit tests covering:
 - Column & Row Sizing: Automatic sizing and manual adjustments
 - File Operations: Async and sync workbook saving
 - Error Handling: Comprehensive error testing and edge cases
+- Platform Compatibility: iOS-specific file system operations and sandbox restrictions
 - All text alignment options (horizontal, vertical, combined) are fully tested
 
 ### XLKitTestRunner
@@ -951,6 +952,7 @@ swift run XLKitTestRunner no-embeds
 swift run XLKitTestRunner embed
 swift run XLKitTestRunner comprehensive
 swift run XLKitTestRunner security-demo
+swift run XLKitTestRunner ios-test
 swift run XLKitTestRunner help
 ```
 
@@ -959,6 +961,7 @@ Available Test Types:
 - embed / with-embeds / with-images: Generate Excel with embedded images from CSV data
 - comprehensive / demo: Comprehensive API demonstration with all features
 - security-demo / security: Demonstrate file path security restrictions
+- ios-test / ios: Test iOS file system compatibility and platform-specific features
 - help / -h / --help: Show available commands
 
 Test Features:
@@ -967,6 +970,17 @@ Test Features:
 - Aspect Ratio Testing: Image embedding tests all 17 professional aspect ratios
 - Performance Testing: Large dataset handling and memory optimisation
 - Error Handling: Comprehensive error testing and edge case coverage
+- Platform Testing: iOS compatibility validation and sandbox restrictions testing
+
+### iOS Compatibility Testing
+
+The `ios-test` command validates iOS compatibility by:
+- Testing platform-specific file system operations
+- Validating iOS sandbox restrictions handling
+- Testing ZIP creation with iOS-compatible methods
+- Ensuring security features work on iOS targets
+- Verifying cross-platform code paths
+- Testing documents and caches directory support
 
 ### Security Features in Tests
 
@@ -997,7 +1011,20 @@ Test-Workflows/
 ├── Embed-Test-Embed.xlsx    # From embed test (with images)
 ├── Comprehensive-Demo.xlsx  # From comprehensive test
 └── [Your-Test].xlsx         # From custom tests
+
+Root Directory:
+├── iOS-Example.xlsx         # From ios-test (iOS compatibility)
+└── [Other-Test].xlsx        # From other platform-specific tests
 ```
+
+### CI/CD Integration
+
+XLKit includes comprehensive CI/CD testing through GitHub Actions:
+- Build & Test: Automated testing on macOS with all unit tests
+- Security Scanning: CodeQL analysis for vulnerability detection
+- iOS Compatibility: Dedicated iOS testing workflow (`cli-ios.yml`)
+- Image Embedding: Automated image embedding tests with validation
+- Cross-Platform: macOS and iOS target compilation and testing
 
 ### Test Coverage
 
@@ -1008,6 +1035,7 @@ Test-Workflows/
 - Performance Tests: Large dataset handling and memory management
 - Validation Tests: CoreXLSX compliance verification for all generated files
 - Security Tests: Rate limiting, input validation, file quarantine, and checksum verification
+- Platform Tests: iOS compatibility and sandbox restrictions testing
 - All text alignment options (horizontal, vertical, combined) are fully tested
 
 ## Code Style & Formatting
