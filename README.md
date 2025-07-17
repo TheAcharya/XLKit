@@ -162,7 +162,7 @@ if let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .use
 
 ### iOS-Specific Features
 
-- Automatic sandbox compliance*: XLKit automatically uses iOS-appropriate directories
+- Automatic sandbox compliance: XLKit automatically uses iOS-appropriate directories
 - Copy-based file operations: Uses copy instead of move for better iOS compatibility
 - Relaxed path validation: iOS sandbox handles actual restrictions
 - Documents directory support: Automatically includes documents and caches directories
