@@ -1,0 +1,36 @@
+name: Create Excel iOS Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ios-test:
+    runs-on: macos-15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.0'
+
+      - name: Build XLKit package for iOS
+        run: swift build -Xswiftc -Xfrontend -Xswiftc -disable-round-trip-debug-types
+
+      - name: Run iOS Compatibility Test
+        run: |
+          swift run -Xswiftc -Xfrontend -Xswiftc -disable-round-trip-debug-types XLKitTestRunner ios-test
+
+      - name: Verify iOS Test Files Created
+        run: |
+          echo "Checking for iOS test files..."
+          ls -la Test-Workflows/
+          echo "iOS test files created successfully"
+
+      - name: Upload iOS Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-results
+          path: Test-Workflows/
+          retention-days: 7 

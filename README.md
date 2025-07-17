@@ -135,6 +135,47 @@ Security features are integrated throughout the codebase:
 - iOS: 15.0+ (available but not tested)
 - Swift: 6.0+
 
+## iOS Support
+
+XLKit is fully supported on iOS 15+ with platform-specific optimizations for iOS sandbox restrictions.
+
+### iOS File System Considerations
+
+On iOS, apps run in a sandboxed environment with restricted file system access. XLKit automatically handles these restrictions:
+
+```swift
+import XLKit
+
+// Recommended: Use CoreUtils.safeFileURL() for iOS
+let safeURL = CoreUtils.safeFileURL(for: "employees.xlsx")
+try await workbook.save(to: safeURL)
+
+// Also works: Use documents directory directly
+if let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+    let fileURL = documentsURL.appendingPathComponent("employees.xlsx")
+    try await workbook.save(to: fileURL)
+}
+
+// Avoid: Using arbitrary file paths on iOS
+// try await workbook.save(to: URL(fileURLWithPath: "employees.xlsx")) // May fail
+```
+
+### iOS-Specific Features
+
+- Automatic sandbox compliance*: XLKit automatically uses iOS-appropriate directories
+- Copy-based file operations: Uses copy instead of move for better iOS compatibility
+- Relaxed path validation: iOS sandbox handles actual restrictions
+- Documents directory support: Automatically includes documents and caches directories
+- Temporary directory fallback: Falls back to temporary directory if needed
+
+### iOS Testing
+
+XLKit is tested on iOS in CI/CD with the following workflow:
+- Build verification on iOS Simulator
+- Unit test execution on iOS
+- Image embedding tests with perfect aspect ratio preservation
+- File system operations in iOS sandbox environment
+
 ## Installing
 
 ### Swift Package Manager
@@ -182,7 +223,8 @@ let sheet = workbook.addSheet(name: "Test")
 sheet.setCell("A1", value: .string("Hello, XLKit!"))
 
 // Save to verify everything works
-try workbook.save(to: URL(fileURLWithPath: "test.xlsx"))
+let safeURL = CoreUtils.safeFileURL(for: "test.xlsx")
+try workbook.save(to: safeURL)
 print("XLKit is working correctly!")
 ```
 
@@ -214,6 +256,10 @@ try await sheet.embedImageAutoSized(gifData, at: "B2", of: workbook)
 try await workbook.save(to: URL(fileURLWithPath: "employees.xlsx"))
 // or
 // try workbook.save(to: url)
+
+// iOS Note: For iOS apps, use CoreUtils.safeFileURL() to get a safe file path:
+// let safeURL = CoreUtils.safeFileURL(for: "employees.xlsx")
+// try await workbook.save(to: safeURL)
 ```
 
 ## Core Concepts
