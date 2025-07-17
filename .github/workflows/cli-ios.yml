@@ -29,11 +29,14 @@ jobs:
         run: |
           echo "Checking for iOS test files..."
           ls -la Test-Workflows/
+          ls -la *.xlsx || echo "No xlsx files in root directory"
           echo "iOS test files created successfully"
 
       - name: Upload iOS Test Results
         uses: actions/upload-artifact@v4
         with:
           name: ios-test-results
-          path: Test-Workflows/
+          path: |
+            Test-Workflows/
+            *.xlsx
           retention-days: 7 
