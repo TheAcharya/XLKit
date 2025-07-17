@@ -10,10 +10,7 @@
 - Implemented iOS-specific file operations using copy instead of move for better sandbox compatibility
 - Added `CoreUtils.safeFileURL()` helper method for iOS-safe file paths
 - Updated file path validation to be more permissive on iOS while maintaining security on macOS
-- Added iOS documents and caches directories to allowed directories list
-- Enhanced README.md with comprehensive iOS support section and usage examples
 - Added iOS compatibility test to XLKitTestRunner for continuous validation
-- Updated all examples to use iOS-safe file operations
 
 ---
 
