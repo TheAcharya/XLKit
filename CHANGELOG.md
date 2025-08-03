@@ -1,5 +1,25 @@
 # Changelog
 
+### 1.0.7
+
+**🎉 Released:**
+- 4th August 2025
+
+**🔧 Improvements:**
+- Fixed custom number formats being silently ignored by Excel in generated XLSX files (#8)
+- Implemented proper `<numFmts>` section in `styles.xml` with dynamic number format ID assignment
+- Added `applyNumberFormat="1"` attribute to cell format (`xf`) elements for Excel compliance
+- Updated `formatToKey` function to include number format information for unique style generation
+- Added comprehensive number formatting tests with 5 new test functions covering currency, percentage, and custom formats
+- Increased test count from 40 to 45 tests with 100% API coverage including number formatting validation
+- Added `number-formats` test type to XLKitTestRunner for end-to-end number formatting validation
+- Enhanced comprehensive demo with number formatting examples for currency and percentage display
+- Ensured all generated Excel files correctly display thousands grouping, currency symbols, and custom formats
+- Fixed Excel "Format Cells" dialog to properly reflect custom number formats instead of showing "General"
+- Validated number formatting fix with CoreXLSX to ensure full Excel compliance and compatibility
+
+---
+
 ### 1.0.6
 
 **🎉 Released:**
