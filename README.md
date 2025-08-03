@@ -14,6 +14,9 @@ Includes comprehensive security features for production use: rate limiting, secu
 
 This codebase is developed using AI agents.
 
+> [!IMPORTANT]
+> XLKit has yet to be extensively tested in production environments, real-world workflows, or application integration. This library serves as a modernised foundation for AI-assisted development and experimentation with Excel file generation, and image embedding. While comprehensive testing has been performed, production deployment should be approached with appropriate caution and validation. Additionally, this project may not be actively maintained, so please consider this when planning long-term integrations.
+
 ## Table of Contents
 
 - [Features](#features)
@@ -50,7 +53,7 @@ This codebase is developed using AI agents.
 - Type-Safe: Strong enums and structs for all data types
 - Excel Compliance: Full OpenXML compliance with CoreXLSX validation
 - No Dependencies: Pure Swift, macOS 12+, Swift 6.0+
-- Comprehensive Testing: 40 tests with 100% API coverage, including all text alignment options (horizontal, vertical, combined), and automated validation
+- Comprehensive Testing: 45 tests with 100% API coverage, including all text alignment options (horizontal, vertical, combined), number formatting, and automated validation
 - Security Features: Comprehensive security features for production use
 
 ## Security Features

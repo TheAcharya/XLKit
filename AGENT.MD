@@ -90,7 +90,7 @@ XLKit/
 ├── Tests/                      # Unit tests
 │   ├── README.md               # Test documentation (196 lines)
 │   └── XLKitTests/             # Test suite
-│       └── XLKitTests.swift    # All unit tests (630 lines, 40 tests)
+│       └── XLKitTests.swift    # All unit tests (864 lines, 45 tests)
 ├── Test-Data/                  # Test data files
 │   ├── README.md               # Test data documentation (44 lines)
 │   └── Embed-Test/             # Image embedding test data
@@ -168,6 +168,7 @@ Available Test Types:
 - `comprehensive` / `demo`: Comprehensive API demonstration with all features
 - `security-demo` / `security`: Demonstrate file path security restrictions
 - `ios-test` / `ios`: Test iOS file system compatibility and platform-specific features
+- `number-formats` / `formats`: Test number formatting (currency, percentage, custom formats)
 - `help` / `-h` / `--help`: Show available commands
 
 Test Features:
@@ -184,6 +185,7 @@ Test-Workflows/
 ├── Embed-Test.xlsx          # From no-embeds test
 ├── Embed-Test-Embed.xlsx    # From embed test (with images)
 ├── Comprehensive-Demo.xlsx  # From comprehensive test
+├── Number-Format-Test.xlsx  # From number-formats test
 └── [Your-Test].xlsx         # From custom tests
 
 Root Directory:
@@ -395,6 +397,7 @@ Test Coverage Requirements:
 - Test coordinate and range operations
 - Test font colour formatting and XML generation
 - Test all text alignment options (horizontal, vertical, combined)
+- Test number formatting (currency, percentage, custom formats)
 - Test platform compatibility and iOS-specific features
 
 Test Patterns:
