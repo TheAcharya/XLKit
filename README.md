@@ -15,7 +15,7 @@ Includes comprehensive security features for production use: rate limiting, secu
 This codebase is developed using AI agents.
 
 > [!IMPORTANT]
-> XLKit has yet to be extensively tested in production environments, real-world workflows, or application integration. This library serves as a modernised foundation for AI-assisted development and experimentation with Excel file generation, and image embedding. While comprehensive testing has been performed, production deployment should be approached with appropriate caution and validation. Additionally, this project may not be actively maintained, so please consider this when planning long-term integrations.
+> XLKit has yet to be extensively tested in production environments, real-world workflows, or application integration. This library serves as a modernised foundation for AI-assisted development and experimentation with Excel file generation, and image embedding. While comprehensive testing has been performed, production deployment should be approached with appropriate caution and validation. Additionally, this project would not be actively maintained, so please consider this when planning long-term integrations.
 
 ## Table of Contents
 
