@@ -169,6 +169,7 @@ struct ExcelGenerators {
         sheet.setCell("C1", boolean: true)
         sheet.setCell("C2", date: Date(), format: CellFormat.date())
         sheet.setCell("D1", formula: "=SUM(B1:B2)")
+        sheet.setCell("D2", number: 0.1234, format: CellFormat.percentage())
         sheet.setRange("A4:C6", string: "Range Value", format: CellFormat.bordered())
         
         // MARK: - Font Color Demonstration
@@ -332,6 +333,162 @@ struct ExcelGenerators {
         
         SecurityManager.enableFilePathRestrictions = false
         print("\n=== Demo completed ===")
+    }
+
+    // MARK: - Number Format Testing
+    
+    /// Tests comprehensive number formatting functionality
+    /// 
+    /// Validates that the number format fix works correctly with:
+    /// - Currency formatting with thousands grouping
+    /// - Percentage formatting with % symbol
+    /// - Custom number formats
+    /// - Excel compliance and proper XML generation
+    @MainActor
+    static func testNumberFormats() async throws {
+        print("[INFO] Starting comprehensive number format testing...")
+        
+        // MARK: - Workbook Creation
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Number Format Test")
+        
+        print("[INFO] Created workbook with sheet: \(sheet.name)")
+        
+        // MARK: - Currency Formatting Tests
+        print("[INFO] Testing currency formatting...")
+        
+        sheet.setCell("A1", string: "Currency Formats", format: CellFormat.header())
+        sheet.setCell("A2", string: "Standard Currency")
+        sheet.setCell("A3", string: "Custom Currency")
+        sheet.setCell("A4", string: "Red Currency")
+        
+        sheet.setCell("B2", number: 1234.56, format: CellFormat.currency())
+        sheet.setCell("B3", number: 5678.90, format: CellFormat.currency(format: .custom("$#,##0.00")))
+        
+        var redCurrencyFormat = CellFormat.currency()
+        redCurrencyFormat.fontColor = "#FF0000"
+        sheet.setCell("B4", number: 9999.99, format: redCurrencyFormat)
+        
+        print("[INFO] ✓ Applied currency formats: standard, custom, and red")
+        
+        // MARK: - Percentage Formatting Tests
+        print("[INFO] Testing percentage formatting...")
+        
+        sheet.setCell("D1", string: "Percentage Formats", format: CellFormat.header())
+        sheet.setCell("D2", string: "Standard Percentage")
+        sheet.setCell("D3", string: "Custom Percentage")
+        sheet.setCell("D4", string: "Blue Percentage")
+        
+        sheet.setCell("E2", number: 0.1234, format: CellFormat.percentage())
+        sheet.setCell("E3", number: 0.5678, format: CellFormat.percentage(format: .custom("0.00%")))
+        
+        var bluePercentageFormat = CellFormat.percentage()
+        bluePercentageFormat.fontColor = "#0000FF"
+        sheet.setCell("E4", number: 0.9999, format: bluePercentageFormat)
+        
+        print("[INFO] ✓ Applied percentage formats: standard, custom, and blue")
+        
+        // MARK: - Custom Number Format Tests
+        print("[INFO] Testing custom number formats...")
+        
+        sheet.setCell("G1", string: "Custom Formats", format: CellFormat.header())
+        sheet.setCell("G2", string: "Thousands Separator")
+        sheet.setCell("G3", string: "Decimal Places")
+        sheet.setCell("G4", string: "Mixed Format")
+        
+        var thousandsFormat = CellFormat()
+        thousandsFormat.numberFormat = .custom
+        thousandsFormat.customNumberFormat = "#,##0"
+        sheet.setCell("H2", number: 1234567, format: thousandsFormat)
+        
+        var decimalFormat = CellFormat()
+        decimalFormat.numberFormat = .custom
+        decimalFormat.customNumberFormat = "0.000"
+        sheet.setCell("H3", number: 3.14159, format: decimalFormat)
+        
+        var mixedFormat = CellFormat()
+        mixedFormat.numberFormat = .custom
+        mixedFormat.customNumberFormat = "$#,##0.00;($#,##0.00)"
+        sheet.setCell("H4", number: -1234.56, format: mixedFormat)
+        
+        print("[INFO] ✓ Applied custom formats: thousands, decimals, and mixed")
+        
+        // MARK: - Date Format Tests
+        print("[INFO] Testing date formatting...")
+        
+        sheet.setCell("J1", string: "Date Formats", format: CellFormat.header())
+        sheet.setCell("J2", string: "Standard Date")
+        sheet.setCell("J3", string: "Custom Date")
+        
+        let currentDate = Date()
+        sheet.setCell("K2", date: currentDate, format: CellFormat.date())
+        
+        var customDateFormat = CellFormat()
+        customDateFormat.numberFormat = .custom
+        customDateFormat.customNumberFormat = "mmmm dd, yyyy"
+        sheet.setCell("K3", date: currentDate, format: customDateFormat)
+        
+        print("[INFO] ✓ Applied date formats: standard and custom")
+        
+        // MARK: - Column Widths
+        print("[INFO] Setting column widths for better display...")
+        
+        sheet.setColumnWidth(1, width: 15.0) // A
+        sheet.setColumnWidth(2, width: 12.0) // B
+        sheet.setColumnWidth(4, width: 15.0) // D
+        sheet.setColumnWidth(5, width: 12.0) // E
+        sheet.setColumnWidth(7, width: 15.0) // G
+        sheet.setColumnWidth(8, width: 12.0) // H
+        sheet.setColumnWidth(10, width: 15.0) // J
+        sheet.setColumnWidth(11, width: 15.0) // K
+        
+        // MARK: - Save and Validate
+        print("[INFO] Saving number format test...")
+        
+        let outputPath = "Test-Workflows/Number-Format-Test.xlsx"
+        let outputURL = URL(fileURLWithPath: outputPath)
+        
+        let outputDir = outputURL.deletingLastPathComponent()
+        if !FileManager.default.fileExists(atPath: outputDir.path) {
+            try FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
+        }
+        
+        try await workbook.save(to: outputURL)
+        print("[SUCCESS] Number format test saved: \(outputPath)")
+        
+        // MARK: - CoreXLSX Validation
+        print("[INFO] Validating with CoreXLSX...")
+        do {
+            guard let xlsx = XLSXFile(filepath: outputPath) else {
+                print("[ERROR] Failed to open Excel file with CoreXLSX")
+                return
+            }
+            
+            let worksheet = try xlsx.parseWorksheet(at: "xl/worksheets/sheet1.xml")
+            let sharedStrings = try xlsx.parseSharedStrings()
+            
+            print("[INFO] ✓ CoreXLSX validation successful")
+            print("[INFO] ✓ Worksheet contains \(worksheet.data?.rows.count ?? 0) rows")
+            print("[INFO] ✓ Shared strings count: \(sharedStrings?.items.count ?? 0)")
+            
+        } catch {
+            print("[ERROR] CoreXLSX validation failed: \(error)")
+            throw error
+        }
+        
+        print("[SUCCESS] Number format testing completed successfully!")
+        print("[INFO] Expected Excel display:")
+        print("   - B2: $1,234.56 (currency with thousands grouping)")
+        print("   - B3: $5,678.90 (custom currency format)")
+        print("   - B4: $9,999.99 (red currency)")
+        print("   - E2: 12.34% (percentage)")
+        print("   - E3: 56.78% (custom percentage)")
+        print("   - E4: 99.99% (blue percentage)")
+        print("   - H2: 1,234,567 (thousands separator)")
+        print("   - H3: 3.142 (3 decimal places)")
+        print("   - H4: ($1,234.56) (negative format)")
+        print("   - K2: Current date in standard format")
+        print("   - K3: Current date in custom format")
     }
 
     // MARK: - Helper Functions

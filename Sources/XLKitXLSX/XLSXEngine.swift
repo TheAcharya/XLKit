@@ -139,8 +139,10 @@ public struct XLSXEngine {
         var uniqueFormats: [CellFormat] = []
         var formatToId: [String: Int] = [:]
         var stringToId: [String: Int] = [:]
+        var uniqueNumberFormats: [String] = []
+        var numberFormatToId: [String: Int] = [:]
         
-        // Collect all unique strings and formats
+        // Collect all unique strings, formats, and number formats
         for sheet in workbook.getSheets() {
             for coordinate in sheet.getUsedCells() {
                 if let value = sheet.getCell(coordinate) {
@@ -155,6 +157,15 @@ public struct XLSXEngine {
                     if formatToId[formatKey] == nil {
                         formatToId[formatKey] = uniqueFormats.count + 1 // Start from 1, 0 is default
                         uniqueFormats.append(format)
+                    }
+                    
+                    // Collect unique number formats
+                    if let numberFormat = format.numberFormat {
+                        let numberFormatString = numberFormat == .custom ? (format.customNumberFormat ?? "") : numberFormat.rawValue
+                        if !uniqueNumberFormats.contains(numberFormatString) {
+                            uniqueNumberFormats.append(numberFormatString)
+                            numberFormatToId[numberFormatString] = numberFormatToId.count + 164 // Start from 164 (Excel's custom format range)
+                        }
                     }
                 }
             }
@@ -175,6 +186,17 @@ public struct XLSXEngine {
         // Generate styles XML
         var content = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
         content += "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
+        
+        // Number formats section
+        content += "<numFmts count=\"\(uniqueNumberFormats.count + 1)\">"
+        content += "<numFmt numFmtId=\"0\" formatCode=\"General\"/>"
+        
+        for numberFormatString in uniqueNumberFormats {
+            let numFmtId = numberFormatToId[numberFormatString] ?? 164
+            content += "<numFmt numFmtId=\"\(numFmtId)\" formatCode=\"\(CoreUtils.escapeXML(numberFormatString))\"/>"
+        }
+        
+        content += "</numFmts>"
         
         // Fonts
         content += "<fonts count=\"\(uniqueFormats.count + 1)\">"
@@ -252,7 +274,15 @@ public struct XLSXEngine {
         for (index, format) in uniqueFormats.enumerated() {
             let fontId = index + 1
             let fillId = index + 2
-            var xf = "<xf numFmtId=\"0\" fontId=\"\(fontId)\" fillId=\"\(fillId)\" borderId=\"0\" xfId=\"0\""
+            
+            // Determine number format ID
+            var numFmtId = 0 // Default to General
+            if let numberFormat = format.numberFormat {
+                let numberFormatString = numberFormat == .custom ? (format.customNumberFormat ?? "") : numberFormat.rawValue
+                numFmtId = numberFormatToId[numberFormatString] ?? 0
+            }
+            
+            var xf = "<xf numFmtId=\"\(numFmtId)\" fontId=\"\(fontId)\" fillId=\"\(fillId)\" borderId=\"0\" xfId=\"0\""
             
             var applyFont = false
             if format.fontWeight == .bold || format.fontStyle != nil || format.fontName != nil || format.fontSize != nil || format.fontColor != nil {
@@ -260,6 +290,11 @@ public struct XLSXEngine {
             }
             if applyFont {
                 xf += " applyFont=\"1\""
+            }
+            
+            // Apply number format if specified
+            if format.numberFormat != nil {
+                xf += " applyNumberFormat=\"1\""
             }
             
             if format.horizontalAlignment != nil || format.verticalAlignment != nil {
@@ -505,6 +540,15 @@ public struct XLSXEngine {
         key += "backgroundColor:\(format.backgroundColor ?? "nil")"
         key += "horizontalAlignment:\(format.horizontalAlignment?.rawValue ?? "nil")"
         key += "verticalAlignment:\(format.verticalAlignment?.rawValue ?? "nil")"
+        
+        // Include number format information
+        if let numberFormat = format.numberFormat {
+            let numberFormatString = numberFormat == .custom ? (format.customNumberFormat ?? "") : numberFormat.rawValue
+            key += "numberFormat:\(numberFormatString)"
+        } else {
+            key += "numberFormat:nil"
+        }
+        
         return key
     }
     

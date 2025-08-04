@@ -53,6 +53,11 @@ let mainTask = Task {
             print("[DEBUG] About to call testIOSCompatibility()")
             try await ExcelGenerators.testIOSCompatibility()
             print("[DEBUG] testIOSCompatibility() completed")
+        case "number-formats", "number-format", "formats":
+            print("Executing: Number Format Testing")
+            print("[DEBUG] About to call testNumberFormats()")
+            try await ExcelGenerators.testNumberFormats()
+            print("[DEBUG] testNumberFormats() completed")
         case "help", "-h", "--help":
             printHelp()
         default:
@@ -85,12 +90,14 @@ func printHelp() {
       comprehensive, demo     - Comprehensive API demonstration
       security-demo, security - Demonstrate file path security restrictions
       ios-test, ios           - Test iOS file system compatibility
+      number-formats, formats - Test number formatting (currency, percentage, custom)
       help, -h, --help        - Show this help message
     
     Examples:
       swift run XLKitTestRunner no-embeds
       swift run XLKitTestRunner security-demo
       swift run XLKitTestRunner ios-test
+      swift run XLKitTestRunner number-formats
       swift run XLKitTestRunner help
     
     
