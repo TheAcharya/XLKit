@@ -21,20 +21,71 @@ This codebase is developed using AI agents.
 
 - [Features](#features)
 - [Security Features](#security-features)
+  - [SecurityManager](#securitymanager)
+  - [Rate Limiting](#rate-limiting)
+  - [Security Logging](#security-logging)
+  - [File Quarantine](#file-quarantine)
+  - [File Checksums](#file-checksums)
+  - [Input Validation](#input-validation)
+  - [Security Integration](#security-integration)
 - [Performance Considerations](#performance-considerations)
 - [Requirements](#requirements)
 - [iOS Support](#ios-support)
+  - [iOS File System Considerations](#ios-file-system-considerations)
+  - [iOS Configuration Requirements](#ios-configuration-requirements)
+  - [iOS-Specific Features](#ios-specific-features)
+  - [iOS Testing](#ios-testing)
 - [Installing](#installing)
+  - [Swift Package Manager](#swift-package-manager)
+  - [Import](#import)
+  - [Verify Installation](#verify-installation)
 - [File Format](#file-format)
 - [Quick Start](#quick-start)
 - [Core Concepts](#core-concepts)
+  - [Workbook](#workbook)
+  - [Sheet](#sheet)
+  - [Cell Values](#cell-values)
+  - [Cell Coordinates](#cell-coordinates)
 - [Basic Usage](#basic-usage)
+  - [API Highlights](#api-highlights)
+  - [Example: Bulk Data and Images](#example-bulk-data-and-images)
+  - [Cell Sizing](#cell-sizing)
+  - [Utility Properties and Methods](#utility-properties-and-methods)
 - [CSV/TSV Import & Export](#csvtsv-import--export)
 - [Image Support](#image-support)
+  - [Perfect Aspect Ratio Preservation](#perfect-aspect-ratio-preservation)
+  - [Supported Image Formats](#supported-image-formats)
+  - [Adding Images with Perfect Sizing](#adding-images-with-perfect-sizing)
+  - [Image Scaling API](#image-scaling-api)
+  - [Automatic Cell Sizing](#automatic-cell-sizing)
+- [Number Format Support](#number-format-support)
+  - [Supported Number Formats](#supported-number-formats)
+  - [Number Format Examples](#number-format-examples)
+  - [Font Colour with Number Formats](#font-colour-with-number-formats)
+  - [Excel Compliance](#excel-compliance)
+  - [Testing Number Formats](#testing-number-formats)
 - [Text Alignment Support](#text-alignment-support)
+  - [Horizontal Alignment (5 options)](#horizontal-alignment-5-options)
+  - [Vertical Alignment (5 options)](#vertical-alignment-5-options)
+  - [Combined Alignment](#combined-alignment)
+  - [Practical Examples](#practical-examples)
+  - [Predefined Formats with Alignment](#predefined-formats-with-alignment)
+  - [Alignment with Other Formatting](#alignment-with-other-formatting)
 - [Advanced Usage](#advanced-usage)
+  - [Multiple Sheets with Formulas](#multiple-sheets-with-formulas)
+  - [Working with Ranges](#working-with-ranges)
+  - [Cell Formatting](#cell-formatting)
+  - [Font Colour Support](#font-colour-support)
 - [Error Handling](#error-handling)
 - [Testing & Validation](#testing--validation)
+  - [Unit Tests](#unit-tests)
+  - [XLKitTestRunner](#xlkittestrunner)
+  - [iOS Compatibility Testing](#ios-compatibility-testing)
+  - [Security Features in Tests](#security-features-in-tests)
+  - [Automated Validation](#automated-validation)
+  - [Test Output Structure](#test-output-structure)
+  - [CI/CD Integration](#cicd-integration)
+  - [Test Coverage](#test-coverage)
 - [Code Style & Formatting](#code-style--formatting)
 - [Credits](#credits)
 - [License](#License)
@@ -799,7 +850,112 @@ Supported colour formats:
 - Theme colours: Excel's built-in theme colour system
 - All colours are properly converted to Excel's internal format
 
-### Text Alignment Support
+### Number Format Support
+
+XLKit provides comprehensive number formatting support with proper Excel compliance. All number formats are correctly applied in Excel with thousands grouping, currency symbols, and proper display in the "Format Cells" dialog.
+
+### Supported Number Formats
+
+```swift
+// Currency formatting
+let currencyFormat = CellFormat.currency()                    // $1,234.56
+let customCurrency = CellFormat.currency(format: .custom("$#,##0.00"))  // Custom currency
+
+// Percentage formatting  
+let percentageFormat = CellFormat.percentage()                // 12.34%
+let customPercentage = CellFormat.percentage(format: .custom("0.00%"))  // Custom percentage
+
+// Date formatting
+let dateFormat = CellFormat.date()                            // Standard date format
+let customDate = CellFormat.date(format: .custom("mmmm dd, yyyy"))      // Custom date
+
+// Custom number formats
+let thousandsFormat = CellFormat()
+thousandsFormat.numberFormat = .custom
+thousandsFormat.customNumberFormat = "#,##0"                  // 1,234,567
+
+let decimalFormat = CellFormat()
+decimalFormat.numberFormat = .custom
+decimalFormat.customNumberFormat = "0.000"                    // 3.142
+
+let mixedFormat = CellFormat()
+mixedFormat.numberFormat = .custom
+mixedFormat.customNumberFormat = "$#,##0.00;($#,##0.00)"     // ($1,234.56) for negatives
+```
+
+### Number Format Examples
+
+```swift
+let sheet = workbook.addSheet(name: "Number Formats")
+
+// Currency examples
+sheet.setCell("A1", number: 1234.56, format: CellFormat.currency())
+sheet.setCell("A2", number: 5678.90, format: CellFormat.currency(format: .custom("$#,##0.00")))
+
+// Percentage examples
+sheet.setCell("B1", number: 0.1234, format: CellFormat.percentage())
+sheet.setCell("B2", number: 0.5678, format: CellFormat.percentage(format: .custom("0.00%")))
+
+// Custom number formats
+var thousandsFormat = CellFormat()
+thousandsFormat.numberFormat = .custom
+thousandsFormat.customNumberFormat = "#,##0"
+sheet.setCell("C1", number: 1234567, format: thousandsFormat)
+
+var decimalFormat = CellFormat()
+decimalFormat.numberFormat = .custom
+decimalFormat.customNumberFormat = "0.000"
+sheet.setCell("C2", number: 3.14159, format: decimalFormat)
+
+// Date formatting
+sheet.setCell("D1", date: Date(), format: CellFormat.date())
+var customDateFormat = CellFormat()
+customDateFormat.numberFormat = .custom
+customDateFormat.customNumberFormat = "mmmm dd, yyyy"
+sheet.setCell("D2", date: Date(), format: customDateFormat)
+```
+
+### Font Colour with Number Formats
+
+```swift
+// Red currency values
+let redCurrencyFormat = CellFormat.currency(
+    format: .currencyWithDecimals,
+    color: "#FF0000"
+)
+
+// Blue percentage values
+let bluePercentageFormat = CellFormat.percentage(
+    format: .percentageWithDecimals,
+    color: "#0000FF"
+)
+
+// Apply coloured number formats
+sheet.setCell("A1", number: 1234.56, format: redCurrencyFormat)
+sheet.setCell("B1", number: 0.85, format: bluePercentageFormat)
+```
+
+### Excel Compliance
+
+All number formats are properly implemented with:
+- Thousands grouping: Numbers display with proper separators (1,234.56)
+- Currency symbols: Dollar signs and other currency symbols display correctly
+- Format Cells dialog: Excel shows the correct format instead of "General"
+- Custom formats: User-defined number formats work as expected
+- Negative numbers: Proper handling of negative values with parentheses or minus signs
+- Locale support: Respects system locale settings for decimal separators
+
+### Testing Number Formats
+
+Use the XLKitTestRunner to validate number formatting:
+
+```bash
+swift run XLKitTestRunner number-formats
+```
+
+This generates `Number-Format-Test.xlsx` with comprehensive examples of all number format types.
+
+## Text Alignment Support
 
 XLKit provides comprehensive text alignment support with all 6 alignment options available in Excel:
 
