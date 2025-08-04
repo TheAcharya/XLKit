@@ -1,5 +1,26 @@
 # Changelog
 
+### 1.0.8
+
+**🎉 Released:**
+- 5th August 2025
+
+**🔧 Improvements:**
+- Added comprehensive border and merge functionality with full Excel compliance (#7)
+- Implemented border support with thin, medium, and thick styles with custom colours
+- Added merged cells support with complex range scenarios and proper XML generation
+- Enhanced CellFormat struct with border properties (borderTop, borderBottom, borderLeft, borderRight, borderColor)
+- Added bordered() factory method for easy border formatting creation
+- Implemented proper border XML generation in styles.xml with dynamic border definitions
+- Added mergeCells() functionality with proper range validation and storage
+- Enhanced XLSXEngine to generate mergeCells XML section in worksheet files
+- Added comprehensive border and merge testing with 6 new test functions
+- Increased test count from 45 to 51 tests with 100% API coverage including border and merge validation
+- Added border and merge combinations with other formatting options (font, alignment, background)
+- Validated border and merge functionality with CoreXLSX to ensure full Excel compliance
+
+---
+
 ### 1.0.7
 
 **🎉 Released:**

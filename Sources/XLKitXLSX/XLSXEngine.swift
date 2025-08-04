@@ -257,8 +257,61 @@ public struct XLSXEngine {
         content += "</fills>"
         
         // Borders
-        content += "<borders count=\"1\">"
+        content += "<borders count=\"\(uniqueFormats.count + 1)\">"
         content += "<border><left/><right/><top/><bottom/><diagonal/></border>"
+        
+        // Generate border definitions for each unique format
+        for format in uniqueFormats {
+            content += "<border>"
+            
+            // Add border elements based on format
+            if let borderStyle = format.borderLeft {
+                content += "<left style=\"\(borderStyle.rawValue)\""
+                if let borderColor = format.borderColor {
+                    content += "><color rgb=\"\(borderColor.replacingOccurrences(of: "#", with: ""))\"/></left>"
+                } else {
+                    content += "/>"
+                }
+            } else {
+                content += "<left/>"
+            }
+            
+            if let borderStyle = format.borderRight {
+                content += "<right style=\"\(borderStyle.rawValue)\""
+                if let borderColor = format.borderColor {
+                    content += "><color rgb=\"\(borderColor.replacingOccurrences(of: "#", with: ""))\"/></right>"
+                } else {
+                    content += "/>"
+                }
+            } else {
+                content += "<right/>"
+            }
+            
+            if let borderStyle = format.borderTop {
+                content += "<top style=\"\(borderStyle.rawValue)\""
+                if let borderColor = format.borderColor {
+                    content += "><color rgb=\"\(borderColor.replacingOccurrences(of: "#", with: ""))\"/></top>"
+                } else {
+                    content += "/>"
+                }
+            } else {
+                content += "<top/>"
+            }
+            
+            if let borderStyle = format.borderBottom {
+                content += "<bottom style=\"\(borderStyle.rawValue)\""
+                if let borderColor = format.borderColor {
+                    content += "><color rgb=\"\(borderColor.replacingOccurrences(of: "#", with: ""))\"/></bottom>"
+                } else {
+                    content += "/>"
+                }
+            } else {
+                content += "<bottom/>"
+            }
+            
+            content += "<diagonal/></border>"
+        }
+        
         content += "</borders>"
         
         // Cell style formats
@@ -282,7 +335,7 @@ public struct XLSXEngine {
                 numFmtId = numberFormatToId[numberFormatString] ?? 0
             }
             
-            var xf = "<xf numFmtId=\"\(numFmtId)\" fontId=\"\(fontId)\" fillId=\"\(fillId)\" borderId=\"0\" xfId=\"0\""
+            var xf = "<xf numFmtId=\"\(numFmtId)\" fontId=\"\(fontId)\" fillId=\"\(fillId)\" borderId=\"\(index + 1)\" xfId=\"0\""
             
             var applyFont = false
             if format.fontWeight == .bold || format.fontStyle != nil || format.fontName != nil || format.fontSize != nil || format.fontColor != nil {
@@ -295,6 +348,11 @@ public struct XLSXEngine {
             // Apply number format if specified
             if format.numberFormat != nil {
                 xf += " applyNumberFormat=\"1\""
+            }
+            
+            // Apply borders if specified
+            if format.borderTop != nil || format.borderBottom != nil || format.borderLeft != nil || format.borderRight != nil {
+                xf += " applyBorder=\"1\""
             }
             
             if format.horizontalAlignment != nil || format.verticalAlignment != nil {
@@ -434,6 +492,16 @@ public struct XLSXEngine {
         
         content += "</sheetData>"
         
+        // Add merged cells if any
+        let mergedRanges = sheet.getMergedRanges()
+        if !mergedRanges.isEmpty {
+            content += "<mergeCells count=\"\(mergedRanges.count)\">"
+            for range in mergedRanges {
+                content += "<mergeCell ref=\"\(range.excelRange)\"/>"
+            }
+            content += "</mergeCells>"
+        }
+        
         // Add page margins
         content += "<pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/>"
         
@@ -548,6 +616,13 @@ public struct XLSXEngine {
         } else {
             key += "numberFormat:nil"
         }
+        
+        // Include border information (only for non-image formats)
+        key += "borderTop:\(format.borderTop?.rawValue ?? "nil")"
+        key += "borderBottom:\(format.borderBottom?.rawValue ?? "nil")"
+        key += "borderLeft:\(format.borderLeft?.rawValue ?? "nil")"
+        key += "borderRight:\(format.borderRight?.rawValue ?? "nil")"
+        key += "borderColor:\(format.borderColor ?? "nil")"
         
         return key
     }

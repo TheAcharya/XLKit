@@ -980,4 +980,322 @@ final class XLKitTests: XCTestCase {
             XCTFail("Failed to save workbook with number formats: \(error)")
         }
     }
+    
+    // MARK: - Border Tests
+    
+    func testBordersActuallyWork() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Border Test")
+        
+        // Test different border styles
+        var thinBorderFormat = CellFormat.bordered()
+        thinBorderFormat.borderTop = .thin
+        thinBorderFormat.borderBottom = .thin
+        thinBorderFormat.borderLeft = .thin
+        thinBorderFormat.borderRight = .thin
+        
+        var mediumBorderFormat = CellFormat.bordered()
+        mediumBorderFormat.borderTop = .medium
+        mediumBorderFormat.borderBottom = .medium
+        mediumBorderFormat.borderColor = "#FF0000" // Red borders
+        
+        var thickBorderFormat = CellFormat.bordered()
+        thickBorderFormat.borderTop = .thick
+        thickBorderFormat.borderBottom = .thick
+        thickBorderFormat.borderColor = "#0000FF" // Blue borders
+        
+        // Set cells with different border styles
+        sheet.setCell("A1", string: "Thin Borders", format: thinBorderFormat)
+        sheet.setCell("A2", string: "Medium Red Borders", format: mediumBorderFormat)
+        sheet.setCell("A3", string: "Thick Blue Borders", format: thickBorderFormat)
+        
+        // Verify border formats are stored correctly
+        let thinCell = sheet.getCellWithFormat("A1")
+        let mediumCell = sheet.getCellWithFormat("A2")
+        let thickCell = sheet.getCellWithFormat("A3")
+        
+        XCTAssertNotNil(thinCell)
+        XCTAssertNotNil(mediumCell)
+        XCTAssertNotNil(thickCell)
+        
+        XCTAssertEqual(thinCell?.format?.borderTop, .thin)
+        XCTAssertEqual(thinCell?.format?.borderBottom, .thin)
+        XCTAssertEqual(thinCell?.format?.borderLeft, .thin)
+        XCTAssertEqual(thinCell?.format?.borderRight, .thin)
+        
+        XCTAssertEqual(mediumCell?.format?.borderTop, .medium)
+        XCTAssertEqual(mediumCell?.format?.borderBottom, .medium)
+        XCTAssertEqual(mediumCell?.format?.borderColor, "#FF0000")
+        
+        XCTAssertEqual(thickCell?.format?.borderTop, .thick)
+        XCTAssertEqual(thickCell?.format?.borderBottom, .thick)
+        XCTAssertEqual(thickCell?.format?.borderColor, "#0000FF")
+        
+        // Test that format keys include border information
+        if let thinFormat = thinCell?.format {
+            let formatKey = XLSXEngine.formatToKey(thinFormat)
+            XCTAssertTrue(formatKey.contains("borderTop:thin"))
+            XCTAssertTrue(formatKey.contains("borderBottom:thin"))
+            XCTAssertTrue(formatKey.contains("borderLeft:thin"))
+            XCTAssertTrue(formatKey.contains("borderRight:thin"))
+        }
+        
+        if let mediumFormat = mediumCell?.format {
+            let formatKey = XLSXEngine.formatToKey(mediumFormat)
+            XCTAssertTrue(formatKey.contains("borderTop:medium"))
+            XCTAssertTrue(formatKey.contains("borderColor:#FF0000"))
+        }
+        
+        // Test Excel file generation with borders
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("border_test.xlsx")
+        
+        do {
+            try workbook.save(to: tempURL)
+            XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
+            try FileManager.default.removeItem(at: tempURL)
+        } catch {
+            XCTFail("Failed to save workbook with borders: \(error)")
+        }
+    }
+    
+    func testDifferentBorderStyles() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Border Styles Test")
+        
+        // Test all border styles
+        let borderStyles: [BorderStyle] = [.thin, .medium, .thick]
+        let borderColors = ["#FF0000", "#00FF00", "#0000FF"]
+        
+        for (index, style) in borderStyles.enumerated() {
+            var borderFormat = CellFormat.bordered()
+            borderFormat.borderTop = style
+            borderFormat.borderBottom = style
+            borderFormat.borderLeft = style
+            borderFormat.borderRight = style
+            borderFormat.borderColor = borderColors[index]
+            
+            let cellAddress = "A\(index + 1)"
+            sheet.setCell(cellAddress, string: "Style: \(style.rawValue)", format: borderFormat)
+            
+            // Verify border style is stored correctly
+            let cell = sheet.getCellWithFormat(cellAddress)
+            XCTAssertNotNil(cell)
+            XCTAssertEqual(cell?.format?.borderTop, style)
+            XCTAssertEqual(cell?.format?.borderBottom, style)
+            XCTAssertEqual(cell?.format?.borderLeft, style)
+            XCTAssertEqual(cell?.format?.borderRight, style)
+            XCTAssertEqual(cell?.format?.borderColor, borderColors[index])
+        }
+    }
+    
+    func testBorderWithOtherFormatting() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Border with Formatting Test")
+        
+        // Test borders combined with other formatting
+        var formattedBorderFormat = CellFormat.bordered()
+        formattedBorderFormat.borderTop = .thick
+        formattedBorderFormat.borderBottom = .thick
+        formattedBorderFormat.borderColor = "#FF0000"
+        formattedBorderFormat.fontWeight = .bold
+        formattedBorderFormat.fontSize = 14.0
+        formattedBorderFormat.fontColor = "#0000FF"
+        formattedBorderFormat.backgroundColor = "#FFFF00"
+        formattedBorderFormat.horizontalAlignment = .center
+        formattedBorderFormat.verticalAlignment = .center
+        
+        sheet.setCell("A1", string: "Formatted with Borders", format: formattedBorderFormat)
+        
+        // Verify all formatting is applied
+        let cell = sheet.getCellWithFormat("A1")
+        XCTAssertNotNil(cell)
+        
+        XCTAssertEqual(cell?.format?.borderTop, .thick)
+        XCTAssertEqual(cell?.format?.borderBottom, .thick)
+        XCTAssertEqual(cell?.format?.borderColor, "#FF0000")
+        XCTAssertEqual(cell?.format?.fontWeight, .bold)
+        XCTAssertEqual(cell?.format?.fontSize, 14.0)
+        XCTAssertEqual(cell?.format?.fontColor, "#0000FF")
+        XCTAssertEqual(cell?.format?.backgroundColor, "#FFFF00")
+        XCTAssertEqual(cell?.format?.horizontalAlignment, .center)
+        XCTAssertEqual(cell?.format?.verticalAlignment, .center)
+        
+        // Test that format key includes all formatting
+        if let format = cell?.format {
+            let formatKey = XLSXEngine.formatToKey(format)
+            XCTAssertTrue(formatKey.contains("borderTop:thick"))
+            XCTAssertTrue(formatKey.contains("borderColor:#FF0000"))
+            XCTAssertTrue(formatKey.contains("fontWeight:bold"))
+            XCTAssertTrue(formatKey.contains("fontColor:#0000FF"))
+            XCTAssertTrue(formatKey.contains("backgroundColor:#FFFF00"))
+            XCTAssertTrue(formatKey.contains("horizontalAlignment:center"))
+            XCTAssertTrue(formatKey.contains("verticalAlignment:center"))
+        }
+    }
+    
+    // MARK: - Merge Tests
+    
+    func testMergedCellsActuallyWork() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Merge Test")
+        
+        // Test complex merging scenarios
+        sheet.setCell("A1", string: "Merged A1:C1")
+        sheet.setCell("A2", string: "Merged A2:B2")
+        sheet.setCell("C2", string: "Single Cell")
+        
+        // Perform merges
+        sheet.mergeCells("A1:C1")
+        sheet.mergeCells("A2:B2")
+        
+        // Verify merged ranges are stored correctly
+        let mergedRanges = sheet.getMergedRanges()
+        XCTAssertEqual(mergedRanges.count, 2)
+        
+        // Check first merge (A1:C1)
+        XCTAssertTrue(mergedRanges.contains { $0.excelRange == "A1:C1" })
+        let firstMerge = mergedRanges.first { $0.excelRange == "A1:C1" }
+        XCTAssertNotNil(firstMerge)
+        XCTAssertEqual(firstMerge?.start.excelAddress, "A1")
+        XCTAssertEqual(firstMerge?.end.excelAddress, "C1")
+        
+        // Check second merge (A2:B2)
+        XCTAssertTrue(mergedRanges.contains { $0.excelRange == "A2:B2" })
+        let secondMerge = mergedRanges.first { $0.excelRange == "A2:B2" }
+        XCTAssertNotNil(secondMerge)
+        XCTAssertEqual(secondMerge?.start.excelAddress, "A2")
+        XCTAssertEqual(secondMerge?.end.excelAddress, "B2")
+        
+        // Verify cell values are preserved
+        XCTAssertEqual(sheet.getCell("A1"), .string("Merged A1:C1"))
+        XCTAssertEqual(sheet.getCell("A2"), .string("Merged A2:B2"))
+        XCTAssertEqual(sheet.getCell("C2"), .string("Single Cell"))
+        
+        // Test Excel file generation with merged cells
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("merge_test.xlsx")
+        
+        do {
+            try workbook.save(to: tempURL)
+            XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
+            try FileManager.default.removeItem(at: tempURL)
+        } catch {
+            XCTFail("Failed to save workbook with merged cells: \(error)")
+        }
+    }
+    
+    func testComplexMerging() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Complex Merge Test")
+        
+        // Test various merge scenarios
+        let mergeRanges = [
+            "A1:B1",   // Horizontal merge
+            "A2:A4",   // Vertical merge
+            "C1:D3",   // 2x3 merge
+            "F1:F1",   // Single cell (no merge)
+            "G1:H2"    // 2x2 merge
+        ]
+        
+        // Set data and perform merges
+        for (index, range) in mergeRanges.enumerated() {
+            let startCell = range.components(separatedBy: ":")[0]
+            sheet.setCell(startCell, string: "Merge \(index + 1): \(range)")
+            sheet.mergeCells(range)
+        }
+        
+        // Verify all merges are stored correctly
+        let mergedRanges = sheet.getMergedRanges()
+        XCTAssertEqual(mergedRanges.count, mergeRanges.count)
+        
+        for range in mergeRanges {
+            XCTAssertTrue(mergedRanges.contains { $0.excelRange == range })
+        }
+        
+        // Test specific merge validations
+        let horizontalMerge = mergedRanges.first { $0.excelRange == "A1:B1" }
+        XCTAssertNotNil(horizontalMerge)
+        XCTAssertEqual(horizontalMerge?.start.row, 1)
+        XCTAssertEqual(horizontalMerge?.start.column, 1)
+        XCTAssertEqual(horizontalMerge?.end.row, 1)
+        XCTAssertEqual(horizontalMerge?.end.column, 2)
+        
+        let verticalMerge = mergedRanges.first { $0.excelRange == "A2:A4" }
+        XCTAssertNotNil(verticalMerge)
+        XCTAssertEqual(verticalMerge?.start.row, 2)
+        XCTAssertEqual(verticalMerge?.start.column, 1)
+        XCTAssertEqual(verticalMerge?.end.row, 4)
+        XCTAssertEqual(verticalMerge?.end.column, 1)
+        
+        let largeMerge = mergedRanges.first { $0.excelRange == "C1:D3" }
+        XCTAssertNotNil(largeMerge)
+        XCTAssertEqual(largeMerge?.start.row, 1)
+        XCTAssertEqual(largeMerge?.start.column, 3)
+        XCTAssertEqual(largeMerge?.end.row, 3)
+        XCTAssertEqual(largeMerge?.end.column, 4)
+    }
+    
+    func testComplexBorderAndMergeCombination() {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Border and Merge Test")
+        
+        // Test the exact scenario from the user's report
+        var borderedFormat = CellFormat.bordered()
+        borderedFormat.fontSize = 11
+        borderedFormat.fontWeight = .bold
+        borderedFormat.horizontalAlignment = .center
+        borderedFormat.verticalAlignment = .center
+        borderedFormat.fontName = "Calibri"
+        borderedFormat.borderTop = .thin
+        borderedFormat.borderBottom = .thin
+        borderedFormat.borderLeft = .thin
+        borderedFormat.borderRight = .thin
+        borderedFormat.borderColor = "#000000"
+        
+        // Set cells with borders and formatting
+        sheet.setCell("A1", string: "Test1", format: borderedFormat)
+        sheet.setCell("A2", string: "Test2")
+        
+        // Perform merges
+        sheet.mergeCells("A1:B1")
+        sheet.mergeCells("A2:B2")
+        
+        // Set column widths
+        sheet.setColumnWidth(1, width: 100.0)
+        sheet.setColumnWidth(2, width: 150.0)
+        
+        // Verify everything is stored correctly
+        let mergedRanges = sheet.getMergedRanges()
+        XCTAssertEqual(mergedRanges.count, 2)
+        XCTAssertTrue(mergedRanges.contains { $0.excelRange == "A1:B1" })
+        XCTAssertTrue(mergedRanges.contains { $0.excelRange == "A2:B2" })
+        
+        // Verify border formatting
+        let borderedCell = sheet.getCellWithFormat("A1")
+        XCTAssertNotNil(borderedCell)
+        XCTAssertEqual(borderedCell?.format?.fontSize, 11)
+        XCTAssertEqual(borderedCell?.format?.fontWeight, .bold)
+        XCTAssertEqual(borderedCell?.format?.horizontalAlignment, .center)
+        XCTAssertEqual(borderedCell?.format?.verticalAlignment, .center)
+        XCTAssertEqual(borderedCell?.format?.fontName, "Calibri")
+        XCTAssertEqual(borderedCell?.format?.borderTop, .thin)
+        XCTAssertEqual(borderedCell?.format?.borderBottom, .thin)
+        XCTAssertEqual(borderedCell?.format?.borderLeft, .thin)
+        XCTAssertEqual(borderedCell?.format?.borderRight, .thin)
+        XCTAssertEqual(borderedCell?.format?.borderColor, "#000000")
+        
+        // Verify column widths
+        XCTAssertEqual(sheet.getColumnWidth(1), 100.0)
+        XCTAssertEqual(sheet.getColumnWidth(2), 150.0)
+        
+        // Test Excel file generation
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("border_merge_test.xlsx")
+        
+        do {
+            try workbook.save(to: tempURL)
+            XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
+            try FileManager.default.removeItem(at: tempURL)
+        } catch {
+            XCTFail("Failed to save workbook with borders and merges: \(error)")
+        }
+    }
 } 

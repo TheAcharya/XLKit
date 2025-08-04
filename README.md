@@ -98,13 +98,15 @@ This codebase is developed using AI agents.
 - Perfect Image Embedding: Pixel-perfect image embedding with automatic aspect ratio preservation
 - Professional Video Support: All 17 video and cinema aspect ratios with zero distortion
 - Auto Cell Sizing: Automatic column width and row height calculation to perfectly fit images
-- Cell Formatting: Comprehensive formatting including font colours, backgrounds, borders, and text alignment (all 6 alignment options) with proper XML generation
+- Cell Formatting: Comprehensive formatting including font colours, backgrounds, borders, and text alignment (all 5 alignment options each for horizontal and vertical) with proper XML generation
+- Border Support: Full border functionality with thin, medium, and thick styles, custom colors, and combined formatting
+- Merge Support: Cell merging functionality with complex range support and proper Excel compliance
 - CSV/TSV Import/Export: Built-in support for importing and exporting CSV/TSV data
 - Async & Sync Operations: Save workbooks with one line (async or sync)
 - Type-Safe: Strong enums and structs for all data types
 - Excel Compliance: Full OpenXML compliance with CoreXLSX validation
 - No Dependencies: Pure Swift, macOS 12+, Swift 6.0+
-- Comprehensive Testing: 45 tests with 100% API coverage, including all text alignment options (horizontal, vertical, combined), number formatting, and automated validation
+- Comprehensive Testing: 51 tests with 100% API coverage, including all text alignment options (horizontal, vertical, combined), number formatting, border and merge functionality, and automated validation
 - Security Features: Comprehensive security features for production use
 
 ## Security Features
@@ -414,6 +416,15 @@ sheet.mergeCells("A1:C1")
 // Get used cells and ranges
 let usedCells = sheet.getUsedCells()
 let mergedRanges = sheet.getMergedRanges()
+
+// Border formatting
+var borderedFormat = CellFormat.bordered()
+borderedFormat.borderTop = .thin
+borderedFormat.borderBottom = .thin
+borderedFormat.borderLeft = .thin
+borderedFormat.borderRight = .thin
+borderedFormat.borderColor = "#000000"
+sheet.setCell("A1", string: "Bordered Cell", format: borderedFormat)
 
 // Clear all data
 sheet.clear()
@@ -772,6 +783,24 @@ sheet.mergeCells("A5:C5")
 
 // Get merged ranges
 let mergedRanges = sheet.getMergedRanges()
+
+// Complex border and merge combination
+var borderedFormat = CellFormat.bordered()
+borderedFormat.fontSize = 11
+borderedFormat.fontWeight = .bold
+borderedFormat.horizontalAlignment = .center
+borderedFormat.verticalAlignment = .center
+borderedFormat.fontName = "Calibri"
+borderedFormat.borderTop = .thin
+borderedFormat.borderBottom = .thin
+borderedFormat.borderLeft = .thin
+borderedFormat.borderRight = .thin
+borderedFormat.borderColor = "#000000"
+
+sheet.setCell("A1", string: "Test1", format: borderedFormat)
+sheet.setCell("A2", string: "Test2")
+sheet.mergeCells("A1:B1")
+sheet.mergeCells("A2:B2")
 ```
 
 ### Cell Formatting
@@ -808,6 +837,15 @@ let currencyRedFormat = CellFormat.currency(format: .currencyWithDecimals, color
 sheet.setCell("I1", string: "Red Text", format: redTextFormat)
 sheet.setCell("J1", string: "Blue Text", format: blueTextFormat)
 sheet.setCell("K1", number: 1234.56, format: currencyRedFormat)
+
+// Border formatting
+var borderedFormat = CellFormat.bordered()
+borderedFormat.borderTop = .thin
+borderedFormat.borderBottom = .thin
+borderedFormat.borderLeft = .thin
+borderedFormat.borderRight = .thin
+borderedFormat.borderColor = "#000000"
+sheet.setCell("L1", string: "Bordered Cell", format: borderedFormat)
 
 // Get cell with formatting
 let cellWithFormat = sheet.getCellWithFormat("A1")
@@ -1111,18 +1149,20 @@ XLKit includes comprehensive testing and validation capabilities with integrated
 
 ### Unit Tests
 
-The library includes 40 comprehensive unit tests covering:
+The library includes 51 comprehensive unit tests covering:
 - Core Workbook & Sheet Tests: Creation, management, and operations
 - Cell Operations & Data Types: All cell value types and operations
 - Coordinate & Range Tests: Excel coordinate parsing and range operations
 - Image & Aspect Ratio Tests: All 17 professional aspect ratios with perfect preservation
 - CSV/TSV Import/Export: Complete import/export functionality
-- Cell Formatting: Predefined and custom formatting options including font colours and all text alignment options (horizontal, vertical, combined)
+- Cell Formatting: Predefined and custom formatting options including font colours, borders, and all text alignment options (horizontal, vertical, combined)
+- Border & Merge Tests: Border functionality with different styles and colors, merged cells with complex scenarios
 - Column & Row Sizing: Automatic sizing and manual adjustments
 - File Operations: Async and sync workbook saving
 - Error Handling: Comprehensive error testing and edge cases
 - Platform Compatibility: iOS-specific file system operations and sandbox restrictions
 - All text alignment options (horizontal, vertical, combined) are fully tested
+- All border and merge functionality is fully tested
 
 ### XLKitTestRunner
 
@@ -1221,6 +1261,7 @@ XLKit includes comprehensive CI/CD testing through GitHub Actions:
 - Security Tests: Rate limiting, input validation, file quarantine, and checksum verification
 - Platform Tests: iOS compatibility and sandbox restrictions testing
 - All text alignment options (horizontal, vertical, combined) are fully tested
+- All border and merge functionality is fully tested
 
 ## Code Style & Formatting
 
