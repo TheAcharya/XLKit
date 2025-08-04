@@ -1,0 +1,57 @@
+name: Bug Report
+description: Report a Bug for XLKit
+title: "Bug: "
+labels: "bug"
+body:
+- type: dropdown
+  attributes:
+    label: Platform
+    description: Which platform are you using?
+    options:
+      - macOS
+      - iOS
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Xcode Version
+    description: Which Xcode version are you using?
+    placeholder: "e.g. Xcode 16.0"
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Summary
+    description: A detailed description of the bug
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Reproduction Steps
+    description: Step-by-step instructions to reproduce the bug
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Root Cause
+    description: What you think is causing the bug
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Expected Behaviour
+    description: What you expected to happen
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Actual Behaviour
+    description: What actually happened
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Suggested Fix
+    description: Any ideas on how to fix the bug
+  validations:
+    required: false
