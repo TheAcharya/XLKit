@@ -1,0 +1,37 @@
+name: Create Excel Number Format Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.0'
+
+      - name: Build XLKit package
+        run: swift build -Xswiftc -Xfrontend -Xswiftc -disable-round-trip-debug-types
+
+      - name: Run Number Format Test
+        run: |
+          swift run -Xswiftc -Xfrontend -Xswiftc -disable-round-trip-debug-types XLKitTestRunner number-formats
+
+      - name: Verify Number Format Test Files Created
+        run: |
+          echo "Checking for number format test files..."
+          ls -la Test-Workflows/
+          echo "Number format test files created successfully"
+
+      - name: Upload Number Format Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: number-format-test-results
+          path: |
+            Test-Workflows/
+          retention-days: 7 
