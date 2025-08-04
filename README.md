@@ -1135,6 +1135,7 @@ swift run XLKitTestRunner embed
 swift run XLKitTestRunner comprehensive
 swift run XLKitTestRunner security-demo
 swift run XLKitTestRunner ios-test
+swift run XLKitTestRunner number-formats
 swift run XLKitTestRunner help
 ```
 
@@ -1144,6 +1145,7 @@ Available Test Types:
 - comprehensive / demo: Comprehensive API demonstration with all features
 - security-demo / security: Demonstrate file path security restrictions
 - ios-test / ios: Test iOS file system compatibility and platform-specific features
+- number-formats / formats: Test number formatting (currency, percentage, custom formats)
 - help / -h / --help: Show available commands
 
 Test Features:
