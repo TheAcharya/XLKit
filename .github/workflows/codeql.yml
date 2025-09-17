@@ -118,14 +118,8 @@ jobs:
     - if: matrix.build-mode == 'manual' && matrix.language == 'swift'
       shell: bash
       run: |
-        # Build for macOS
-        xcodebuild build -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "XLKit-CI" -destination "generic/platform=macOS,name=Any Mac" | xcbeautify && exit ${PIPESTATUS[0]}
-        # Build for iOS (if available simulators found)
-        if xcodebuild -showdestinations -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "XLKit-CI" | grep -q "iOS Simulator"; then
-          xcodebuild build -workspace ".swiftpm/xcode/package.xcworkspace" -scheme "XLKit-CI" -destination "generic/platform=iOS Simulator,name=Any iOS Device" | xcbeautify && exit ${PIPESTATUS[0]}
-        else
-          echo "No iOS simulators found, skipping iOS build"
-        fi
+        swift package resolve
+        swift build
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
