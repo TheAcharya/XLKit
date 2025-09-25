@@ -90,7 +90,7 @@ XLKit/
 ├── Tests/                      # Unit tests
 │   ├── README.md               # Test documentation (196 lines)
 │   └── XLKitTests/             # Test suite
-│       └── XLKitTests.swift    # All unit tests (983 lines, 51 tests)
+│       └── XLKitTests.swift    # All unit tests (1363 lines, 53 tests)
 ├── Test-Data/                  # Test data files
 │   ├── README.md               # Test data documentation (44 lines)
 │   └── Embed-Test/             # Image embedding test data
@@ -397,6 +397,7 @@ Test Coverage Requirements:
 - Test coordinate and range operations
 - Test font colour formatting and XML generation
 - Test all text alignment options (horizontal, vertical, combined)
+- Test text wrapping functionality with proper Excel XML generation
 - Test border functionality with different styles and colors
 - Test merged cells with complex scenarios
 - Test number formatting (currency, percentage, custom formats)
@@ -445,6 +446,8 @@ Border and Merge Testing:
 - Test border and merge combinations with formatting
 - Test Excel-compliant XML generation for borders and merges
 - Test format key generation includes border information
+- Test text wrapping functionality with proper Excel XML generation
+- Test text wrapping inclusion in format key generation
 
 ### Documentation
 
@@ -809,6 +812,14 @@ try await sheet.embedImageAutoSized(
 - Excel-compliant XML generation for borders and merges
 - Test count increased from 45 to 51 tests with 100% API coverage
 - All border and merge functionality fully tested and validated
+
+### Text Wrapping Functionality (2025-09-25)
+- Comprehensive text wrapping functionality implemented and tested
+- Text wrapping support with proper Excel XML generation
+- Text wrapping inclusion in format key generation for proper format caching
+- Excel-compliant XML generation for text wrapping with wrapText attribute
+- Test count increased from 51 to 53 tests with 100% API coverage
+- All text wrapping functionality fully tested and validated
 
 ### iOS Compatibility Fix (2025-07-14)
 - Fixed iOS build error: `'homeDirectoryForCurrentUser' is unavailable in iOS`

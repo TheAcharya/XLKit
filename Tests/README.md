@@ -17,12 +17,13 @@ This document provides an organized overview of all tests in the XLKit library, 
 - [Coverage & Quality Assurance](#coverage--quality-assurance)
 
 ## Test Overview
-- Total Tests: 51
+- Total Tests: 53
 - 100% coverage of public APIs
 - All generated files validated with CoreXLSX
 - Security features integrated throughout all tests
 - Text alignment (horizontal, vertical, combined) is now fully tested
 - Border and merge functionality is now fully tested
+- Text wrapping functionality is now fully tested
 
 ## Core Workbook & Sheet Tests
 - `testCreateWorkbook()`: Basic workbook creation and initialization
@@ -89,6 +90,8 @@ All tests verify pixel-perfect scaling, Excel cell dimension matching, and zero 
 - `testCombinedAlignment()`: Combined horizontal and vertical alignment scenarios
 - `testAlignmentWithOtherFormatting()`: Alignment with other formatting (font, background, etc.)
 - `testAlignmentEnumValues()`: Enum value correctness for all alignment options
+- `testTextWrapping()`: Text wrapping functionality with proper Excel XML generation
+- `testTextWrappingInFormatToKey()`: Text wrapping inclusion in format key generation
 
 ## Border & Merge Tests
 - `testBordersActuallyWork()`: Border functionality with different styles and colors
@@ -98,8 +101,9 @@ All tests verify pixel-perfect scaling, Excel cell dimension matching, and zero 
 - `testComplexMerging()`: Various merge scenarios (horizontal, vertical, large merges)
 - `testComplexBorderAndMergeCombination()`: Combined borders and merges with formatting
 
-## Text Alignment Coverage:
+## Text Alignment & Wrapping Coverage:
 - All horizontal and vertical alignment options are tested for correct API behavior and Excel-compliant output.
+- Text wrapping functionality is tested with proper Excel XML generation and format key inclusion.
 - Combined and formatting-with-alignment scenarios are validated.
 
 ## Number Format Tests
@@ -204,12 +208,12 @@ swift run XLKitTestRunner help
 | Coordinates/Ranges | 2          | 100%            |
 | File Operations    | 2          | 100%            |
 | Image Support      | 2          | 100%            |
-| Cell Formatting    | 8          | 100%            |
+| Cell Formatting    | 10         | 100%            |
 | Border & Merge     | 6          | 100%            |
 | Number Formats     | 5          | 100%            |
 | CSV/TSV            | 8          | 100%            |
 | Column/Row Sizing  | 1          | 100%            |
-| Total              | 51         | 100%            |
+| Total              | 53         | 100%            |
 
 ### Quality Standards
 - All generated files pass CoreXLSX validation
@@ -218,6 +222,7 @@ swift run XLKitTestRunner help
 - Comprehensive error and edge case testing
 - 100% of public APIs tested
 - All text alignment options (horizontal, vertical, combined) are fully tested
+- All text wrapping functionality is fully tested
 - All border and merge functionality is fully tested
 - All number formatting options are fully tested
 - Automated CI on macOS and iOS, performance and memory monitoring

@@ -355,7 +355,7 @@ public struct XLSXEngine {
                 xf += " applyBorder=\"1\""
             }
             
-            if format.horizontalAlignment != nil || format.verticalAlignment != nil {
+            if format.horizontalAlignment != nil || format.verticalAlignment != nil || format.textWrapping != nil {
                 xf += " applyAlignment=\"1\">"
                 xf += "<alignment"
                 if let horizontalAlignment = format.horizontalAlignment {
@@ -363,6 +363,9 @@ public struct XLSXEngine {
                 }
                 if let verticalAlignment = format.verticalAlignment {
                     xf += " vertical=\"\(verticalAlignment.rawValue)\""
+                }
+                if let textWrapping = format.textWrapping {
+                    xf += " wrapText=\"\(textWrapping ? 1 : 0)\""
                 }
                 xf += "/>"
                 xf += "</xf>"
@@ -608,6 +611,7 @@ public struct XLSXEngine {
         key += "backgroundColor:\(format.backgroundColor ?? "nil")"
         key += "horizontalAlignment:\(format.horizontalAlignment?.rawValue ?? "nil")"
         key += "verticalAlignment:\(format.verticalAlignment?.rawValue ?? "nil")"
+        key += "textWrapping:\(format.textWrapping ?? false)"
         
         // Include number format information
         if let numberFormat = format.numberFormat {
