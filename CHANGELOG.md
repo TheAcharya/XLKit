@@ -1,5 +1,19 @@
 # Changelog
 
+### 1.0.9
+
+**🎉 Released:**
+- 25th September 2025
+
+**🔧 Improvements:**
+- Fixed text wrapping functionality that was defined in CellFormat but not being used in XLSX generation (#12)
+- Added text wrapping support to XLSXEngine alignment XML generation with proper wrapText attribute
+- Enhanced formatToKey function to include text wrapping in format key generation for proper format caching
+- Increased test count from 51 to 53 tests with 100% API coverage including text wrapping validation
+- Implemented proper Excel XML structure with alignment elements containing wrapText attribute
+
+---
+
 ### 1.0.8
 
 **🎉 Released:**
