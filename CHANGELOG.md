@@ -6,7 +6,7 @@
 - 18th October 2025
 
 **🔧 Improvements:**
-- Fixed critical column ordering bug for sheets with more than 26 columns (A-Z, AA, AB, etc.) (#13)
+- Fixed critical column ordering bug for sheets with more than 26 columns (A-Z, AA, AB, etc.) (#14)
 - Resolved Excel compatibility issue where generated files were rejected or repaired due to invalid column ordering
 - Implemented proper numeric column sorting in XLSXEngine.generateWorksheetXML() to ensure Excel-compliant column order
 - Fixed lexicographic string sorting that caused "AA1" to appear before "B1" in generated XML
