@@ -106,8 +106,14 @@ This codebase is developed using AI agents.
 - Type-Safe: Strong enums and structs for all data types
 - Excel Compliance: Full OpenXML compliance with CoreXLSX validation
 - No Dependencies: Pure Swift, macOS 12+, Swift 6.0+
-- Comprehensive Testing: 51 tests with 100% API coverage, including all text alignment options (horizontal, vertical, combined), number formatting, border and merge functionality, and automated validation
+- Comprehensive Testing: 55 tests with 100% API coverage, including all text alignment options (horizontal, vertical, combined), number formatting, border and merge functionality, column ordering validation, and automated validation
 - Security Features: Comprehensive security features for production use
+
+## Recent Improvements
+
+### Column Ordering Fix (2025-10-18)
+
+Fixed critical column ordering bug for sheets with more than 26 columns (A-Z, AA, AB, etc.). The issue was resolved by implementing proper numeric column sorting in XLSXEngine.generateWorksheetXML() to ensure Excel-compliant column order. This fix ensures proper Excel column order: A, B, ..., Z, AA, AB, ..., BA, BB, ... in all generated files, maintaining full backward compatibility with existing APIs and storage model. All generated Excel files now open correctly in Excel without repair warnings.
 
 ## Security Features
 
@@ -1149,7 +1155,7 @@ XLKit includes comprehensive testing and validation capabilities with integrated
 
 ### Unit Tests
 
-The library includes 51 comprehensive unit tests covering:
+The library includes 55 comprehensive unit tests covering:
 - Core Workbook & Sheet Tests: Creation, management, and operations
 - Cell Operations & Data Types: All cell value types and operations
 - Coordinate & Range Tests: Excel coordinate parsing and range operations
@@ -1157,12 +1163,14 @@ The library includes 51 comprehensive unit tests covering:
 - CSV/TSV Import/Export: Complete import/export functionality
 - Cell Formatting: Predefined and custom formatting options including font colours, borders, and all text alignment options (horizontal, vertical, combined)
 - Border & Merge Tests: Border functionality with different styles and colors, merged cells with complex scenarios
+- Column Ordering Tests: Excel column order validation for sheets with more than 26 columns (A-Z, AA, AB, etc.)
 - Column & Row Sizing: Automatic sizing and manual adjustments
 - File Operations: Async and sync workbook saving
 - Error Handling: Comprehensive error testing and edge cases
 - Platform Compatibility: iOS-specific file system operations and sandbox restrictions
 - All text alignment options (horizontal, vertical, combined) are fully tested
 - All border and merge functionality is fully tested
+- Column ordering for sheets with more than 26 columns is fully tested
 
 ### XLKitTestRunner
 
@@ -1262,6 +1270,7 @@ XLKit includes comprehensive CI/CD testing through GitHub Actions:
 - Platform Tests: iOS compatibility and sandbox restrictions testing
 - All text alignment options (horizontal, vertical, combined) are fully tested
 - All border and merge functionality is fully tested
+- Column ordering for sheets with more than 26 columns is fully tested
 
 ## Code Style & Formatting
 
