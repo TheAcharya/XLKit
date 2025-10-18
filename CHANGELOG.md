@@ -1,5 +1,20 @@
 # Changelog
 
+### 1.0.10
+
+**🎉 Released:**
+- 18th October 2025
+
+**🔧 Improvements:**
+- Fixed critical column ordering bug for sheets with more than 26 columns (A-Z, AA, AB, etc.) (#13)
+- Resolved Excel compatibility issue where generated files were rejected or repaired due to invalid column ordering
+- Implemented proper numeric column sorting in XLSXEngine.generateWorksheetXML() to ensure Excel-compliant column order
+- Fixed lexicographic string sorting that caused "AA1" to appear before "B1" in generated XML
+- Increased test count from 53 to 55 tests with 100% API coverage including column ordering validation
+- Enhanced XLKitTestRunner with column ordering validation for continuous testing 
+
+---
+
 ### 1.0.9
 
 **🎉 Released:**

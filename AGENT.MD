@@ -79,7 +79,7 @@ XLKit/
 │   │   ├── ImageUtils.swift    # Image utilities (155 lines)
 │   │   └── ImageSizingUtils.swift # Image sizing logic (191 lines)
 │   ├── XLKitXLSX/              # XLSX generation engine
-│   │   └── XLSXEngine.swift    # XLSX file generation (759 lines)
+│   │   └── XLSXEngine.swift    # XLSX file generation (897 lines)
 │   └── XLKitTestRunner/        # Test runner executable
 │       ├── main.swift          # Command-line interface (91 lines)
 │       ├── ExcelGenerators.swift # Excel generation tests (590 lines)
@@ -90,7 +90,7 @@ XLKit/
 ├── Tests/                      # Unit tests
 │   ├── README.md               # Test documentation (196 lines)
 │   └── XLKitTests/             # Test suite
-│       └── XLKitTests.swift    # All unit tests (1363 lines, 53 tests)
+│       └── XLKitTests.swift    # All unit tests (1430 lines, 55 tests)
 ├── Test-Data/                  # Test data files
 │   ├── README.md               # Test data documentation (44 lines)
 │   └── Embed-Test/             # Image embedding test data
@@ -401,6 +401,7 @@ Test Coverage Requirements:
 - Test border functionality with different styles and colors
 - Test merged cells with complex scenarios
 - Test number formatting (currency, percentage, custom formats)
+- Test column ordering for sheets with more than 26 columns (A-Z, AA, AB, etc.)
 - Test platform compatibility and iOS-specific features
 
 Test Patterns:
@@ -448,6 +449,7 @@ Border and Merge Testing:
 - Test format key generation includes border information
 - Test text wrapping functionality with proper Excel XML generation
 - Test text wrapping inclusion in format key generation
+- Test column ordering with proper Excel column sequence (A, B, ..., Z, AA, AB, ...)
 
 ### Documentation
 
@@ -820,6 +822,18 @@ try await sheet.embedImageAutoSized(
 - Excel-compliant XML generation for text wrapping with wrapText attribute
 - Test count increased from 51 to 53 tests with 100% API coverage
 - All text wrapping functionality fully tested and validated
+
+### Column Ordering Fix (2025-10-18)
+- Fixed critical column ordering bug for sheets with more than 26 columns (A-Z, AA, AB, etc.)
+- Resolved Excel compatibility issue where generated files were rejected or repaired due to invalid column ordering
+- Implemented proper numeric column sorting in XLSXEngine.generateWorksheetXML() to ensure Excel-compliant column order
+- Fixed lexicographic string sorting that caused "AA1" to appear before "B1" in generated XML
+- Added comprehensive test coverage with testColumnOrderingBeyondZ() and testColumnOrderingWithGaps() test functions
+- Increased test count from 53 to 55 tests with 100% API coverage including column ordering validation
+- Ensured proper Excel column order: A, B, ..., Z, AA, AB, ..., BA, BB, ... in all generated files
+- Maintained full backward compatibility with existing APIs and storage model
+- Validated fix with CoreXLSX to ensure all generated Excel files open correctly in Excel
+- Enhanced XLKitTestRunner with column ordering validation for continuous testing
 
 ### iOS Compatibility Fix (2025-07-14)
 - Fixed iOS build error: `'homeDirectoryForCurrentUser' is unavailable in iOS`
