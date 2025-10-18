@@ -251,6 +251,27 @@ struct ExcelGenerators {
         
         print("[INFO] ✓ Created sheet using fluent API")
         
+        // MARK: - Column Ordering Test
+        print("[INFO] Demonstrating column ordering for sheets with >26 columns...")
+        
+        let columnOrderSheet = workbook.addSheet(name: "Column Order Test")
+        
+        // Fill columns A through AD (30 columns total) - this tests the column ordering fix
+        for i in 1...30 {
+            let column = i
+            let value = "Col\(i)"
+            columnOrderSheet.setCell(row: 1, column: column, cell: Cell.string(value, format: CellFormat.header()))
+        }
+        
+        // Add some data in row 2 to make it more realistic
+        for i in 1...30 {
+            let column = i
+            let value = "Data\(i)"
+            columnOrderSheet.setCell(row: 2, column: column, cell: Cell.string(value))
+        }
+        
+        print("[INFO] ✓ Created sheet with 30 columns (A1 through AD1) to test column ordering")
+        
         // MARK: - Save and Validate
         print("[INFO] Saving comprehensive demo...")
         
@@ -279,6 +300,37 @@ struct ExcelGenerators {
             print("[INFO] ✓ CoreXLSX validation successful")
             print("[INFO] ✓ Worksheet contains \(worksheet.data?.rows.count ?? 0) rows")
             print("[INFO] ✓ Shared strings count: \(sharedStrings?.items.count ?? 0)")
+            
+            // Validate column ordering sheet (it's the 4th sheet: API Demo, Second Sheet, Fluent Demo, Column Order Test)
+            let columnOrderWorksheet = try xlsx.parseWorksheet(at: "xl/worksheets/sheet4.xml")
+            let columnOrderRows = columnOrderWorksheet.data?.rows ?? []
+            print("[INFO] ✓ Column Order Test sheet contains \(columnOrderRows.count) rows")
+            
+            if let firstRow = columnOrderRows.first {
+                let cells = firstRow.cells
+                print("[INFO] ✓ Column Order Test sheet contains \(cells.count) columns")
+                
+                // Verify column ordering (A, B, C, ..., Z, AA, AB, AC, AD)
+                let expectedColumns = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "AA", "AB", "AC", "AD"]
+                var correctOrder = true
+                
+                for (index, cell) in cells.enumerated() {
+                    if index < expectedColumns.count {
+                        let expectedColumn = expectedColumns[index]
+                        let actualColumn = String(describing: cell.reference.column)
+                        if actualColumn != expectedColumn {
+                            correctOrder = false
+                            break
+                        }
+                    }
+                }
+                
+                if correctOrder {
+                    print("[INFO] ✓ Column ordering is correct - no Excel repair warnings should occur")
+                } else {
+                    print("[WARNING] Column ordering may have issues")
+                }
+            }
             
         } catch {
             print("[ERROR] CoreXLSX validation failed: \(error)")

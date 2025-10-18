@@ -484,7 +484,13 @@ public struct XLSXEngine {
                 content += "<row r=\"\(rowNum)\" spans=\"\(minCol):\(maxCol)\">"
             }
             
-            for coordinate in rowCells.keys.sorted() {
+            // Sort coordinates by column number to ensure proper Excel column order (A, B, ..., Z, AA, AB, ...)
+            let sortedCoordinates = rowCells.keys.compactMap { coordinate -> (String, Int)? in
+                guard let cellCoord = CellCoordinate(excelAddress: coordinate) else { return nil }
+                return (coordinate, cellCoord.column)
+            }.sorted { $0.1 < $1.1 }.map { $0.0 }
+            
+            for coordinate in sortedCoordinates {
                 guard let value = rowCells[coordinate] else { continue }
                 let format = sheet.getCellFormat(coordinate)
                 content += generateCellXML(coordinate: coordinate, value: value, format: format, formatMapping: formatMapping, sharedStrings: sharedStrings)

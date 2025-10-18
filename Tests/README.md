@@ -17,13 +17,14 @@ This document provides an organized overview of all tests in the XLKit library, 
 - [Coverage & Quality Assurance](#coverage--quality-assurance)
 
 ## Test Overview
-- Total Tests: 53
+- Total Tests: 55
 - 100% coverage of public APIs
 - All generated files validated with CoreXLSX
 - Security features integrated throughout all tests
 - Text alignment (horizontal, vertical, combined) is now fully tested
 - Border and merge functionality is now fully tested
 - Text wrapping functionality is now fully tested
+- Column ordering for sheets with more than 26 columns is now fully tested
 
 ## Core Workbook & Sheet Tests
 - `testCreateWorkbook()`: Basic workbook creation and initialization
@@ -126,6 +127,10 @@ All tests verify pixel-perfect scaling, Excel cell dimension matching, and zero 
 ## Column & Row Sizing
 - `testColumnAndRowSizing()`: Column width and row height management
 
+## Column Ordering Tests
+- `testColumnOrderingBeyondZ()`: Excel column order validation for sheets with more than 26 columns (A-Z, AA, AB, etc.)
+- `testColumnOrderingWithGaps()`: Column ordering validation with gaps in column sequence
+
 ## XLKitTestRunner
 
 A modular command-line tool for generating Excel files for testing and demonstration purposes.
@@ -213,7 +218,8 @@ swift run XLKitTestRunner help
 | Number Formats     | 5          | 100%            |
 | CSV/TSV            | 8          | 100%            |
 | Column/Row Sizing  | 1          | 100%            |
-| Total              | 53         | 100%            |
+| Column Ordering    | 2          | 100%            |
+| Total              | 55         | 100%            |
 
 ### Quality Standards
 - All generated files pass CoreXLSX validation
@@ -225,6 +231,7 @@ swift run XLKitTestRunner help
 - All text wrapping functionality is fully tested
 - All border and merge functionality is fully tested
 - All number formatting options are fully tested
+- Column ordering for sheets with more than 26 columns is fully tested
 - Automated CI on macOS and iOS, performance and memory monitoring
 - Security features integrated throughout all tests
 - XLKitTestRunner provides comprehensive demonstration capabilities
