@@ -571,12 +571,11 @@ public struct CellCoordinate: Hashable {
     public init?(excelAddress: String) {
         let pattern = "^([A-Z]+)([0-9]+)$"
         guard let regex = try? NSRegularExpression(pattern: pattern),
-              let match = regex.firstMatch(in: excelAddress, range: NSRange(excelAddress.startIndex..., in: excelAddress)) else {
+              let match = regex.firstMatch(in: excelAddress, range: NSRange(excelAddress.startIndex..., in: excelAddress)),
+              let columnRange = Range(match.range(at: 1), in: excelAddress),
+              let rowRange = Range(match.range(at: 2), in: excelAddress) else {
             return nil
         }
-        
-        let columnRange = Range(match.range(at: 1), in: excelAddress)!
-        let rowRange = Range(match.range(at: 2), in: excelAddress)!
         
         let columnString = String(excelAddress[columnRange])
         let rowString = String(excelAddress[rowRange])
@@ -948,8 +947,8 @@ public struct CoreUtils {
         
         while col > 0 {
             col -= 1
-            let char = Character(UnicodeScalar(65 + (col % 26))!)
-            result = String(char) + result
+            guard let scalar = UnicodeScalar(65 + (col % 26)) else { break }
+            result = String(Character(scalar)) + result
             col /= 26
         }
         
@@ -962,7 +961,8 @@ public struct CoreUtils {
         let upperLetter = letter.uppercased()
         
         for char in upperLetter {
-            result = result * 26 + Int(char.asciiValue! - 64)
+            guard let ascii = char.asciiValue, ascii >= 65, ascii <= 90 else { return result }
+            result = result * 26 + Int(ascii - 64)
         }
         
         return result

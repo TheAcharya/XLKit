@@ -331,7 +331,7 @@ sheet
 // 3. Add formatting with font colours
 sheet.setCell("A1", string: "Name", format: CellFormat.header())
 sheet.setCell("B1", string: "Photo", format: CellFormat.header())
-sheet.setCell("C1", string: "Age", format: CellFormat.coloredText(color: "#FF0000"))
+sheet.setCell("C1", string: "Age", format: CellFormat.text(color: "#FF0000"))
 
 // 4. Add a GIF image to a cell with perfect aspect ratio preservation
 let gifData = try Data(contentsOf: URL(fileURLWithPath: "alice.gif"))
@@ -836,9 +836,9 @@ let customFormat = CellFormat(
 sheet.setCell("H1", string: "Custom", format: customFormat)
 
 // Font colour formatting
-let redTextFormat = CellFormat.coloredText(color: "#FF0000")
-let blueTextFormat = CellFormat.coloredText(color: "#0000FF")
-let currencyRedFormat = CellFormat.currency(format: .currencyWithDecimals, color: "#FF0000")
+let redTextFormat = CellFormat.text(color: "#FF0000")
+let blueTextFormat = CellFormat.text(color: "#0000FF")
+let currencyRedFormat = CellFormat.currency(color: "#FF0000")
 
 sheet.setCell("I1", string: "Red Text", format: redTextFormat)
 sheet.setCell("J1", string: "Blue Text", format: blueTextFormat)
@@ -863,9 +863,9 @@ XLKit provides comprehensive font colour support with proper XML generation and 
 
 ```swift
 // Basic font colours
-let redText = CellFormat.coloredText(color: "#FF0000")
-let blueText = CellFormat.coloredText(color: "#0000FF")
-let greenText = CellFormat.coloredText(color: "#00FF00")
+let redText = CellFormat.text(color: "#FF0000")
+let blueText = CellFormat.text(color: "#0000FF")
+let greenText = CellFormat.text(color: "#00FF00")
 
 // Font colours with other formatting
 let boldRedText = CellFormat(
@@ -885,8 +885,8 @@ sheet.setCell("B1", number: 1234.56, format: colouredCurrency)
 sheet.setCell("C1", string: "Bold Blue", format: boldRedText)
 
 // Font colours work with all cell types
-sheet.setCell("D1", boolean: true, format: CellFormat.coloredText(color: "#FF6600"))
-sheet.setCell("E1", date: Date(), format: CellFormat.coloredText(color: "#6600FF"))
+sheet.setCell("D1", boolean: true, format: CellFormat.text(color: "#FF6600"))
+sheet.setCell("E1", date: Date(), format: CellFormat.text(color: "#6600FF"))
 ```
 
 Supported colour formats:

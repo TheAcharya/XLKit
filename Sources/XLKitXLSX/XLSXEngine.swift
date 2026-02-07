@@ -569,8 +569,12 @@ public struct XLSXEngine {
     }
     
     private static func generateCellXML(coordinate: String, value: CellValue, format: CellFormat?, formatMapping: [String: Int], sharedStrings: [String: Int]) -> String {
-        let styleId = format != nil ? getStyleId(for: format!, formatMapping: formatMapping) : nil
-        let styleAttribute = styleId != nil ? " s=\"\(styleId!)\"" : ""
+        let styleId: Int? = if let format {
+            getStyleId(for: format, formatMapping: formatMapping)
+        } else {
+            nil
+        }
+        let styleAttribute = styleId.map { " s=\"\($0)\"" } ?? ""
         
         switch value {
         case .string(let stringValue):
