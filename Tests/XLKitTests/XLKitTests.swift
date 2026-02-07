@@ -573,7 +573,7 @@ final class XLKitTests: XCTestCase {
         let sheet = workbook.addSheet(name: "Test")
         sheet.setCell("A1", value: .string("Test"))
         
-        let tempURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("test.xlsx")
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("test.xlsx")
         
         // Test synchronous save
         try workbook.save(to: tempURL)
@@ -590,7 +590,7 @@ final class XLKitTests: XCTestCase {
         let sheet = workbook.addSheet(name: "Test")
         sheet.setCell("A1", value: .string("Test"))
         
-        let tempURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("test_async.xlsx")
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("test_async.xlsx")
         
         // Test asynchronous save
         try await workbook.save(to: tempURL)

@@ -579,7 +579,7 @@ public struct CellFormat {
     public static func percentage(format: NumberFormat = .percentageWithDecimals) -> CellFormat
     public static func date(format: NumberFormat = .date) -> CellFormat
     public static func bordered(style: BorderStyle = .thin, color: String? = nil) -> CellFormat
-    public static func coloredText(color: String) -> CellFormat
+    public static func text(fontName: String?, fontSize: Double?, fontWeight: FontWeight?, fontStyle: FontStyle?, color: String?) -> CellFormat
 }
 ```
 
@@ -653,7 +653,7 @@ let value = sheet.getCell("A1")
 sheet.setCell("A1", cell: Cell.string("Header", format: CellFormat.header()))
 
 // Set cell with font colour
-sheet.setCell("A1", cell: Cell.string("Red Text", format: CellFormat.coloredText(color: "#FF0000")))
+sheet.setCell("A1", cell: Cell.string("Red Text", format: CellFormat.text(color: "#FF0000")))
 
 // Set range of cells
 sheet.setRange("A1:A10", value: .string("Batch"))

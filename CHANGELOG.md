@@ -1,5 +1,18 @@
 # Changelog
 
+### 1.0.11
+
+**🎉 Released:**
+- 8th February 2026
+
+**🔧 Improvements:**
+- Fixed documentation inconsistency: replaced all references to `CellFormat.coloredText(color:)` with `CellFormat.text(color:)` in README.md and AGENT.MD to match the current API
+- Removed force unwraps in `CoreTypes.swift` for Swift 6 compliance and safer behaviour: `CellCoordinate.init?(excelAddress:)` now uses optional binding for `Range` conversion; `CoreUtils.columnLetter(from:)` uses optional binding for `UnicodeScalar`; `CoreUtils.columnNumber(from:)` safely handles non-ASCII characters instead of crashing
+- Removed force unwraps in `XLSXEngine.generateCellXML()`: replaced `format!` and `styleId!` with optional binding and `styleId.map` for style attribute generation
+- Updated unit tests to use `FileManager.default.temporaryDirectory` instead of `NSTemporaryDirectory()` for cross-platform consistency and alignment with project guidelines
+
+---
+
 ### 1.0.10
 
 **🎉 Released:**
