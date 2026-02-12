@@ -11,9 +11,7 @@
 - Fixed media files: include images from workbook and all sheets so `embedImage(from url:)` / `embedImage(from path:)` write to XLSX
 - Fixed `CellCoordinate(excelAddress:)` to accept lowercase (e.g. "a1"); added unit tests
 - Created Documentation folder with Manual.md and README; moved manual content from root README
-- Trimmed root README; added full API Reference, Examples (five runnable examples), and complete TOC to Manual
 - Updated Error Handling section to use actual XLKitError cases; added CI/CD, Test Coverage, Code Style to Manual
-- Added AUDIT-REPORT.md with audit findings and Swift 6 compliance notes
 
 ---
 
