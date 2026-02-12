@@ -1,5 +1,22 @@
 # Changelog
 
+### 1.0.12
+
+**🎉 Released:**
+- 12th February 2026
+
+**🔧 Improvements:**
+- Fixed RateLimiter: changed from struct to final class so rate limiting state persists
+- Fixed [Content_Types].xml for multi-sheet workbooks: register every worksheet and drawing via `generateContentTypes(workbook:)`
+- Fixed media files: include images from workbook and all sheets so `embedImage(from url:)` / `embedImage(from path:)` write to XLSX
+- Fixed `CellCoordinate(excelAddress:)` to accept lowercase (e.g. "a1"); added unit tests
+- Created Documentation folder with Manual.md and README; moved manual content from root README
+- Trimmed root README; added full API Reference, Examples (five runnable examples), and complete TOC to Manual
+- Updated Error Handling section to use actual XLKitError cases; added CI/CD, Test Coverage, Code Style to Manual
+- Added AUDIT-REPORT.md with audit findings and Swift 6 compliance notes
+
+---
+
 ### 1.0.11
 
 **🎉 Released:**

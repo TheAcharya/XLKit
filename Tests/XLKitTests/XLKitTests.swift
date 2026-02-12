@@ -163,6 +163,16 @@ final class XLKitTests: XCTestCase {
         
         // Test invalid address
         XCTAssertNil(CellCoordinate(excelAddress: "Invalid"))
+        
+        // Test lowercase address (normalized)
+        let coord5 = CellCoordinate(excelAddress: "a1")
+        XCTAssertNotNil(coord5)
+        XCTAssertEqual(coord5?.row, 1)
+        XCTAssertEqual(coord5?.column, 1)
+        let coord6 = CellCoordinate(excelAddress: "aa10")
+        XCTAssertNotNil(coord6)
+        XCTAssertEqual(coord6?.row, 10)
+        XCTAssertEqual(coord6?.column, 27)
     }
     
     func testCellRange() {

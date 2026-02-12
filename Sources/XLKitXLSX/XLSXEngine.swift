@@ -61,7 +61,7 @@ public struct XLSXEngine {
         try FileManager.default.createDirectory(at: drawingsRelsDir, withIntermediateDirectories: true)
         
         // Generate Content_Types.xml
-        let contentTypes = generateContentTypes()
+        let contentTypes = generateContentTypes(workbook: workbook)
         try contentTypes.write(to: tempDir.appendingPathComponent("[Content_Types].xml"), atomically: true, encoding: .utf8)
         
         // Generate docProps files
@@ -661,9 +661,19 @@ public struct XLSXEngine {
     }
     
     private static func generateMediaFiles(mediaDir: URL, workbook: Workbook) throws {
+        // Collect all images from workbook and every sheet (e.g. embedImage(from url:) adds only to sheet)
+        var seenIds: Set<String> = []
         for image in workbook.getImages() {
+            guard seenIds.insert(image.id).inserted else { continue }
             let imageURL = mediaDir.appendingPathComponent("\(image.id).\(image.format.rawValue)")
             try image.data.write(to: imageURL)
+        }
+        for sheet in workbook.getSheets() {
+            for (_, image) in sheet.getImages() {
+                guard seenIds.insert(image.id).inserted else { continue }
+                let imageURL = mediaDir.appendingPathComponent("\(image.id).\(image.format.rawValue)")
+                try image.data.write(to: imageURL)
+            }
         }
     }
     
@@ -862,7 +872,7 @@ public struct XLSXEngine {
         }
     }
     
-    private static func generateContentTypes() -> String {
+    private static func generateContentTypes(workbook: Workbook) -> String {
         var content = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
         content += "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
         content += "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
@@ -876,9 +886,13 @@ public struct XLSXEngine {
         content += "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
         content += "<Override PartName=\"/xl/theme/theme1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\"/>"
         content += "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>"
-        content += "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>"
+        for sheet in workbook.getSheets() {
+            content += "<Override PartName=\"/xl/worksheets/sheet\(sheet.id).xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>"
+        }
         content += "<Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/>"
-        content += "<Override PartName=\"/xl/drawings/drawing1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\"/>"
+        for sheet in workbook.getSheets() where !sheet.getImages().isEmpty {
+            content += "<Override PartName=\"/xl/drawings/drawing\(sheet.id).xml\" ContentType=\"application/vnd.openxmlformats-officedocument.drawing+xml\"/>"
+        }
         content += "</Types>"
         return content
     }
