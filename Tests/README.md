@@ -31,7 +31,6 @@ This document provides an organized overview of all tests in the XLKit library, 
 - `testAddSheet()`: Sheet addition with proper ID assignment
 - `testGetSheetByName()`: Sheet retrieval by name functionality
 - `testRemoveSheet()`: Sheet removal and count tracking
-- `testComplexWorkbook()`: Complex workbook with multiple sheets and formulas
 
 ## Cell Operations & Data Types
 - `testSetAndGetCell()`: Setting/getting all cell value types (string, number, integer, boolean, date, formula)
@@ -49,7 +48,7 @@ This document provides an organized overview of all tests in the XLKit library, 
 - `testSheetConvenienceInitializer()`: Sheet convenience initializer with data
 
 ## Coordinate & Range Tests
-- `testCellCoordinate()`: Excel coordinate creation and parsing
+- `testCellCoordinate()`: Excel coordinate creation, parsing (including lowercase addresses e.g. "a1", "aa10"), and invalid address handling
 - `testCellRange()`: Range creation, notation parsing, and coordinate enumeration
 
 ## File Operations
@@ -157,7 +156,12 @@ Test-Workflows/
 ├── Embed-Test.xlsx          # From no-embeds test
 ├── Embed-Test-Embed.xlsx    # From embed test (with images)
 ├── Comprehensive-Demo.xlsx  # From comprehensive test
+├── Number-Format-Test.xlsx  # From number-formats test
 └── [Your-Test].xlsx         # From custom tests
+
+Root directory:
+├── iOS-Example.xlsx         # From ios-test (iOS compatibility)
+└── [Other-Test].xlsx        # From other platform-specific tests
 ```
 
 ### Security Features in Tests
@@ -206,8 +210,8 @@ swift run XLKitTestRunner help
 
 | Category           | Test Count | Coverage         |
 |--------------------|------------|-----------------|
-| Core Workbook      | 5          | 100%            |
-| Sheet Management   | 5          | 100%            |
+| Core Workbook      | 4          | 100%            |
+| Sheet Operations   | 5          | 100%            |
 | Cell Operations    | 12         | 100%            |
 | Data Types         | 2          | 100%            |
 | Coordinates/Ranges | 2          | 100%            |

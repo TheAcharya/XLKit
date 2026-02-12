@@ -194,8 +194,8 @@ public struct SecurityManager {
 
 // MARK: - Rate Limiter
 
-/// Simple rate limiter for security
-private struct RateLimiter {
+/// Simple rate limiter for security (reference type so mutations persist across queue.sync)
+private final class RateLimiter {
     private let maxOperations: Int
     private let timeWindow: TimeInterval
     private var operations: [Date] = []
@@ -206,20 +206,12 @@ private struct RateLimiter {
         self.timeWindow = timeWindow
     }
     
-    mutating func allowOperation() -> Bool {
+    func allowOperation() -> Bool {
         return queue.sync {
             let now = Date()
             let cutoff = now.addingTimeInterval(-timeWindow)
-            
-            // Remove old operations
             operations = operations.filter { $0 > cutoff }
-            
-            // Check if we can allow this operation
-            guard operations.count < maxOperations else {
-                return false
-            }
-            
-            // Add current operation
+            guard operations.count < maxOperations else { return false }
             operations.append(now)
             return true
         }

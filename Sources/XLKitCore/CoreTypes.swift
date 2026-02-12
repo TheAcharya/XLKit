@@ -567,18 +567,19 @@ public struct CellCoordinate: Hashable {
     }
     
     /// Creates a coordinate from Excel address
-    /// - Parameter excelAddress: Excel-style address (e.g., "A1", "B2", "AA10")
+    /// - Parameter excelAddress: Excel-style address (e.g., "A1", "B2", "AA10"); case-insensitive
     public init?(excelAddress: String) {
+        let normalized = excelAddress.uppercased()
         let pattern = "^([A-Z]+)([0-9]+)$"
         guard let regex = try? NSRegularExpression(pattern: pattern),
-              let match = regex.firstMatch(in: excelAddress, range: NSRange(excelAddress.startIndex..., in: excelAddress)),
-              let columnRange = Range(match.range(at: 1), in: excelAddress),
-              let rowRange = Range(match.range(at: 2), in: excelAddress) else {
+              let match = regex.firstMatch(in: normalized, range: NSRange(normalized.startIndex..., in: normalized)),
+              let columnRange = Range(match.range(at: 1), in: normalized),
+              let rowRange = Range(match.range(at: 2), in: normalized) else {
             return nil
         }
         
-        let columnString = String(excelAddress[columnRange])
-        let rowString = String(excelAddress[rowRange])
+        let columnString = String(normalized[columnRange])
+        let rowString = String(normalized[rowRange])
         
         guard let row = Int(rowString) else { return nil }
         let column = CoreUtils.columnNumber(from: columnString)
