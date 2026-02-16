@@ -23,11 +23,21 @@ class XLKitTestBase: XCTestCase {
         components.second = second
         
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? calendar.timeZone
+        // TimeZone(secondsFromGMT: 0) never returns nil, so force unwrap is safe
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
         
         guard let date = calendar.date(from: components) else {
-            XCTFail("Failed to create UTC date from components: \(components)")
-            return Date(timeIntervalSince1970: 0)
+            XCTFail("""
+            Failed to create UTC date from components.
+              Year:   \(components.year.map(String.init) ?? "nil")
+              Month:  \(components.month.map(String.init) ?? "nil")
+              Day:    \(components.day.map(String.init) ?? "nil")
+              Hour:   \(components.hour.map(String.init) ?? "nil")
+              Minute: \(components.minute.map(String.init) ?? "nil")
+              Second: \(components.second.map(String.init) ?? "nil")
+            Expected a valid Gregorian calendar date in UTC (e.g., year ≥ 1, month 1–12, day in valid range for the given month).
+            """)
+            fatalError("makeUTCDate encountered an unrecoverable error when creating a UTC date from components: \(components)")
         }
         
         return date
@@ -54,8 +64,12 @@ class XLKitTestBase: XCTestCase {
         
         let tempURL = makeTempWorkbookURL(prefix: prefix)
         defer {
-            // Best-effort cleanup; ignore errors to avoid hiding test failures.
-            try? FileManager.default.removeItem(at: tempURL)
+            // Best-effort cleanup; log errors so file system issues are visible in test output.
+            do {
+                try FileManager.default.removeItem(at: tempURL)
+            } catch {
+                XCTFail("Failed to remove temporary workbook at \(tempURL.path): \(error)")
+            }
         }
         
         try body(workbook, tempURL)
@@ -70,8 +84,12 @@ class XLKitTestBase: XCTestCase {
         
         let tempURL = makeTempWorkbookURL(prefix: prefix)
         defer {
-            // Best-effort cleanup; ignore errors to avoid hiding test failures.
-            try? FileManager.default.removeItem(at: tempURL)
+            // Best-effort cleanup; log errors so file system issues are visible in test output.
+            do {
+                try FileManager.default.removeItem(at: tempURL)
+            } catch {
+                XCTFail("Failed to remove temporary workbook at \(tempURL.path): \(error)")
+            }
         }
         
         try await body(workbook, tempURL)
