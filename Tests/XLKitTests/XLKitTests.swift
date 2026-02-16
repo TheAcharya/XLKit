@@ -10,11 +10,38 @@ import XLKit
 @MainActor
 final class XLKitTests: XCTestCase {
     
+    /// Helper to construct a UTC date from calendar components, avoiding magic Unix timestamps.
+    private static func makeUTCDate(year: Int, month: Int, day: Int,
+                                    hour: Int = 0, minute: Int = 0, second: Int = 0) -> Date {
+        var components = DateComponents()
+        components.year = year
+        components.month = month
+        components.day = day
+        components.hour = hour
+        components.minute = minute
+        components.second = second
+        
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? calendar.timeZone
+        
+        // Force-unwrap is safe here because the components are fixed and known-valid.
+        return calendar.date(from: components)!
+    }
+    
     /// Fixed date used for deterministic date-related tests (2022-01-01 00:00:00 UTC).
-    private static let fixedTestDate = Date(timeIntervalSince1970: 1_640_995_200)
+    private static let fixedTestDate = makeUTCDate(year: 2022, month: 1, day: 1)
     
     /// Epoch date (1970-01-01 00:00:00 UTC) used for simple date type tests.
-    private static let epochDate = Date(timeIntervalSince1970: 0)
+    private static let epochDate = makeUTCDate(year: 1970, month: 1, day: 1)
+    
+    /// Helper to generate a unique temporary URL for workbook files.
+    /// - Parameter prefix: A prefix to distinguish different test cases.
+    private func makeTempWorkbookURL(prefix: String) -> URL {
+        FileManager.default.temporaryDirectory.appendingPathComponent("\(prefix)-\(UUID().uuidString).xlsx")
+    }
+    
+    /// Standard font size used in border and merge tests.
+    private static let standardFontSize: Double = 11
     
     func testCreateWorkbook() throws {
         let workbook = Workbook()
@@ -211,6 +238,11 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(CellValue.boolean(false).stringValue, "FALSE")
         XCTAssertEqual(CellValue.formula("=A1+B1").stringValue, "=A1+B1")
         XCTAssertEqual(CellValue.empty.stringValue, "")
+        
+        // Verify that date values produce a non-empty, stable string representation.
+        let dateString = CellValue.date(Self.epochDate).stringValue
+        XCTAssertFalse(dateString.isEmpty)
+        XCTAssertTrue(dateString.contains("1970"), "Expected epoch date string to contain year 1970, got: \(dateString)")
     }
     
     func testCellValueType() {
@@ -595,7 +627,7 @@ final class XLKitTests: XCTestCase {
         let sheet = workbook.addSheet(name: "Test")
         sheet.setCell("A1", value: .string("Test"))
         
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("test-\(UUID().uuidString).xlsx")
+        let tempURL = makeTempWorkbookURL(prefix: "test")
         
         // Test synchronous save
         try workbook.save(to: tempURL)
@@ -612,7 +644,7 @@ final class XLKitTests: XCTestCase {
         let sheet = workbook.addSheet(name: "Test")
         sheet.setCell("A1", value: .string("Test"))
         
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("test_async-\(UUID().uuidString).xlsx")
+        let tempURL = makeTempWorkbookURL(prefix: "test_async")
         
         // Test asynchronous save
         try await workbook.save(to: tempURL)
@@ -633,7 +665,7 @@ final class XLKitTests: XCTestCase {
         
         let workbook = Workbook(fromCSV: csvData, hasHeader: true)
         let sheets = workbook.getSheets()
-        XCTAssertFalse(sheets.isEmpty, "Workbook created from CSV should contain at least one sheet")
+        XCTAssertTrue(!sheets.isEmpty, "Workbook created from CSV should contain at least one sheet")
         guard let sheet = sheets.first else {
             XCTFail("Expected workbook created from CSV to contain at least one sheet")
             return
@@ -1416,7 +1448,7 @@ final class XLKitTests: XCTestCase {
         
         // Test the exact scenario from the user's report
         var borderedFormat = CellFormat.bordered()
-        borderedFormat.fontSize = 11
+        borderedFormat.fontSize = Self.standardFontSize
         borderedFormat.fontWeight = .bold
         borderedFormat.horizontalAlignment = .center
         borderedFormat.verticalAlignment = .center
@@ -1448,7 +1480,7 @@ final class XLKitTests: XCTestCase {
         // Verify border formatting
         let borderedCell = sheet.getCellWithFormat("A1")
         XCTAssertNotNil(borderedCell)
-        XCTAssertEqual(borderedCell?.format?.fontSize, 11)
+        XCTAssertEqual(borderedCell?.format?.fontSize, Self.standardFontSize)
         XCTAssertEqual(borderedCell?.format?.fontWeight, .bold)
         XCTAssertEqual(borderedCell?.format?.horizontalAlignment, .center)
         XCTAssertEqual(borderedCell?.format?.verticalAlignment, .center)
