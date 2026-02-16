@@ -141,10 +141,10 @@ try await workbook.save(to: URL(fileURLWithPath: "employees.xlsx"))
 
 ## Documentation
 
-Full manual and reference documentation has been moved to the **Documentation** folder:
+Manual and reference documentation is located in the **Documentation** folder:
 
-- **[Documentation/README.md](Documentation/README.md)** – Overview of documentation contents
-- **[Documentation/Manual.md](Documentation/Manual.md)** – Complete user manual, including:
+- **[Readme](Documentation/README.md)** – Overview of documentation contents
+- **[Manual](Documentation/Manual.md)** – Complete user manual, including:
   - Security features (SecurityManager, rate limiting, logging, quarantine, checksums)
   - Performance considerations and file format support
   - iOS support and file system considerations
