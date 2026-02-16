@@ -17,7 +17,7 @@ This document provides an organized overview of all tests in the XLKit library, 
 - [Coverage & Quality Assurance](#coverage--quality-assurance)
 
 ## Test Overview
-- Total Tests: 55
+- Total Tests: 59
 - 100% coverage of public APIs
 - All generated files validated with CoreXLSX
 - Security features integrated throughout all tests
@@ -25,6 +25,7 @@ This document provides an organized overview of all tests in the XLKit library, 
 - Border and merge functionality is now fully tested
 - Text wrapping functionality is now fully tested
 - Column ordering for sheets with more than 26 columns is now fully tested
+- CSV/TSV edge cases (quoted fields, escaped quotes, empty fields) are now fully tested
 
 ## Core Workbook & Sheet Tests
 - `testCreateWorkbook()`: Basic workbook creation and initialization
@@ -122,6 +123,10 @@ All tests verify pixel-perfect scaling, Excel cell dimension matching, and zero 
 - `testWorkbookExportSheetToTSV()`: Export sheet to TSV format
 - `testSheetExportToCSV()`: Sheet-level CSV export
 - `testSheetExportToTSV()`: Sheet-level TSV export
+- `testCSVWithQuotedFields()`: CSV with quoted fields containing commas (validates swift-textfile-tools integration)
+- `testCSVWithEscapedQuotes()`: CSV with escaped quotes (double quotes) - validates proper parsing
+- `testCSVExportWithSpecialCharacters()`: CSV export/import round-trip with special characters
+- `testCSVWithEmptyFields()`: CSV with empty fields at various positions
 
 ## Column & Row Sizing
 - `testColumnAndRowSizing()`: Column width and row height management
@@ -220,10 +225,10 @@ swift run XLKitTestRunner help
 | Cell Formatting    | 10         | 100%            |
 | Border & Merge     | 6          | 100%            |
 | Number Formats     | 5          | 100%            |
-| CSV/TSV            | 8          | 100%            |
+| CSV/TSV            | 12         | 100%            |
 | Column/Row Sizing  | 1          | 100%            |
 | Column Ordering    | 2          | 100%            |
-| Total              | 55         | 100%            |
+| Total              | 59         | 100%            |
 
 ### Quality Standards
 - All generated files pass CoreXLSX validation

@@ -6,14 +6,14 @@
 
 import Foundation
 @preconcurrency import XLKitCore
+import TextFileTools
 
 /// CSV/TSV import/export utilities for XLKit
+/// Uses swift-textfile-tools library for robust CSV/TSV parsing and generation
 public struct CSVUtils {
     
     /// Exports a sheet to CSV format
     public static func exportToCSV(sheet: Sheet, separator: String = ",") -> String {
-        var csv = ""
-        
         // Find max row/column from used cells
         let usedCells = sheet.getUsedCells()
         var maxRow = 0
@@ -25,7 +25,9 @@ public struct CSVUtils {
             maxColumn = max(maxColumn, cellCoord.column)
         }
         
-        // Generate CSV content
+        // Build StringTable from sheet data
+        var stringTable: StringTable = []
+        
         for row in 1...maxRow {
             var rowData: [String] = []
             
@@ -34,43 +36,93 @@ public struct CSVUtils {
                 let cellAddress = coord.excelAddress
                 
                 if let cellValue = sheet.getCell(cellAddress) {
-                    rowData.append(formatCellValueForCSV(cellValue, separator: separator))
+                    rowData.append(cellValue.stringValue)
                 } else {
                     rowData.append("")
                 }
             }
             
-            csv += rowData.joined(separator: separator) + "\n"
+            stringTable.append(rowData)
         }
         
-        return csv.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Use TextFileTools for CSV generation
+        if separator == "," {
+            let csv = TextFile.CSV(table: stringTable)
+            return csv.rawText
+        } else {
+            // For custom separators, we need to use a delimited format
+            // Since TextFileTools only supports CSV (comma) and TSV (tab),
+            // we'll fall back to manual generation for custom separators
+            return generateCustomDelimitedText(table: stringTable, separator: separator)
+        }
     }
     
     /// Exports a sheet to TSV format
     public static func exportToTSV(sheet: Sheet) -> String {
-        return exportToCSV(sheet: sheet, separator: "\t")
+        // Find max row/column from used cells
+        let usedCells = sheet.getUsedCells()
+        var maxRow = 0
+        var maxColumn = 0
+        
+        for coordinate in usedCells {
+            guard let cellCoord = CellCoordinate(excelAddress: coordinate) else { continue }
+            maxRow = max(maxRow, cellCoord.row)
+            maxColumn = max(maxColumn, cellCoord.column)
+        }
+        
+        // Build StringTable from sheet data
+        var stringTable: StringTable = []
+        
+        for row in 1...maxRow {
+            var rowData: [String] = []
+            
+            for column in 1...maxColumn {
+                let coord = CellCoordinate(row: row, column: column)
+                let cellAddress = coord.excelAddress
+                
+                if let cellValue = sheet.getCell(cellAddress) {
+                    rowData.append(cellValue.stringValue)
+                } else {
+                    rowData.append("")
+                }
+            }
+            
+            stringTable.append(rowData)
+        }
+        
+        // Use TextFileTools for TSV generation
+        let tsv = TextFile.TSV(table: stringTable)
+        return tsv.rawText
     }
     
     /// Imports CSV data into a sheet
     public static func importFromCSV(sheet: Sheet, csvData: String, separator: String = ",", hasHeader: Bool = false) {
-        let lines = csvData.components(separatedBy: .newlines)
-            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-        
-        let dataLines: [String]
-        if hasHeader && !lines.isEmpty {
-            dataLines = Array(lines.dropFirst())
+        // Use TextFileTools for CSV parsing
+        let stringTable: StringTable
+        if separator == "," {
+            let csv = TextFile.CSV(rawText: csvData)
+            stringTable = csv.table
         } else {
-            dataLines = lines
+            // For custom separators, parse manually
+            stringTable = parseCustomDelimitedText(text: csvData, separator: separator)
+        }
+        
+        // Determine which rows to import
+        let dataRows: [[String]]
+        if hasHeader && !stringTable.isEmpty {
+            dataRows = Array(stringTable.dropFirst())
+        } else {
+            dataRows = stringTable
         }
         let startRow = hasHeader ? 2 : 1
         
-        for (lineIndex, line) in dataLines.enumerated() {
-            let row = startRow + lineIndex
-            let columns = parseCSVLine(line, separator: separator)
+        // Import data into sheet
+        for (rowIndex, row) in dataRows.enumerated() {
+            let excelRow = startRow + rowIndex
             
-            for (columnIndex, value) in columns.enumerated() {
+            for (columnIndex, value) in row.enumerated() {
                 let column = columnIndex + 1
-                let coord = CellCoordinate(row: row, column: column)
+                let coord = CellCoordinate(row: excelRow, column: column)
                 let cellAddress = coord.excelAddress
                 
                 let cellValue = parseCSVValue(value)
@@ -81,7 +133,32 @@ public struct CSVUtils {
     
     /// Imports TSV data into a sheet
     public static func importFromTSV(sheet: Sheet, tsvData: String, hasHeader: Bool = false) {
-        importFromCSV(sheet: sheet, csvData: tsvData, separator: "\t", hasHeader: hasHeader)
+        // Use TextFileTools for TSV parsing
+        let tsv = TextFile.TSV(rawText: tsvData)
+        let stringTable = tsv.table
+        
+        // Determine which rows to import
+        let dataRows: [[String]]
+        if hasHeader && !stringTable.isEmpty {
+            dataRows = Array(stringTable.dropFirst())
+        } else {
+            dataRows = stringTable
+        }
+        let startRow = hasHeader ? 2 : 1
+        
+        // Import data into sheet
+        for (rowIndex, row) in dataRows.enumerated() {
+            let excelRow = startRow + rowIndex
+            
+            for (columnIndex, value) in row.enumerated() {
+                let column = columnIndex + 1
+                let coord = CellCoordinate(row: excelRow, column: column)
+                let cellAddress = coord.excelAddress
+                
+                let cellValue = parseCSVValue(value)
+                sheet.setCell(cellAddress, value: cellValue)
+            }
+        }
     }
     
     /// Creates a workbook from CSV data
@@ -94,29 +171,13 @@ public struct CSVUtils {
     
     /// Creates a workbook from TSV data
     public static func createWorkbookFromTSV(tsvData: String, sheetName: String = "Sheet1", hasHeader: Bool = false) -> Workbook {
-        return createWorkbookFromCSV(csvData: tsvData, sheetName: sheetName, separator: "\t", hasHeader: hasHeader)
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: sheetName)
+        importFromTSV(sheet: sheet, tsvData: tsvData, hasHeader: hasHeader)
+        return workbook
     }
     
     // MARK: - Private Helper Methods
-    
-    /// Formats cell value for CSV with proper quoting and escaping
-    private static func formatCellValueForCSV(_ cellValue: CellValue, separator: String) -> String {
-        let stringValue = cellValue.stringValue
-        
-        // Quote if contains separator, quotes, or newlines
-        let needsQuoting = stringValue.contains(separator) || 
-                          stringValue.contains("\"") || 
-                          stringValue.contains("\n") || 
-                          stringValue.contains("\r")
-        
-        if needsQuoting {
-            // Escape quotes by doubling them
-            let escapedValue = stringValue.replacingOccurrences(of: "\"", with: "\"\"")
-            return "\"\(escapedValue)\""
-        } else {
-            return stringValue
-        }
-    }
     
     /// Parses CSV value to appropriate CellValue type
     private static func parseCSVValue(_ value: String) -> CellValue {
@@ -152,39 +213,74 @@ public struct CSVUtils {
         return .string(trimmed)
     }
     
-    /// Parses CSV line handling quoted fields and escaped quotes
-    private static func parseCSVLine(_ line: String, separator: String) -> [String] {
-        var result: [String] = []
-        var currentField = ""
-        var inQuotes = false
-        var i = 0
-        
-        while i < line.count {
-            let char = line[line.index(line.startIndex, offsetBy: i)]
-            
-            if char == "\"" {
-                if inQuotes {
-                    // Check for escaped quote
-                    if i + 1 < line.count && line[line.index(line.startIndex, offsetBy: i + 1)] == "\"" {
-                        currentField += "\""
-                        i += 1 // Skip the next quote
-                    } else {
-                        inQuotes = false
-                    }
-                } else {
-                    inQuotes = true
+    /// Generates custom delimited text for separators other than comma or tab
+    /// Falls back to manual generation when TextFileTools doesn't support the separator
+    private static func generateCustomDelimitedText(table: StringTable, separator: String) -> String {
+        return table.map { row in
+            row.map { textString in
+                var outString = textString
+                
+                // Escape double-quotes
+                outString = outString.replacingOccurrences(of: "\"", with: "\"\"")
+                
+                // Wrap string in double-quotes if it contains separator, quotes, or newlines
+                if outString.contains(separator) ||
+                   outString.contains("\"") ||
+                   outString.contains("\n") ||
+                   outString.contains("\r") {
+                    outString = "\"\(outString)\""
                 }
-            } else if char == Character(separator) && !inQuotes {
-                result.append(currentField)
-                currentField = ""
-            } else {
-                currentField += String(char)
+                
+                return outString
+            }
+            .joined(separator: separator)
+        }
+        .joined(separator: "\n")
+    }
+    
+    /// Parses custom delimited text for separators other than comma or tab
+    /// Falls back to manual parsing when TextFileTools doesn't support the separator
+    private static func parseCustomDelimitedText(text: String, separator: String) -> StringTable {
+        let lines = text.components(separatedBy: .newlines)
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        
+        var result: StringTable = []
+        
+        for line in lines {
+            var fields: [String] = []
+            var currentField = ""
+            var inQuotes = false
+            var i = 0
+            
+            while i < line.count {
+                let char = line[line.index(line.startIndex, offsetBy: i)]
+                
+                if char == "\"" {
+                    if inQuotes {
+                        // Check for escaped quote
+                        if i + 1 < line.count && line[line.index(line.startIndex, offsetBy: i + 1)] == "\"" {
+                            currentField += "\""
+                            i += 1 // Skip the next quote
+                        } else {
+                            inQuotes = false
+                        }
+                    } else {
+                        inQuotes = true
+                    }
+                } else if String(char) == separator && !inQuotes {
+                    fields.append(currentField)
+                    currentField = ""
+                } else {
+                    currentField += String(char)
+                }
+                
+                i += 1
             }
             
-            i += 1
+            fields.append(currentField)
+            result.append(fields)
         }
         
-        result.append(currentField)
         return result
     }
 }

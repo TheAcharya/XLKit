@@ -74,7 +74,7 @@ XLKit/
 │   │   ├── CoreTypes.swift     # Core data structures (1215 lines)
 │   │   └── SecurityManager.swift # Security features (282 lines)
 │   ├── XLKitFormatters/        # CSV/TSV functionality
-│   │   └── CSVUtils.swift      # CSV import/export utilities (199 lines)
+│   │   └── CSVUtils.swift      # CSV import/export utilities (294 lines, uses swift-textfile-tools)
 │   ├── XLKitImages/            # Image processing
 │   │   ├── ImageUtils.swift    # Image utilities (155 lines)
 │   │   └── ImageSizingUtils.swift # Image sizing logic (191 lines)
@@ -90,7 +90,7 @@ XLKit/
 ├── Tests/                      # Unit tests
 │   ├── README.md               # Test documentation (196 lines)
 │   └── XLKitTests/             # Test suite
-│       └── XLKitTests.swift    # All unit tests (1430 lines, 55 tests)
+│       └── XLKitTests.swift    # All unit tests (1511 lines, 59 tests)
 ├── Test-Data/                  # Test data files
 │   ├── README.md               # Test data documentation (44 lines)
 │   └── Embed-Test/             # Image embedding test data
@@ -122,7 +122,8 @@ XLKit (main API)
 └── XLKitXLSX (XLSX generation engine)
 
 XLKitFormatters
-└── XLKitCore
+├── XLKitCore
+└── TextFileTools (swift-textfile-tools)
 
 XLKitImages
 └── XLKitCore
@@ -137,6 +138,7 @@ External Dependencies:
 - CoreXLSX (0.14.2): Excel file validation and parsing
 - ZIPFoundation (0.9.19): Cross-platform ZIP archive creation
 - XMLCoder (0.14.0): XML serialization
+- swift-textfile-tools (0.3.0): CSV/TSV parsing and generation (used by XLKitFormatters)
 
 ### Test Runner
 

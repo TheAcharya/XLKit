@@ -41,66 +41,57 @@ struct ExcelGenerators {
             throw XLKitError.fileWriteError("CSV file not found: \(csvFilePath)")
         }
         
-        // MARK: - CSV Parsing
-        
-        func parseCSV(_ csv: String) -> (rows: [[String]], headers: [String]) {
-            let lines = csv.components(separatedBy: .newlines).filter { !$0.isEmpty }
-            guard let headerLine = lines.first else { return ([], []) }
-            let headers = headerLine.components(separatedBy: ",")
-            let rows = lines.dropFirst().map { $0.components(separatedBy: ",") }
-            return (rows, headers)
-        }
-        
         guard let csvData = try? String(contentsOfFile: csvFilePath, encoding: .utf8) else {
             print("[ERROR] Failed to read CSV file: \(csvFilePath)")
             throw XLKitError.fileWriteError("Failed to read CSV file: \(csvFilePath)")
         }
         
-        let (rows, headers) = parseCSV(csvData)
-        print("[INFO] Parsed CSV with \(headers.count) columns and \(rows.count) data rows")
-        
         // MARK: - Create Excel File
         print("[INFO] Creating Excel workbook...")
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Embed Test")
+
+        // Import CSV using XLKit's public API (powered by swift-textfile-tools for robust parsing).
+        // Use hasHeader: false so the header row is included in the sheet and can be formatted.
+        workbook.importCSV(csvData, into: sheet, hasHeader: false)
+
+        let usedCoordinates = sheet.getUsedCells().compactMap { CellCoordinate(excelAddress: $0) }
+        let maxRow = usedCoordinates.map(\.row).max() ?? 0
+        let maxColumn = usedCoordinates.map(\.column).max() ?? 0
+
+        let headers: [String] = (1...maxColumn).map { column in
+            let coordinate = CellCoordinate(row: 1, column: column).excelAddress
+            return sheet.getCell(coordinate)?.stringValue ?? ""
+        }
+
+        let dataRowCount = max(0, maxRow - 1)
+        print("[INFO] Imported CSV with \(headers.count) columns and \(dataRowCount) data rows")
         
         // MARK: - Calculate Column Widths
         print("[INFO] Calculating optimal column widths...")
         var columnWidths: [Int: Double] = [:]
         
-        for col in 0..<headers.count {
-            let column = col + 1
-            var maxWidth = calculateTextWidth(headers[col])
-            
-            for row in rows {
-                if col < row.count {
-                    let cellWidth = calculateTextWidth(row[col])
-                    maxWidth = max(maxWidth, cellWidth)
-                }
+        for col in 1...maxColumn {
+            var maxWidth = calculateTextWidth(headers[col - 1])
+
+            for row in 2...maxRow {
+                let coordinate = CellCoordinate(row: row, column: col).excelAddress
+                let text = sheet.getCell(coordinate)?.stringValue ?? ""
+                maxWidth = max(maxWidth, calculateTextWidth(text))
             }
-            
+
             let adjustedWidth = min(max(maxWidth + 4.0, 8.0), 50.0)
-            columnWidths[column] = adjustedWidth
-            print("[INFO] Column \(column) (\(headers[col])): width = \(adjustedWidth)")
+            columnWidths[col] = adjustedWidth
+            print("[INFO] Column \(col) (\(headers[col - 1])): width = \(adjustedWidth)")
         }
         
         // MARK: - Write Headers
         print("[INFO] Writing headers with bold formatting...")
         let headerFormat = CellFormat.header(fontSize: 12.0, backgroundColor: "#E6E6E6")
         
-        for (col, header) in headers.enumerated() {
-            let column = col + 1
+        for (colIndex, header) in headers.enumerated() {
+            let column = colIndex + 1
             sheet.setCell(row: 1, column: column, cell: Cell.string(header, format: headerFormat))
-        }
-        
-        // MARK: - Write Data Rows
-        print("[INFO] Writing data rows...")
-        for (rowIdx, row) in rows.enumerated() {
-            let excelRow = rowIdx + 2
-            for (colIdx, value) in row.enumerated() {
-                let column = colIdx + 1
-                sheet.setCell(row: excelRow, column: column, value: .string(value))
-            }
         }
         
         // MARK: - Apply Column Widths

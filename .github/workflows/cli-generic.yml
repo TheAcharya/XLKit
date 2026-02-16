@@ -3,6 +3,10 @@ name: Create Excel Generic Tests
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   build:
     runs-on: macos-latest

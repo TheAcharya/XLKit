@@ -1,5 +1,19 @@
 # Changelog
 
+### 1.1.0
+
+**🎉 Released:**
+- TBA
+
+**🔧 Improvements:**
+- Added [swift-textfile-tools](https://github.com/orchetect/swift-textfile-tools) integration for CSV/TSV parsing and generation
+- Updated `XLKitFormatters/CSVUtils` to use `swift-textfile-tools` for comma/tab, with safe fallback for custom separators
+- Updated `XLKitTestRunner` CSV handling to use XLKit’s public CSV import APIs (aligns runner behavior with library CSV/TSV support)
+- Added new CSV edge-case unit tests (quoted commas, escaped quotes, empty fields, export/import round-trip) and increased test count from 55 → 59
+- Updated documentation to reflect new dependency, CSV/TSV behavior, and updated test counts
+
+---
+
 ### 1.0.12
 
 **🎉 Released:**

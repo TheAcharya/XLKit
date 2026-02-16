@@ -663,7 +663,7 @@ do {
 
 ## CSV/TSV Import & Export
 
-XLKit provides simple static methods for importing and exporting CSV/TSV data:
+XLKit provides simple static methods for importing and exporting CSV/TSV data. CSV/TSV parsing and generation is powered by the [swift-textfile-tools](https://github.com/orchetect/swift-textfile-tools) library, which provides robust handling of quoted fields, escaped quotes, and edge cases. For custom separators (other than comma or tab), XLKit falls back to manual parsing/generation.
 
 ```swift
 // Create a workbook from CSV
@@ -1255,7 +1255,7 @@ XLKit includes comprehensive testing and validation capabilities with integrated
 
 ### Unit Tests
 
-The library includes 55 comprehensive unit tests covering:
+The library includes 59 comprehensive unit tests covering:
 - Core Workbook & Sheet Tests: Creation, management, and operations
 - Cell Operations & Data Types: All cell value types and operations
 - Coordinate & Range Tests: Excel coordinate parsing and range operations
@@ -1635,14 +1635,14 @@ Static configuration and methods (`@MainActor`):
 
 ### CSVUtils
 
-Static methods; typically used via `Workbook`/`Sheet` instance methods:
+Static methods; typically used via `Workbook`/`Sheet` instance methods. CSV/TSV parsing and generation is powered by the [swift-textfile-tools](https://github.com/orchetect/swift-textfile-tools) library for robust handling of quoted fields, escaped quotes, and edge cases.
 
 | Member | Description |
 |--------|-------------|
-| `exportToCSV(sheet: Sheet, separator: String = ",") -> String` | Export sheet to CSV. |
-| `exportToTSV(sheet: Sheet) -> String` | Export sheet to TSV. |
-| `importFromCSV(sheet: Sheet, csvData: String, separator: String, hasHeader: Bool)` | Import CSV into sheet. |
-| `importFromTSV(sheet: Sheet, tsvData: String, hasHeader: Bool)` | Import TSV into sheet. |
+| `exportToCSV(sheet: Sheet, separator: String = ",") -> String` | Export sheet to CSV. Uses TextFileTools for comma-separated values; falls back to manual generation for custom separators. |
+| `exportToTSV(sheet: Sheet) -> String` | Export sheet to TSV. Uses TextFileTools for tab-separated values. |
+| `importFromCSV(sheet: Sheet, csvData: String, separator: String, hasHeader: Bool)` | Import CSV into sheet. Uses TextFileTools for comma-separated values; falls back to manual parsing for custom separators. |
+| `importFromTSV(sheet: Sheet, tsvData: String, hasHeader: Bool)` | Import TSV into sheet. Uses TextFileTools for tab-separated values. |
 | `createWorkbookFromCSV(csvData: String, sheetName: String, separator: String, hasHeader: Bool) -> Workbook` | New workbook from CSV. |
 | `createWorkbookFromTSV(tsvData: String, sheetName: String, hasHeader: Bool) -> Workbook` | New workbook from TSV. |
 
