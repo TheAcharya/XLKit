@@ -24,8 +24,12 @@ final class XLKitTests: XCTestCase {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? calendar.timeZone
         
-        // Force-unwrap is safe here because the components are fixed and known-valid.
-        return calendar.date(from: components)!
+        guard let date = calendar.date(from: components) else {
+            XCTFail("Failed to create UTC date from components: \(components)")
+            return Date(timeIntervalSince1970: 0)
+        }
+        
+        return date
     }
     
     /// Fixed date used for deterministic date-related tests (2022-01-01 00:00:00 UTC).
@@ -74,8 +78,8 @@ final class XLKitTests: XCTestCase {
     
     func testRemoveSheet() throws {
         let workbook = Workbook()
-        _ = workbook.addSheet(name: "Sheet1")
-        _ = workbook.addSheet(name: "Sheet2")
+        let sheet1 = workbook.addSheet(name: "Sheet1")
+        let sheet2 = workbook.addSheet(name: "Sheet2")
         
         XCTAssertEqual(workbook.getSheets().count, 2)
         
@@ -842,10 +846,10 @@ final class XLKitTests: XCTestCase {
         let csv = sheet.exportToCSV()
         
         // Verify the CSV contains quoted fields for special characters
-        XCTAssertTrue(csv.contains("\"Red, delicious\""))
-        XCTAssertTrue(csv.contains("\"\"Hello\"\"") || csv.contains("\"\\\"Hello\\\"\""))
+        XCTAssertTrue(csv.contains("\"Red, delicious\""), "CSV should quote fields containing commas")
         
-        // Verify round-trip: import the exported CSV
+        // Verify round-trip: import the exported CSV (this validates CSV format correctness)
+        // The round-trip test ensures escaped quotes are handled correctly regardless of format
         let workbook2 = Workbook(fromCSV: csv, hasHeader: true)
         guard let sheet2 = workbook2.getSheets().first else {
             XCTFail("Expected workbook created from CSV to contain at least one sheet")
@@ -855,6 +859,9 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(sheet2.getCell("A2"), .string("Apple"))
         XCTAssertEqual(sheet2.getCell("B2"), .string("Red, delicious"))
         XCTAssertEqual(sheet2.getCell("A3"), .string("Quote"))
+        // Verify that quotes are preserved correctly in the round-trip
+        let quoteValue = sheet2.getCell("B3")
+        XCTAssertEqual(quoteValue, .string("\"Hello\""), "Quoted strings should be preserved correctly in CSV round-trip")
     }
     
     func testCSVWithEmptyFields() {
