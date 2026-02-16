@@ -10,7 +10,9 @@
 - Updated `XLKitFormatters/CSVUtils` to use `swift-textfile-tools` for comma/tab, with safe fallback for custom separators
 - Updated `XLKitTestRunner` CSV handling to use XLKit’s public CSV import APIs (aligns runner behavior with library CSV/TSV support)
 - Refactored test suite from single 1,535-line file into 13 focused test files with shared `XLKitTestBase` class for better maintainability
-- Added new CSV edge-case unit tests (quoted commas, escaped quotes, empty fields, export/import round-trip) and improved test quality (deterministic dates, UUID-based temp files, removed force unwraps)
+- Enhanced `XLKitTestBase` with improved error handling: replaced `fatalError` with `XCTFail` and deterministic fallback dates to prevent test suite crashes, added comprehensive error messages for date creation failures, improved cleanup error logging with `XCTFail` instead of silent failures
+- Improved test helper reliability: `withSavedTempWorkbookSync()` and `withSavedTempWorkbookAsync()` now save workbooks to disk before passing them to test closures, ensuring file operations work correctly
+- Added new CSV edge-case unit tests (quoted commas, escaped quotes, empty fields, export/import round-trip) and improved test quality (deterministic dates, UUID-based temp files, removed force unwraps, proper guard statements with descriptive error messages)
 - Increased test count from 55 to 59 with 100% API coverage maintained
 
 ---

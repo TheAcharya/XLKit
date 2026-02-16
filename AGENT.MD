@@ -88,9 +88,23 @@ XLKit/
 │       └── Templates/          # Test templates
 │           └── TestGeneratorTemplate.swift # Template for new tests (224 lines)
 ├── Tests/                      # Unit tests
-│   ├── README.md               # Test documentation (196 lines)
-│   └── XLKitTests/             # Test suite
-│       └── XLKitTests.swift    # All unit tests (1511 lines, 59 tests)
+│   ├── README.md               # Test documentation (371 lines)
+│   └── XLKitTests/             # Test suite (13 focused test files)
+│       ├── XLKitTestBase.swift # Shared base class with common helpers (136 lines)
+│       ├── CoreTests.swift     # Workbook and sheet operations (5 tests)
+│       ├── CellValueTests.swift # Cell values and data types (6 tests)
+│       ├── CoordinateTests.swift # Coordinates and ranges (2 tests)
+│       ├── FormattingTests.swift # Cell formatting (8 tests)
+│       ├── NumberFormatTests.swift # Number formatting (5 tests)
+│       ├── TextWrappingTests.swift # Text wrapping (2 tests)
+│       ├── BorderTests.swift   # Border functionality (3 tests)
+│       ├── MergeTests.swift    # Cell merging (4 tests)
+│       ├── CSVTests.swift      # CSV/TSV operations (12 tests)
+│       ├── FileOperationTests.swift # File operations (2 tests)
+│       ├── ImageTests.swift     # Image management (2 tests)
+│       ├── ColumnOrderingTests.swift # Column ordering (2 tests)
+│       └── SheetUtilityTests.swift # Sheet utilities (6 tests)
+│       # Total: 59 tests across 13 focused test files
 ├── Test-Data/                  # Test data files
 │   ├── README.md               # Test data documentation (44 lines)
 │   └── Embed-Test/             # Image embedding test data
@@ -407,22 +421,41 @@ Test Coverage Requirements:
 - Test platform compatibility and iOS-specific features
 
 Test Patterns:
-```swift
-func testFeatureName() {
-    // Arrange
-    let workbook = Workbook()
-    
-    // Act
-    let result = workbook.someOperation()
-    
-    // Assert
-    XCTAssertEqual(result, expectedValue)
-}
+- All test classes inherit from `XLKitTestBase` for shared helpers and utilities
+- Tests are organized into focused files by functionality (e.g., `CoreTests.swift`, `CSVTests.swift`)
+- Use `XLKitTestBase` helpers: `makeUTCDate()`, `makeTempWorkbookURL()`, `withSavedTempWorkbookSync()`, `withSavedTempWorkbookAsync()`
+- Use deterministic dates (`fixedTestDate`, `epochDate`) instead of `Date()` for consistent test results
+- Use UUID-based temp file names to prevent concurrent test conflicts
+- Use proper guard statements with descriptive error messages instead of force unwraps
 
-func testFeatureNameWithInvalidInput() {
-    // Act & Assert
-    XCTAssertThrowsError(try someOperation(invalidInput)) { error in
-        XCTAssertEqual(error as? XLKitError, .expectedError)
+```swift
+@MainActor
+final class FeatureTests: XLKitTestBase {
+    func testFeatureName() {
+        // Arrange
+        let workbook = Workbook()
+        
+        // Act
+        let result = workbook.someOperation()
+        
+        // Assert
+        XCTAssertEqual(result, expectedValue)
+    }
+    
+    func testFeatureNameWithInvalidInput() {
+        // Act & Assert
+        XCTAssertThrowsError(try someOperation(invalidInput)) { error in
+            XCTAssertEqual(error as? XLKitError, .expectedError)
+        }
+    }
+    
+    func testFeatureWithFileOperation() throws {
+        try withSavedTempWorkbookSync(prefix: "test") { workbook, url in
+            // Workbook is already saved to disk at url
+            XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
+            // Test file operations...
+        }
+        // Automatic cleanup happens in defer block
     }
 }
 ```
@@ -836,6 +869,18 @@ try await sheet.embedImageAutoSized(
 - Maintained full backward compatibility with existing APIs and storage model
 - Validated fix with CoreXLSX to ensure all generated Excel files open correctly in Excel
 - Enhanced XLKitTestRunner with column ordering validation for continuous testing
+
+### Test Suite Refactoring and Quality Improvements (2026-02-16)
+- Refactored test suite from single 1,535-line file into 13 focused test files organized by functionality for better maintainability
+- Created `XLKitTestBase` shared base class with common helpers (date creation utilities, temp file management with automatic cleanup, border format helpers)
+- Enhanced `XLKitTestBase` error handling: replaced `fatalError` with `XCTFail` and deterministic fallback dates to prevent test suite crashes
+- Improved test helper reliability: `withSavedTempWorkbookSync()` and `withSavedTempWorkbookAsync()` now save workbooks to disk before passing them to test closures
+- Added comprehensive error messages for date creation failures and improved cleanup error logging with `XCTFail` instead of silent failures
+- Improved test quality: replaced magic numbers with named constants, removed force unwraps with proper guard statements, added comprehensive error handling
+- Enhanced test determinism: fixed dates for consistent test results, UUID-based temp filenames to prevent concurrent test conflicts
+- Added new CSV edge-case unit tests (quoted commas, escaped quotes, empty fields, export/import round-trip) validating swift-textfile-tools integration
+- Increased test count from 55 to 59 with 100% API coverage maintained
+- Test files: `CoreTests.swift` (5 tests), `CellValueTests.swift` (6 tests), `CoordinateTests.swift` (2 tests), `FormattingTests.swift` (8 tests), `NumberFormatTests.swift` (5 tests), `TextWrappingTests.swift` (2 tests), `BorderTests.swift` (3 tests), `MergeTests.swift` (4 tests), `CSVTests.swift` (12 tests), `FileOperationTests.swift` (2 tests), `ImageTests.swift` (2 tests), `ColumnOrderingTests.swift` (2 tests), `SheetUtilityTests.swift` (6 tests)
 
 ### iOS Compatibility Fix (2025-07-14)
 - Fixed iOS build error: `'homeDirectoryForCurrentUser' is unavailable in iOS`
