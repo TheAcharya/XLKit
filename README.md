@@ -39,19 +39,13 @@ This codebase is developed using AI agents.
 - Cell Formatting: Comprehensive formatting including font colours, backgrounds, borders, and text alignment (all 5 alignment options each for horizontal and vertical) with proper XML generation
 - Border Support: Full border functionality with thin, medium, and thick styles, custom colors, and combined formatting
 - Merge Support: Cell merging functionality with complex range support and proper Excel compliance
-- CSV/TSV Import/Export: Built-in support for importing and exporting CSV/TSV data
+- CSV/TSV Import/Export: Built-in support for importing and exporting CSV/TSV data (powered by swift-textfile-tools)
 - Async & Sync Operations: Save workbooks with one line (async or sync)
 - Type-Safe: Strong enums and structs for all data types
 - Excel Compliance: Full OpenXML compliance with CoreXLSX validation
-- No Dependencies: Pure Swift, macOS 12+, Swift 6.0+
-- Comprehensive Testing: 55 tests with 100% API coverage, including all text alignment options (horizontal, vertical, combined), number formatting, border and merge functionality, column ordering validation, and automated validation
+- Minimal Dependencies: CoreXLSX, ZIPFoundation, swift-textfile-tools - all reputable, open-source libraries
+- Comprehensive Testing: 59 tests with 100% API coverage, including all text alignment options (horizontal, vertical, combined), number formatting, border and merge functionality, column ordering validation, CSV/TSV edge cases, and automated validation
 - Security Features: Comprehensive security features for production use
-
-## Recent Improvements
-
-### Column Ordering Fix (2025-10-18)
-
-Fixed critical column ordering bug for sheets with more than 26 columns (A-Z, AA, AB, etc.). The issue was resolved by implementing proper numeric column sorting in XLSXEngine.generateWorksheetXML() to ensure Excel-compliant column order. This fix ensures proper Excel column order: A, B, ..., Z, AA, AB, ..., BA, BB, ... in all generated files, maintaining full backward compatibility with existing APIs and storage model. All generated Excel files now open correctly in Excel without repair warnings.
 
 ## Requirements
 
@@ -147,10 +141,10 @@ try await workbook.save(to: URL(fileURLWithPath: "employees.xlsx"))
 
 ## Documentation
 
-Full manual and reference documentation has been moved to the **Documentation** folder:
+Manual and reference documentation is located in the **Documentation** folder:
 
-- **[Documentation/README.md](Documentation/README.md)** – Overview of documentation contents
-- **[Documentation/Manual.md](Documentation/Manual.md)** – Complete user manual, including:
+- **[Readme](Documentation/README.md)** – Overview of documentation contents
+- **[Manual](Documentation/Manual.md)** – Complete user manual, including:
   - Security features (SecurityManager, rate limiting, logging, quarantine, checksums)
   - Performance considerations and file format support
   - iOS support and file system considerations

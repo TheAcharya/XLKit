@@ -744,6 +744,78 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(tsv, expectedTSV)
     }
     
+    func testCSVWithQuotedFields() {
+        // Test CSV with quoted fields containing commas (swift-textfile-tools handles this)
+        let csvData = "Name,Description,Price\nApple,\"Red, delicious apple\",1.99\nBanana,\"Yellow, curved fruit\",0.99"
+        
+        let workbook = Workbook(fromCSV: csvData, hasHeader: true)
+        let sheet = workbook.getSheets().first!
+        
+        XCTAssertEqual(sheet.getCell("A2"), .string("Apple"))
+        XCTAssertEqual(sheet.getCell("B2"), .string("Red, delicious apple"))
+        XCTAssertEqual(sheet.getCell("C2"), .number(1.99))
+        XCTAssertEqual(sheet.getCell("A3"), .string("Banana"))
+        XCTAssertEqual(sheet.getCell("B3"), .string("Yellow, curved fruit"))
+        XCTAssertEqual(sheet.getCell("C3"), .number(0.99))
+    }
+    
+    func testCSVWithEscapedQuotes() {
+        // Test CSV with escaped quotes (double quotes) - swift-textfile-tools handles this
+        let csvData = "Name,Quote\nAlice,\"She said \"\"Hello\"\"\"\nBob,\"He said \"\"Goodbye\"\"\""
+        
+        let workbook = Workbook(fromCSV: csvData, hasHeader: true)
+        let sheet = workbook.getSheets().first!
+        
+        XCTAssertEqual(sheet.getCell("A2"), .string("Alice"))
+        XCTAssertEqual(sheet.getCell("B2"), .string("She said \"Hello\""))
+        XCTAssertEqual(sheet.getCell("A3"), .string("Bob"))
+        XCTAssertEqual(sheet.getCell("B3"), .string("He said \"Goodbye\""))
+    }
+    
+    func testCSVExportWithSpecialCharacters() {
+        // Test that CSV export properly quotes fields with special characters
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
+        
+        sheet.setRow(1, strings: ["Name", "Description"])
+        sheet.setRow(2, strings: ["Apple", "Red, delicious"])
+        sheet.setRow(3, strings: ["Quote", "\"Hello\""])
+        
+        let csv = sheet.exportToCSV()
+        
+        // Verify the CSV contains quoted fields for special characters
+        XCTAssertTrue(csv.contains("\"Red, delicious\""))
+        XCTAssertTrue(csv.contains("\"\"Hello\"\"") || csv.contains("\"\\\"Hello\\\"\""))
+        
+        // Verify round-trip: import the exported CSV
+        let workbook2 = Workbook(fromCSV: csv, hasHeader: true)
+        let sheet2 = workbook2.getSheets().first!
+        
+        XCTAssertEqual(sheet2.getCell("A2"), .string("Apple"))
+        XCTAssertEqual(sheet2.getCell("B2"), .string("Red, delicious"))
+        XCTAssertEqual(sheet2.getCell("A3"), .string("Quote"))
+    }
+    
+    func testCSVWithEmptyFields() {
+        // Test CSV with empty fields
+        let csvData = "Name,Age,City\nAlice,30,\nBob,,Paris\n,25,London"
+        
+        let workbook = Workbook(fromCSV: csvData, hasHeader: true)
+        let sheet = workbook.getSheets().first!
+        
+        XCTAssertEqual(sheet.getCell("A2"), .string("Alice"))
+        XCTAssertEqual(sheet.getCell("B2"), .integer(30))
+        XCTAssertEqual(sheet.getCell("C2"), .string(""))
+        
+        XCTAssertEqual(sheet.getCell("A3"), .string("Bob"))
+        XCTAssertEqual(sheet.getCell("B3"), .string(""))
+        XCTAssertEqual(sheet.getCell("C3"), .string("Paris"))
+        
+        XCTAssertEqual(sheet.getCell("A4"), .string(""))
+        XCTAssertEqual(sheet.getCell("B4"), .integer(25))
+        XCTAssertEqual(sheet.getCell("C4"), .string("London"))
+    }
+    
     func testFluentAPI() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")

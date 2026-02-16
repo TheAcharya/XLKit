@@ -3,6 +3,10 @@ name: Create Excel With Embeds
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   build:
     runs-on: macos-latest

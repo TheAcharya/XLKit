@@ -1,5 +1,5 @@
 {
-  "originHash" : "34876087cffeae5879bb0589cdebdae4cbc327b93dc017fa6f0131816779e124",
+  "originHash" : "18435e52bfd6104f5494750d5a3c3e511ef476ac464de174fa79c95302bf0aa7",
   "pins" : [
     {
       "identity" : "corexlsx",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "1391f3832ea2eeee5186ea8abb81ea49ed0609cc",
         "version" : "0.14.2"
+      }
+    },
+    {
+      "identity" : "swift-textfile-tools",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/orchetect/swift-textfile-tools.git",
+      "state" : {
+        "revision" : "8d2d10bfac5a446b10dbdca191bbe4450df7324c",
+        "version" : "0.3.0"
       }
     },
     {

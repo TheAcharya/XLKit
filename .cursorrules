@@ -21,7 +21,8 @@ XLKit (main API)
 └── XLKitXLSX (XLSX generation engine)
 
 XLKitFormatters
-└── XLKitCore
+├── XLKitCore
+└── TextFileTools (swift-textfile-tools)
 
 XLKitImages
 └── XLKitCore
@@ -142,7 +143,7 @@ XLKit/
 │   │   ├── CoreTypes.swift     # Core data structures (1215 lines)
 │   │   └── SecurityManager.swift # Security features (282 lines)
 │   ├── XLKitFormatters/        # CSV/TSV functionality
-│   │   └── CSVUtils.swift      # CSV import/export utilities (199 lines)
+│   │   └── CSVUtils.swift      # CSV import/export utilities (294 lines, uses swift-textfile-tools)
 │   ├── XLKitImages/            # Image processing
 │   │   ├── ImageUtils.swift    # Image utilities (155 lines)
 │   │   └── ImageSizingUtils.swift # Image sizing logic (191 lines)
@@ -158,7 +159,7 @@ XLKit/
 ├── Tests/                      # Unit tests
 │   ├── README.md               # Test documentation (196 lines)
 │   └── XLKitTests/             # Test suite
-│       └── XLKitTests.swift    # All unit tests (1430 lines, 55 tests)
+│       └── XLKitTests.swift    # All unit tests (1511 lines, 59 tests)
 ├── Test-Data/                  # Test data files
 │   ├── README.md               # Test data documentation (44 lines)
 │   └── Embed-Test/             # Image embedding test data
@@ -317,6 +318,8 @@ import Foundation
 - Support header row handling
 - Auto-detect data types
 - Handle special characters and quotes
+- Powered by swift-textfile-tools library for robust CSV/TSV parsing and generation
+- Falls back to manual parsing/generation for custom separators (when separator ≠ comma or tab)
 
 ### Image Operations (XLKitImages Module)
 - Support GIF, PNG, JPEG formats (BMP, TIFF removed for compatibility)
@@ -577,6 +580,12 @@ Security operations are logged with structured data:
 - Use only essential libraries
 - Document dependency reasons
 - Monitor for updates
+
+Current External Dependencies:
+- CoreXLSX (0.14.2): Excel file validation and parsing
+- ZIPFoundation (0.9.19): Cross-platform ZIP archive creation
+- XMLCoder (0.14.0): XML serialization (transitive dependency)
+- swift-textfile-tools (0.3.0): CSV/TSV parsing and generation (used by XLKitFormatters)
 
 ## Troubleshooting Guide
 
