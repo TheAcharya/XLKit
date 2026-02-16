@@ -10,6 +10,12 @@ import XLKit
 @MainActor
 final class XLKitTests: XCTestCase {
     
+    /// Fixed date used for deterministic date-related tests (2022-01-01 00:00:00 UTC).
+    private static let fixedTestDate = Date(timeIntervalSince1970: 1_640_995_200)
+    
+    /// Epoch date (1970-01-01 00:00:00 UTC) used for simple date type tests.
+    private static let epochDate = Date(timeIntervalSince1970: 0)
+    
     func testCreateWorkbook() throws {
         let workbook = Workbook()
         XCTAssertNotNil(workbook)
@@ -72,10 +78,9 @@ final class XLKitTests: XCTestCase {
         sheet.setCell("D1", value: .boolean(true))
         XCTAssertEqual(sheet.getCell("D1"), .boolean(true))
         
-        // Test date value
-        let date = Date(timeIntervalSince1970: 1_640_995_200) // Fixed date for deterministic tests
-        sheet.setCell("E1", value: .date(date))
-        XCTAssertEqual(sheet.getCell("E1"), .date(date))
+        // Test date value using a fixed date for deterministic tests
+        sheet.setCell("E1", value: .date(Self.fixedTestDate))
+        XCTAssertEqual(sheet.getCell("E1"), .date(Self.fixedTestDate))
         
         // Test formula
         sheet.setCell("F1", value: .formula("=A1+B1"))
@@ -213,8 +218,7 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(CellValue.number(0).type, "number")
         XCTAssertEqual(CellValue.integer(0).type, "integer")
         XCTAssertEqual(CellValue.boolean(true).type, "boolean")
-        let fixedDate = Date(timeIntervalSince1970: 0)
-        XCTAssertEqual(CellValue.date(fixedDate).type, "date")
+        XCTAssertEqual(CellValue.date(Self.epochDate).type, "date")
         XCTAssertEqual(CellValue.formula("=A1").type, "formula")
         XCTAssertEqual(CellValue.empty.type, "empty")
     }
@@ -628,7 +632,12 @@ final class XLKitTests: XCTestCase {
         """
         
         let workbook = Workbook(fromCSV: csvData, hasHeader: true)
-        let sheet = workbook.getSheets().first!
+        let sheets = workbook.getSheets()
+        XCTAssertFalse(sheets.isEmpty, "Workbook created from CSV should contain at least one sheet")
+        guard let sheet = sheets.first else {
+            XCTFail("Expected workbook created from CSV to contain at least one sheet")
+            return
+        }
         
         XCTAssertEqual(sheet.getCell("A2"), .string("Alice"))
         XCTAssertEqual(sheet.getCell("B2"), .integer(30))
@@ -646,7 +655,10 @@ final class XLKitTests: XCTestCase {
         """
         
         let workbook = Workbook(fromTSV: tsvData, hasHeader: true)
-        let sheet = workbook.getSheets().first!
+        guard let sheet = workbook.getSheets().first else {
+            XCTFail("Expected workbook created from TSV to contain at least one sheet")
+            return
+        }
         
         XCTAssertEqual(sheet.getCell("A2"), .string("Apple"))
         XCTAssertEqual(sheet.getCell("B2"), .number(1.99))
@@ -757,7 +769,10 @@ final class XLKitTests: XCTestCase {
         let csvData = "Name,Description,Price\nApple,\"Red, delicious apple\",1.99\nBanana,\"Yellow, curved fruit\",0.99"
         
         let workbook = Workbook(fromCSV: csvData, hasHeader: true)
-        let sheet = workbook.getSheets().first!
+        guard let sheet = workbook.getSheets().first else {
+            XCTFail("Expected workbook created from CSV to contain at least one sheet")
+            return
+        }
         
         XCTAssertEqual(sheet.getCell("A2"), .string("Apple"))
         XCTAssertEqual(sheet.getCell("B2"), .string("Red, delicious apple"))
@@ -772,7 +787,10 @@ final class XLKitTests: XCTestCase {
         let csvData = "Name,Quote\nAlice,\"She said \"\"Hello\"\"\"\nBob,\"He said \"\"Goodbye\"\"\""
         
         let workbook = Workbook(fromCSV: csvData, hasHeader: true)
-        let sheet = workbook.getSheets().first!
+        guard let sheet = workbook.getSheets().first else {
+            XCTFail("Expected workbook created from CSV to contain at least one sheet")
+            return
+        }
         
         XCTAssertEqual(sheet.getCell("A2"), .string("Alice"))
         XCTAssertEqual(sheet.getCell("B2"), .string("She said \"Hello\""))
@@ -797,7 +815,10 @@ final class XLKitTests: XCTestCase {
         
         // Verify round-trip: import the exported CSV
         let workbook2 = Workbook(fromCSV: csv, hasHeader: true)
-        let sheet2 = workbook2.getSheets().first!
+        guard let sheet2 = workbook2.getSheets().first else {
+            XCTFail("Expected workbook created from CSV to contain at least one sheet")
+            return
+        }
         
         XCTAssertEqual(sheet2.getCell("A2"), .string("Apple"))
         XCTAssertEqual(sheet2.getCell("B2"), .string("Red, delicious"))
@@ -809,7 +830,10 @@ final class XLKitTests: XCTestCase {
         let csvData = "Name,Age,City\nAlice,30,\nBob,,Paris\n,25,London"
         
         let workbook = Workbook(fromCSV: csvData, hasHeader: true)
-        let sheet = workbook.getSheets().first!
+        guard let sheet = workbook.getSheets().first else {
+            XCTFail("Expected workbook created from CSV to contain at least one sheet")
+            return
+        }
         
         XCTAssertEqual(sheet.getCell("A2"), .string("Alice"))
         XCTAssertEqual(sheet.getCell("B2"), .integer(30))
@@ -857,8 +881,7 @@ final class XLKitTests: XCTestCase {
         sheet.setCell("B1", number: 123.45)
         sheet.setCell("C1", integer: 42)
         sheet.setCell("D1", boolean: true)
-        let fixedDate = Date(timeIntervalSince1970: 1_640_995_200) // Fixed date for deterministic tests
-        sheet.setCell("E1", date: fixedDate)
+        sheet.setCell("E1", date: Self.fixedTestDate)
         sheet.setCell("F1", formula: "=A1+B1")
         
         XCTAssertEqual(sheet.getCell("A1"), .string("String Value"))
