@@ -3,7 +3,7 @@
 ### 1.1.0
 
 **🎉 Released:**
-- TBA
+- 16th February 2026
 
 **🔧 Improvements:**
 - Added [swift-textfile-tools](https://github.com/orchetect/swift-textfile-tools) integration for CSV/TSV parsing and generation
