@@ -31,7 +31,11 @@ final class XLKitTests: XCTestCase {
         let sheet2 = workbook.addSheet(name: "Sheet2")
         
         XCTAssertEqual(workbook.getSheet(name: "Sheet1"), sheet1)
-        XCTAssertEqual(workbook.getSheet(name: "Sheet2"), sheet2)
+        let retrievedSheet2 = workbook.getSheet(name: "Sheet2")
+        XCTAssertNotNil(retrievedSheet2)
+        XCTAssertEqual(retrievedSheet2?.name, "Sheet2")
+        XCTAssertEqual(retrievedSheet2?.id, sheet2.id)
+        XCTAssertEqual(retrievedSheet2, sheet2)
         XCTAssertNil(workbook.getSheet(name: "NonExistent"))
     }
     
@@ -69,7 +73,7 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(sheet.getCell("D1"), .boolean(true))
         
         // Test date value
-        let date = Date()
+        let date = Date(timeIntervalSince1970: 1_640_995_200) // Fixed date for deterministic tests
         sheet.setCell("E1", value: .date(date))
         XCTAssertEqual(sheet.getCell("E1"), .date(date))
         
@@ -209,7 +213,8 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(CellValue.number(0).type, "number")
         XCTAssertEqual(CellValue.integer(0).type, "integer")
         XCTAssertEqual(CellValue.boolean(true).type, "boolean")
-        XCTAssertEqual(CellValue.date(Date()).type, "date")
+        let fixedDate = Date(timeIntervalSince1970: 0)
+        XCTAssertEqual(CellValue.date(fixedDate).type, "date")
         XCTAssertEqual(CellValue.formula("=A1").type, "formula")
         XCTAssertEqual(CellValue.empty.type, "empty")
     }
@@ -475,6 +480,8 @@ final class XLKitTests: XCTestCase {
         XCTAssertEqual(formattedCell?.format?.fontSize, 14.0)
         XCTAssertEqual(formattedCell?.format?.fontColor, "#FF0000")
         XCTAssertEqual(formattedCell?.format?.backgroundColor, "#FFFF00")
+        // Verify text wrapping remains at the expected default (nil, which defaults to false in format key)
+        XCTAssertNil(formattedCell?.format?.textWrapping)
         
         // Test that format key includes all formatting
         if let format = formattedCell?.format {
@@ -485,6 +492,7 @@ final class XLKitTests: XCTestCase {
             XCTAssertTrue(formatKey.contains("fontSize:14.0"))
             XCTAssertTrue(formatKey.contains("fontColor:#FF0000"))
             XCTAssertTrue(formatKey.contains("backgroundColor:#FFFF00"))
+            XCTAssertTrue(formatKey.contains("textWrapping:false"))
         }
     }
     
@@ -583,7 +591,7 @@ final class XLKitTests: XCTestCase {
         let sheet = workbook.addSheet(name: "Test")
         sheet.setCell("A1", value: .string("Test"))
         
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("test.xlsx")
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("test-\(UUID().uuidString).xlsx")
         
         // Test synchronous save
         try workbook.save(to: tempURL)
@@ -600,7 +608,7 @@ final class XLKitTests: XCTestCase {
         let sheet = workbook.addSheet(name: "Test")
         sheet.setCell("A1", value: .string("Test"))
         
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("test_async.xlsx")
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("test_async-\(UUID().uuidString).xlsx")
         
         // Test asynchronous save
         try await workbook.save(to: tempURL)
@@ -849,7 +857,8 @@ final class XLKitTests: XCTestCase {
         sheet.setCell("B1", number: 123.45)
         sheet.setCell("C1", integer: 42)
         sheet.setCell("D1", boolean: true)
-        sheet.setCell("E1", date: Date())
+        let fixedDate = Date(timeIntervalSince1970: 1_640_995_200) // Fixed date for deterministic tests
+        sheet.setCell("E1", date: fixedDate)
         sheet.setCell("F1", formula: "=A1+B1")
         
         XCTAssertEqual(sheet.getCell("A1"), .string("String Value"))
