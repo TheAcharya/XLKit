@@ -58,16 +58,26 @@ Tests/XLKitTests/
 ### Shared Test Base (`XLKitTestBase.swift`)
 
 All test classes inherit from `XLKitTestBase`, which provides:
-- **Date Helpers**: `makeUTCDate()`, `fixedTestDate`, `epochDate` for deterministic date testing
-- **File Helpers**: `makeTempWorkbookURL()`, `withSavedTempWorkbookSync()`, `withSavedTempWorkbookAsync()` for temporary file management
+- **Date Helpers**: `makeUTCDate()` with comprehensive error handling and deterministic fallback, `fixedTestDate`, `epochDate` for deterministic date testing
+- **File Helpers**: 
+  - `makeTempWorkbookURL()`: Generates UUID-based unique temporary file URLs to prevent concurrent test conflicts
+  - `withSavedTempWorkbookSync()`: Creates a workbook, saves it to disk, passes it to the test closure, and ensures cleanup with error logging
+  - `withSavedTempWorkbookAsync()`: Async version with the same functionality
 - **Format Helpers**: `makeThinBorderFormat()`, `makeMediumRedBorderFormat()`, `makeThickBlueBorderFormat()` for common border configurations
 - **Constants**: `standardFontSize` for consistent font size testing
+
+**Quality Features:**
+- **Deterministic Testing**: Fixed dates and UUID-based temp files ensure consistent, reproducible test results
+- **Error Visibility**: Cleanup failures are logged with `XCTFail` instead of being silently ignored
+- **Safe Error Handling**: Uses `XCTFail` with fallback dates instead of `fatalError` to prevent test suite crashes
+- **File Safety**: Workbooks are saved to disk before being passed to test closures, ensuring file operations work correctly
 
 This structure improves:
 - **Maintainability**: Smaller, focused files are easier to review and modify
 - **Discoverability**: Tests are organized by functionality, making it easy to find relevant tests
 - **Scalability**: New test files can be added without cluttering existing ones
 - **Code Reuse**: Shared helpers reduce duplication across test files
+- **Test Quality**: Deterministic behavior, proper error handling, and comprehensive cleanup ensure reliable test execution
 
 ## Core Workbook & Sheet Tests
 
@@ -101,8 +111,13 @@ This structure improves:
 
 **File**: `FileOperationTests.swift` (2 tests)
 
-- `testWorkbookSave()`: Synchronous workbook saving and file validation with automatic cleanup
-- `testWorkbookSaveAsync()`: Async workbook saving and file validation with automatic cleanup
+- `testWorkbookSave()`: Synchronous workbook saving and file validation using `withSavedTempWorkbookSync()` helper (workbook is pre-saved before test execution)
+- `testWorkbookSaveAsync()`: Async workbook saving and file validation using `withSavedTempWorkbookAsync()` helper (workbook is pre-saved before test execution)
+
+Both tests use the shared test base helpers which ensure:
+- Workbooks are saved to disk before being passed to test closures
+- Automatic cleanup with error logging if cleanup fails
+- UUID-based temporary file names to prevent conflicts
 
 ## Image & Aspect Ratio Tests
 
@@ -333,6 +348,10 @@ swift run XLKitTestRunner help
 - Efficient memory usage and file generation
 - Comprehensive error and edge case testing
 - 100% of public APIs tested
+- Deterministic test execution: fixed dates and UUID-based temp files ensure reproducible results
+- Proper error handling: no force unwraps, comprehensive guard statements, detailed error messages
+- Test isolation: unique temporary files prevent concurrent test conflicts
+- Cleanup reliability: file cleanup failures are logged instead of silently ignored
 - All text alignment options (horizontal, vertical, combined) are fully tested
 - All text wrapping functionality is fully tested
 - All border and merge functionality is fully tested

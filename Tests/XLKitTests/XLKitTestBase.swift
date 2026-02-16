@@ -37,7 +37,8 @@ class XLKitTestBase: XCTestCase {
               Second: \(components.second.map(String.init) ?? "nil")
             Expected a valid Gregorian calendar date in UTC (e.g., year ≥ 1, month 1–12, day in valid range for the given month).
             """)
-            fatalError("makeUTCDate encountered an unrecoverable error when creating a UTC date from components: \(components)")
+            // Return a deterministic fallback date instead of crashing the entire test suite.
+            return Date(timeIntervalSince1970: 0)
         }
         
         return date
@@ -63,6 +64,9 @@ class XLKitTestBase: XCTestCase {
         sheet.setCell("A1", value: .string("Test"))
         
         let tempURL = makeTempWorkbookURL(prefix: prefix)
+        // Save the workbook to disk so callers can rely on a real file at tempURL.
+        try workbook.save(to: tempURL)
+        
         defer {
             // Best-effort cleanup; log errors so file system issues are visible in test output.
             do {
@@ -77,12 +81,15 @@ class XLKitTestBase: XCTestCase {
     
     /// Helper to save a workbook to a temporary URL asynchronously and ensure cleanup.
     func withSavedTempWorkbookAsync(prefix: String,
-                                    _ body: (_ workbook: Workbook, _ url: URL) async throws -> Void) async throws {
+                                    _ body: @MainActor (_ workbook: Workbook, _ url: URL) async throws -> Void) async throws {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         sheet.setCell("A1", value: .string("Test"))
         
         let tempURL = makeTempWorkbookURL(prefix: prefix)
+        // Save the workbook to disk before invoking the async body.
+        try await workbook.save(to: tempURL)
+        
         defer {
             // Best-effort cleanup; log errors so file system issues are visible in test output.
             do {
