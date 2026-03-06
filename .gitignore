@@ -1,3 +1,20 @@
+# macOS
 .DS_Store
 .build
 .nova
+
+## Build generated
+/.build
+DerivedData/
+
+# Swift Package Manager
+/Packages
+Package.resolved
+.swiftpm/config/registries.json
+
+# .swiftpm - for shared CI schemes we need these checked in:
+#     -> .swiftpm/xcode/package.xcworkspace
+#     -> .swiftpm/xcode/xcshareddata/xcschemes/*.*
+
+# Xcode
+xcuserdata/
