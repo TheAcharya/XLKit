@@ -61,9 +61,10 @@ All test classes inherit from `XLKitTestBase`, which provides:
 - **Date Helpers**: `makeUTCDate()` with comprehensive error handling and deterministic fallback, `fixedTestDate`, `epochDate` for deterministic date testing
 - **File Helpers**: 
   - `makeTempWorkbookURL()`: Generates UUID-based unique temporary file URLs to prevent concurrent test conflicts
-  - `withSavedTempWorkbookSync()`: Creates a workbook, saves it to disk, passes it to the test closure, and ensures cleanup with error logging
-  - `withSavedTempWorkbookAsync()`: Async version with the same functionality
-- **Format Helpers**: `makeThinBorderFormat()`, `makeMediumRedBorderFormat()`, `makeThickBlueBorderFormat()` for common border configurations
+  - `withSavedTempWorkbookSync()`: Creates a standard test workbook, saves it to disk, passes it to the test closure, and ensures cleanup with error logging
+  - `withSavedTempWorkbookAsync()`: Async version with the same behavior and cleanup guarantees
+  - Internal shared helpers (`makeTestWorkbook()`, `cleanupTempFile(at:)`) centralize setup/cleanup logic to reduce duplication
+- **Format Helpers**: `makeThinBorderFormat()`, `makeMediumRedBorderFormat()`, `makeThickBlueBorderFormat()` for common border configurations, now built on a shared bordered-format helper for consistency
 - **Constants**: `standardFontSize` for consistent font size testing
 
 **Quality Features:**
@@ -71,6 +72,7 @@ All test classes inherit from `XLKitTestBase`, which provides:
 - **Error Visibility**: Cleanup failures are logged with `XCTFail` instead of being silently ignored
 - **Safe Error Handling**: Uses `XCTFail` with fallback dates instead of `fatalError` to prevent test suite crashes
 - **File Safety**: Workbooks are saved to disk before being passed to test closures, ensuring file operations work correctly
+- **Reduced Duplication**: Shared internal setup/cleanup and bordered-format builders keep test helpers concise and easier to maintain
 
 This structure improves:
 - **Maintainability**: Smaller, focused files are easier to review and modify

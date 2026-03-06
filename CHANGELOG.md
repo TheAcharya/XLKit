@@ -1,5 +1,17 @@
 # Changelog
 
+### 1.1.1
+
+**🎉 Released:**
+- 6th March 2026
+
+**🔧 Improvements:**
+- Refactored `XLKitTestBase` to reduce duplicate helper code and improve maintainability
+- Updated sync and async test workbook helpers to use a shared setup/cleanup flow while preserving existing behavior
+- Simplified border format helper creation in `XLKitTestBase` so common border helpers now follow a single shared pattern
+
+---
+
 ### 1.1.0
 
 **🎉 Released:**

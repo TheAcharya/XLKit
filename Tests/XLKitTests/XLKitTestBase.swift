@@ -55,25 +55,36 @@ class XLKitTestBase: XCTestCase {
     func makeTempWorkbookURL(prefix: String) -> URL {
         FileManager.default.temporaryDirectory.appendingPathComponent("\(prefix)-\(UUID().uuidString).xlsx")
     }
+
+    /// Helper to construct a standard test workbook with a single sheet and sample content.
+    private func makeTestWorkbook() -> Workbook {
+        let workbook = Workbook()
+        let sheet = workbook.addSheet(name: "Test")
+        sheet.setCell("A1", value: .string("Test"))
+        return workbook
+    }
+
+    /// Best-effort cleanup for temporary workbook files used in tests.
+    /// Logs any failure via `XCTFail` so file system issues are visible in test output.
+    private func cleanupTempFile(at url: URL) {
+        do {
+            try FileManager.default.removeItem(at: url)
+        } catch {
+            XCTFail("Failed to remove temporary workbook at \(url.path): \(error)")
+        }
+    }
     
     /// Helper to save a workbook to a temporary URL synchronously and ensure cleanup.
     func withSavedTempWorkbookSync(prefix: String,
                                    _ body: (_ workbook: Workbook, _ url: URL) throws -> Void) throws {
-        let workbook = Workbook()
-        let sheet = workbook.addSheet(name: "Test")
-        sheet.setCell("A1", value: .string("Test"))
+        let workbook = makeTestWorkbook()
         
         let tempURL = makeTempWorkbookURL(prefix: prefix)
         // Save the workbook to disk so callers can rely on a real file at tempURL.
         try workbook.save(to: tempURL)
         
         defer {
-            // Best-effort cleanup; log errors so file system issues are visible in test output.
-            do {
-                try FileManager.default.removeItem(at: tempURL)
-            } catch {
-                XCTFail("Failed to remove temporary workbook at \(tempURL.path): \(error)")
-            }
+            cleanupTempFile(at: tempURL)
         }
         
         try body(workbook, tempURL)
@@ -82,52 +93,40 @@ class XLKitTestBase: XCTestCase {
     /// Helper to save a workbook to a temporary URL asynchronously and ensure cleanup.
     func withSavedTempWorkbookAsync(prefix: String,
                                     _ body: @MainActor (_ workbook: Workbook, _ url: URL) async throws -> Void) async throws {
-        let workbook = Workbook()
-        let sheet = workbook.addSheet(name: "Test")
-        sheet.setCell("A1", value: .string("Test"))
+        let workbook = makeTestWorkbook()
         
         let tempURL = makeTempWorkbookURL(prefix: prefix)
         // Save the workbook to disk before invoking the async body.
         try await workbook.save(to: tempURL)
         
         defer {
-            // Best-effort cleanup; log errors so file system issues are visible in test output.
-            do {
-                try FileManager.default.removeItem(at: tempURL)
-            } catch {
-                XCTFail("Failed to remove temporary workbook at \(tempURL.path): \(error)")
-            }
+            cleanupTempFile(at: tempURL)
         }
         
         try await body(workbook, tempURL)
     }
     
+    /// Helper to create a bordered `CellFormat` with configurable top/bottom borders and optional color.
+    private static func makeBorderedFormat(top: BorderStyle, bottom: BorderStyle, color: String? = nil) -> CellFormat {
+        var format = CellFormat.bordered(style: .thin, color: color)
+        format.borderTop = top
+        format.borderBottom = bottom
+        return format
+    }
+
     /// Helper to create a `CellFormat` with thin borders on all sides.
     static func makeThinBorderFormat() -> CellFormat {
-        var format = CellFormat.bordered()
-        format.borderTop = .thin
-        format.borderBottom = .thin
-        format.borderLeft = .thin
-        format.borderRight = .thin
-        return format
+        makeBorderedFormat(top: .thin, bottom: .thin)
     }
     
     /// Helper to create a `CellFormat` with medium top/bottom borders and red border color.
     static func makeMediumRedBorderFormat() -> CellFormat {
-        var format = CellFormat.bordered()
-        format.borderTop = .medium
-        format.borderBottom = .medium
-        format.borderColor = "#FF0000"
-        return format
+        makeBorderedFormat(top: .medium, bottom: .medium, color: "#FF0000")
     }
     
     /// Helper to create a `CellFormat` with thick top/bottom borders and blue border color.
     static func makeThickBlueBorderFormat() -> CellFormat {
-        var format = CellFormat.bordered()
-        format.borderTop = .thick
-        format.borderBottom = .thick
-        format.borderColor = "#0000FF"
-        return format
+        makeBorderedFormat(top: .thick, bottom: .thick, color: "#0000FF")
     }
     
     /// Standard font size used in tests.
