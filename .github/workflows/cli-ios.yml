@@ -12,7 +12,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Swift
         uses: swift-actions/setup-swift@v2
@@ -34,7 +34,7 @@ jobs:
           echo "iOS test files created successfully"
 
       - name: Upload iOS Test Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ios-test-results
           path: |
