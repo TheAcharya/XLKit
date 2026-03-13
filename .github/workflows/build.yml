@@ -70,7 +70,7 @@ jobs:
       run: swift run XLKitTestRunner embed
 
   iOS:
-    name: Tests (iOS)
+    name: iOS
     runs-on: macos-latest
     timeout-minutes: 20
     steps:
