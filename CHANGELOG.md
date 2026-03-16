@@ -11,7 +11,7 @@
 - CSV and TSV are treated as defined formats (e.g. RFC 4180 for CSV) with standard quote/escape rules; all parsing and generation go through swift-textfile for spec compliance
 - Removed custom-delimiter boilerplate (`generateCustomDelimitedText`, `parseCustomDelimitedText`) to avoid non-standard formats and delimiter-vs-content collision pitfalls
 - Removed custom delimiter support from CSV import/export. Only CSV (comma) and TSV (tab) are now supported.
-- **API changes:** `exportToCSV(separator:)` → `exportToCSV()`; `importCSV(_:into:separator:hasHeader:)` → `importCSV(_:into:hasHeader:)`; `init(fromCSV:sheetName:separator:hasHeader:)` → `init(fromCSV:sheetName:hasHeader:)`; `exportSheetToCSV(_:separator:)` → `exportSheetToCSV(_:)`. Same for `CSVUtils` static methods (no `separator` parameter).
+- API changes: `exportToCSV(separator:)` → `exportToCSV()`; `importCSV(_:into:separator:hasHeader:)` → `importCSV(_:into:hasHeader:)`; `init(fromCSV:sheetName:separator:hasHeader:)` → `init(fromCSV:sheetName:hasHeader:)`; `exportSheetToCSV(_:separator:)` → `exportSheetToCSV(_:)`. Same for `CSVUtils` static methods (no `separator` parameter).
 - Updated documentation and rules (`.cursorrules`, AGENT.MD, README, Manual) to reference swift-textfile and TextFile
 
 ---
