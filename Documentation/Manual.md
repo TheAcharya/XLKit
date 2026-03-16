@@ -1639,10 +1639,10 @@ Static methods; typically used via `Workbook`/`Sheet` instance methods. CSV/TSV 
 
 | Member | Description |
 |--------|-------------|
-| `exportToCSV(sheet: Sheet, separator: String = ",") -> String` | Export sheet to CSV. Uses TextFileTools for comma-separated values; falls back to manual generation for custom separators. |
-| `exportToTSV(sheet: Sheet) -> String` | Export sheet to TSV. Uses TextFileTools for tab-separated values. |
-| `importFromCSV(sheet: Sheet, csvData: String, separator: String, hasHeader: Bool)` | Import CSV into sheet. Uses TextFileTools for comma-separated values; falls back to manual parsing for custom separators. |
-| `importFromTSV(sheet: Sheet, tsvData: String, hasHeader: Bool)` | Import TSV into sheet. Uses TextFileTools for tab-separated values. |
+| `exportToCSV(sheet: Sheet, separator: String = ",") -> String` | Export sheet to CSV. Uses **swift-textfile** for comma-separated values; falls back to manual generation for custom separators. |
+| `exportToTSV(sheet: Sheet) -> String` | Export sheet to TSV. Uses **swift-textfile** for tab-separated values. |
+| `importFromCSV(sheet: Sheet, csvData: String, separator: String, hasHeader: Bool)` | Import CSV into sheet. Uses **swift-textfile** for comma-separated values; falls back to manual parsing for custom separators. |
+| `importFromTSV(sheet: Sheet, tsvData: String, hasHeader: Bool)` | Import TSV into sheet. Uses **swift-textfile** for tab-separated values. |
 | `createWorkbookFromCSV(csvData: String, sheetName: String, separator: String, hasHeader: Bool) -> Workbook` | New workbook from CSV. |
 | `createWorkbookFromTSV(tsvData: String, sheetName: String, hasHeader: Bool) -> Workbook` | New workbook from TSV. |
 

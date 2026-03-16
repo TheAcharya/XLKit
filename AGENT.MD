@@ -137,7 +137,7 @@ XLKit (main API)
 
 XLKitFormatters
 ├── XLKitCore
-└── TextFileTools (swift-textfile-tools)
+└── TextFile (swift-textfile)
 
 XLKitImages
 └── XLKitCore

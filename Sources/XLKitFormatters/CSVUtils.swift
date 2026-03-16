@@ -6,10 +6,10 @@
 
 import Foundation
 @preconcurrency import XLKitCore
-import TextFileTools
+import TextFile
 
 /// CSV/TSV import/export utilities for XLKit
-/// Uses swift-textfile-tools library for robust CSV/TSV parsing and generation
+/// Uses swift-textfile library for robust CSV/TSV parsing and generation
 public struct CSVUtils {
     
     /// Exports a sheet to CSV format
@@ -45,13 +45,13 @@ public struct CSVUtils {
             stringTable.append(rowData)
         }
         
-        // Use TextFileTools for CSV generation
+        // Use swift-textfile for CSV generation
         if separator == "," {
-            let csv = TextFile.CSV(table: stringTable)
+            let csv = CSV(table: stringTable)
             return csv.rawText
         } else {
             // For custom separators, we need to use a delimited format
-            // Since TextFileTools only supports CSV (comma) and TSV (tab),
+            // Since swift-textfile only supports CSV (comma) and TSV (tab),
             // we'll fall back to manual generation for custom separators
             return generateCustomDelimitedText(table: stringTable, separator: separator)
         }
@@ -90,17 +90,17 @@ public struct CSVUtils {
             stringTable.append(rowData)
         }
         
-        // Use TextFileTools for TSV generation
-        let tsv = TextFile.TSV(table: stringTable)
+        // Use swift-textfile for TSV generation
+        let tsv = TSV(table: stringTable)
         return tsv.rawText
     }
     
     /// Imports CSV data into a sheet
     public static func importFromCSV(sheet: Sheet, csvData: String, separator: String = ",", hasHeader: Bool = false) {
-        // Use TextFileTools for CSV parsing
+        // Use swift-textfile for CSV parsing
         let stringTable: StringTable
         if separator == "," {
-            let csv = TextFile.CSV(rawText: csvData)
+            let csv = CSV(rawText: csvData)
             stringTable = csv.table
         } else {
             // For custom separators, parse manually
@@ -133,8 +133,8 @@ public struct CSVUtils {
     
     /// Imports TSV data into a sheet
     public static func importFromTSV(sheet: Sheet, tsvData: String, hasHeader: Bool = false) {
-        // Use TextFileTools for TSV parsing
-        let tsv = TextFile.TSV(rawText: tsvData)
+        // Use swift-textfile for TSV parsing
+        let tsv = TSV(rawText: tsvData)
         let stringTable = tsv.table
         
         // Determine which rows to import
@@ -214,7 +214,7 @@ public struct CSVUtils {
     }
     
     /// Generates custom delimited text for separators other than comma or tab
-    /// Falls back to manual generation when TextFileTools doesn't support the separator
+    /// Falls back to manual generation when swift-textfile doesn't support the separator
     private static func generateCustomDelimitedText(table: StringTable, separator: String) -> String {
         return table.map { row in
             row.map { textString in
@@ -239,7 +239,7 @@ public struct CSVUtils {
     }
     
     /// Parses custom delimited text for separators other than comma or tab
-    /// Falls back to manual parsing when TextFileTools doesn't support the separator
+    /// Falls back to manual parsing when swift-textfile doesn't support the separator
     private static func parseCustomDelimitedText(text: String, separator: String) -> StringTable {
         let lines = text.components(separatedBy: .newlines)
             .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
