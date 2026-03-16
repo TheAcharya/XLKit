@@ -469,7 +469,7 @@ let range2 = CellRange(excelRange: "A1:B5")
 - Sheet: `setCell`, `setRow`, `setColumn`, `setRange`, `mergeCells`, `embedImageAutoSized`, `setColumnWidth`
 - Convenience Methods: Type-specific setters like `setCell(string:format:)`, `setRange(number:format:)`
 - Images: GIF, PNG, JPEG with perfect aspect ratio preservation
-- CSV/TSV: `Workbook(fromCSV:)`, `exportToCSV()`, `importCSVIntoSheet`
+- CSV/TSV: `Workbook(fromCSV:)`, `Workbook(fromTSV:)`, `exportToCSV()`, `exportToTSV()`, `importCSV(_:into:hasHeader:)`, `importTSV(_:into:hasHeader:)`
 - Fluent API: Most setters return `Self` for chaining
 - Bulk Data: `setRow`, `setColumn` for easy import
 - Utility Properties: `allCells`, `allFormattedCells`, `isEmpty`, `cellCount`, `imageCount`
@@ -678,8 +678,8 @@ let sheet = workbook.getSheets().first!
 // Export a sheet to CSV
 let csv = sheet.exportToCSV()
 
-// Import CSV into an existing sheet
-sheet.importCSV(csvData, hasHeader: true)
+// Import CSV into an existing sheet (Workbook method)
+workbook.importCSV(csvData, into: sheet, hasHeader: true)
 
 // Create a workbook from TSV
 let tsvData = """
@@ -693,8 +693,8 @@ let tsvSheet = tsvWorkbook.getSheets().first!
 // Export a sheet to TSV
 let tsv = tsvSheet.exportToTSV()
 
-// Import TSV into an existing sheet
-tsvSheet.importTSV(tsvData, hasHeader: true)
+// Import TSV into an existing sheet (Workbook method)
+tsvWorkbook.importTSV(tsvData, into: tsvSheet, hasHeader: true)
 ```
 
 All CSV/TSV helpers are available as instance methods on `Workbook` and `Sheet` classes for convenience, and are powered by the `XLKitFormatters` module under the hood.
@@ -1635,7 +1635,7 @@ Static configuration and methods (`@MainActor`):
 
 ### CSVUtils
 
-Static methods; typically used via `Workbook`/`Sheet` instance methods. CSV/TSV parsing and generation is powered by the [swift-textfile](https://github.com/orchetect/swift-textfile) library for robust handling of quoted fields, escaped quotes, and edge cases.
+Static methods; typically used via `Workbook`/`Sheet` instance methods. Only CSV (comma) and TSV (tab) are supported. Parsing and generation are powered by the [swift-textfile](https://github.com/orchetect/swift-textfile) library for spec-compliant handling of quoted fields, escaped quotes, and edge cases (e.g. RFC 4180 for CSV).
 
 | Member | Description |
 |--------|-------------|
