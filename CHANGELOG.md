@@ -1,5 +1,17 @@
 # Changelog
 
+### 1.1.2
+
+**🎉 Released:**
+- 16th March 2026
+
+**🔧 Improvements:**
+- Migrated CSV/TSV dependency from [swift-textfile-tools](https://github.com/orchetect/swift-textfile-tools) to [swift-textfile](https://github.com/orchetect/swift-textfile)
+- Updated `XLKitFormatters/CSVUtils` to use `import TextFile` and the `TextFile` product; all CSV/TSV behavior unchanged
+- Updated documentation and rules (`.cursorrules`, AGENT.MD, README, Manual, tests) to reference swift-textfile and TextFile
+
+---
+
 ### 1.1.1
 
 **🎉 Released:**

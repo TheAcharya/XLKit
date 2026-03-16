@@ -212,7 +212,7 @@ All tests verify pixel-perfect scaling, Excel cell dimension matching, and zero 
 - `testWorkbookExportSheetToTSV()`: Export sheet to TSV format
 - `testSheetExportToCSV()`: Sheet-level CSV export
 - `testSheetExportToTSV()`: Sheet-level TSV export
-- `testCSVWithQuotedFields()`: CSV with quoted fields containing commas (validates swift-textfile-tools integration)
+- `testCSVWithQuotedFields()`: CSV with quoted fields containing commas (validates swift-textfile integration)
 - `testCSVWithEscapedQuotes()`: CSV with escaped quotes (double quotes) - validates proper parsing
 - `testCSVExportWithSpecialCharacters()`: CSV export/import round-trip with special characters
 - `testCSVWithEmptyFields()`: CSV with empty fields at various positions

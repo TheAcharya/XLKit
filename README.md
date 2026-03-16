@@ -39,11 +39,11 @@ This codebase is developed using AI agents.
 - Cell Formatting: Comprehensive formatting including font colours, backgrounds, borders, and text alignment (all 5 alignment options each for horizontal and vertical) with proper XML generation
 - Border Support: Full border functionality with thin, medium, and thick styles, custom colors, and combined formatting
 - Merge Support: Cell merging functionality with complex range support and proper Excel compliance
-- CSV/TSV Import/Export: Built-in support for importing and exporting CSV/TSV data (powered by swift-textfile-tools)
+- CSV/TSV Import/Export: Built-in support for importing and exporting CSV/TSV data (powered by swift-textfile)
 - Async & Sync Operations: Save workbooks with one line (async or sync)
 - Type-Safe: Strong enums and structs for all data types
 - Excel Compliance: Full OpenXML compliance with CoreXLSX validation
-- Minimal Dependencies: CoreXLSX, ZIPFoundation, swift-textfile-tools - all reputable, open-source libraries
+- Minimal Dependencies: CoreXLSX, ZIPFoundation, swift-textfile - all reputable, open-source libraries
 - Comprehensive Testing: 59 tests with 100% API coverage, including all text alignment options (horizontal, vertical, combined), number formatting, border and merge functionality, column ordering validation, CSV/TSV edge cases, and automated validation
 - Security Features: Comprehensive security features for production use
 
