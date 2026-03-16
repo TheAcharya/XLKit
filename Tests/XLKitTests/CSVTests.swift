@@ -151,7 +151,7 @@ final class CSVTests: XLKitTestBase {
     }
     
     func testCSVWithQuotedFields() {
-        // Test CSV with quoted fields containing commas (swift-textfile-tools handles this)
+        // Test CSV with quoted fields containing commas (swift-textfile handles this)
         let csvData = "Name,Description,Price\nApple,\"Red, delicious apple\",1.99\nBanana,\"Yellow, curved fruit\",0.99"
         
         let workbook = Workbook(fromCSV: csvData, hasHeader: true)
@@ -169,7 +169,7 @@ final class CSVTests: XLKitTestBase {
     }
     
     func testCSVWithEscapedQuotes() {
-        // Test CSV with escaped quotes (double quotes) - swift-textfile-tools handles this
+        // Test CSV with escaped quotes (double quotes) - swift-textfile handles this
         let csvData = "Name,Quote\nAlice,\"She said \"\"Hello\"\"\"\nBob,\"He said \"\"Goodbye\"\"\""
         
         let workbook = Workbook(fromCSV: csvData, hasHeader: true)

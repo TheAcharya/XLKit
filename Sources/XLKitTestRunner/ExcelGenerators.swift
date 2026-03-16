@@ -51,7 +51,7 @@ struct ExcelGenerators {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Embed Test")
 
-        // Import CSV using XLKit's public API (powered by swift-textfile-tools for robust parsing).
+        // Import CSV using XLKit's public API (powered by swift-textfile for robust parsing).
         // Use hasHeader: false so the header row is included in the sheet and can be formatted.
         workbook.importCSV(csvData, into: sheet, hasHeader: false)
 

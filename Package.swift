@@ -34,7 +34,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/CoreOffice/CoreXLSX.git", from: "0.14.0"),
         .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.0"),
-        .package(url: "https://github.com/orchetect/swift-textfile-tools.git", from: "0.3.0")
+        .package(url: "https://github.com/orchetect/swift-textfile.git", from: "0.4.0")
     ],
     targets: [
         .target(
@@ -42,7 +42,7 @@ let package = Package(
         ),
         .target(
             name: "XLKitFormatters",
-            dependencies: ["XLKitCore", .product(name: "TextFileTools", package: "swift-textfile-tools")]
+            dependencies: ["XLKitCore", .product(name: "TextFile", package: "swift-textfile")]
         ),
         .target(
             name: "XLKitImages",
