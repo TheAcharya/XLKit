@@ -47,7 +47,7 @@ public struct CSVUtils {
         
         // Use TextFile for CSV generation
         if separator == "," {
-            let csv = TextFile.CSV(table: stringTable)
+            let csv = CSV(table: stringTable)
             return csv.rawText
         } else {
             // For custom separators, we need to use a delimited format
@@ -91,7 +91,7 @@ public struct CSVUtils {
         }
         
         // Use TextFile for TSV generation
-        let tsv = TextFile.TSV(table: stringTable)
+        let tsv = TSV(table: stringTable)
         return tsv.rawText
     }
     
@@ -100,7 +100,7 @@ public struct CSVUtils {
         // Use TextFile for CSV parsing
         let stringTable: StringTable
         if separator == "," {
-            let csv = TextFile.CSV(rawText: csvData)
+            let csv = CSV(rawText: csvData)
             stringTable = csv.table
         } else {
             // For custom separators, parse manually
@@ -134,7 +134,7 @@ public struct CSVUtils {
     /// Imports TSV data into a sheet
     public static func importFromTSV(sheet: Sheet, tsvData: String, hasHeader: Bool = false) {
         // Use TextFile for TSV parsing
-        let tsv = TextFile.TSV(rawText: tsvData)
+        let tsv = TSV(rawText: tsvData)
         let stringTable = tsv.table
         
         // Determine which rows to import
