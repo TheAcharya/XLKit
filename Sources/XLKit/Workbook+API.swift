@@ -10,11 +10,11 @@ import XLKitXLSX
 import XLKitFormatters
 
 public extension Workbook {
-    /// Creates a workbook from CSV data
-    convenience init(fromCSV csvData: String, sheetName: String = "Sheet1", separator: String = ",", hasHeader: Bool = false) {
+    /// Creates a workbook from CSV data (comma-separated).
+    convenience init(fromCSV csvData: String, sheetName: String = "Sheet1", hasHeader: Bool = false) {
         self.init()
         let sheet = addSheet(name: sheetName)
-        importCSV(csvData, into: sheet, separator: separator, hasHeader: hasHeader)
+        importCSV(csvData, into: sheet, hasHeader: hasHeader)
     }
     /// Creates a workbook from TSV data
     convenience init(fromTSV tsvData: String, sheetName: String = "Sheet1", hasHeader: Bool = false) {
@@ -34,17 +34,17 @@ public extension Workbook {
         try XLSXEngine.generateXLSX(workbook: self, to: url)
     }
     // MARK: - CSV/TSV Operations
-    /// Imports CSV data into a sheet
-    func importCSV(_ csvData: String, into sheet: Sheet, separator: String = ",", hasHeader: Bool = false) {
-        CSVUtils.importFromCSV(sheet: sheet, csvData: csvData, separator: separator, hasHeader: hasHeader)
+    /// Imports CSV data into a sheet (comma-separated).
+    func importCSV(_ csvData: String, into sheet: Sheet, hasHeader: Bool = false) {
+        CSVUtils.importFromCSV(sheet: sheet, csvData: csvData, hasHeader: hasHeader)
     }
     /// Imports TSV data into a sheet
     func importTSV(_ tsvData: String, into sheet: Sheet, hasHeader: Bool = false) {
         CSVUtils.importFromTSV(sheet: sheet, tsvData: tsvData, hasHeader: hasHeader)
     }
-    /// Exports a sheet to CSV format
-    func exportSheetToCSV(_ sheet: Sheet, separator: String = ",") -> String {
-        return CSVUtils.exportToCSV(sheet: sheet, separator: separator)
+    /// Exports a sheet to CSV format (comma-separated).
+    func exportSheetToCSV(_ sheet: Sheet) -> String {
+        return CSVUtils.exportToCSV(sheet: sheet)
     }
     /// Exports a sheet to TSV format
     func exportSheetToTSV(_ sheet: Sheet) -> String {
