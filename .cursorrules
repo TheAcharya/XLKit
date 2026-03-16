@@ -333,7 +333,7 @@ import Foundation
 - Auto-detect data types
 - Handle special characters and quotes
 - Powered by swift-textfile library for robust CSV/TSV parsing and generation
-- Falls back to manual parsing/generation for custom separators (when separator ≠ comma or tab)
+- CSV and TSV only (no custom delimiters); spec-compliant parsing/generation via swift-textfile
 
 ### Image Operations (XLKitImages Module)
 - Support GIF, PNG, JPEG formats (BMP, TIFF removed for compatibility)

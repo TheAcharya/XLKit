@@ -66,9 +66,9 @@ public extension Sheet {
         return setColumn(column, values: values)
     }
     // MARK: - CSV/TSV Export Methods
-    /// Exports the sheet to CSV format
-    func exportToCSV(separator: String = ",") -> String {
-        return CSVUtils.exportToCSV(sheet: self, separator: separator)
+    /// Exports the sheet to CSV format (comma-separated).
+    func exportToCSV() -> String {
+        return CSVUtils.exportToCSV(sheet: self)
     }
     /// Exports the sheet to TSV format
     func exportToTSV() -> String {

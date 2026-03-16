@@ -469,7 +469,7 @@ let range2 = CellRange(excelRange: "A1:B5")
 - Sheet: `setCell`, `setRow`, `setColumn`, `setRange`, `mergeCells`, `embedImageAutoSized`, `setColumnWidth`
 - Convenience Methods: Type-specific setters like `setCell(string:format:)`, `setRange(number:format:)`
 - Images: GIF, PNG, JPEG with perfect aspect ratio preservation
-- CSV/TSV: `Workbook(fromCSV:)`, `exportToCSV()`, `importCSVIntoSheet`
+- CSV/TSV: `Workbook(fromCSV:)`, `Workbook(fromTSV:)`, `exportToCSV()`, `exportToTSV()`, `importCSV(_:into:hasHeader:)`, `importTSV(_:into:hasHeader:)`
 - Fluent API: Most setters return `Self` for chaining
 - Bulk Data: `setRow`, `setColumn` for easy import
 - Utility Properties: `allCells`, `allFormattedCells`, `isEmpty`, `cellCount`, `imageCount`
@@ -663,7 +663,7 @@ do {
 
 ## CSV/TSV Import & Export
 
-XLKit provides simple static methods for importing and exporting CSV/TSV data. CSV/TSV parsing and generation is powered by the [swift-textfile](https://github.com/orchetect/swift-textfile) library, which provides robust handling of quoted fields, escaped quotes, and edge cases. For custom separators (other than comma or tab), XLKit falls back to manual parsing/generation.
+XLKit provides simple static methods for importing and exporting CSV/TSV data. Only CSV (comma) and TSV (tab) are supported; both are defined formats with standard quote and escape rules (e.g. RFC 4180 for CSV). Parsing and generation are powered by the [swift-textfile](https://github.com/orchetect/swift-textfile) library for spec-compliant handling of quoted fields and escaped quotes.
 
 ```swift
 // Create a workbook from CSV
@@ -678,8 +678,8 @@ let sheet = workbook.getSheets().first!
 // Export a sheet to CSV
 let csv = sheet.exportToCSV()
 
-// Import CSV into an existing sheet
-sheet.importCSV(csvData, hasHeader: true)
+// Import CSV into an existing sheet (Workbook method)
+workbook.importCSV(csvData, into: sheet, hasHeader: true)
 
 // Create a workbook from TSV
 let tsvData = """
@@ -693,8 +693,8 @@ let tsvSheet = tsvWorkbook.getSheets().first!
 // Export a sheet to TSV
 let tsv = tsvSheet.exportToTSV()
 
-// Import TSV into an existing sheet
-tsvSheet.importTSV(tsvData, hasHeader: true)
+// Import TSV into an existing sheet (Workbook method)
+tsvWorkbook.importTSV(tsvData, into: tsvSheet, hasHeader: true)
 ```
 
 All CSV/TSV helpers are available as instance methods on `Workbook` and `Sheet` classes for convenience, and are powered by the `XLKitFormatters` module under the hood.
@@ -1411,13 +1411,13 @@ This section lists the full public API of XLKit. All types and members are avail
 | `getImages(withFormat format: ImageFormat) -> [ExcelImage]` | Return images filtered by format. |
 | `clearImages()` | Remove all workbook-level images. |
 | `imageCount: Int` | Number of images in the workbook. |
-| `init(fromCSV csvData: String, sheetName:separator:hasHeader:)` | Convenience initializer: create a workbook from CSV. |
+| `init(fromCSV csvData: String, sheetName:hasHeader:)` | Convenience initializer: create a workbook from CSV (comma-separated). |
 | `init(fromTSV tsvData: String, sheetName:hasHeader:)` | Convenience initializer: create a workbook from TSV. |
 | `save(to url: URL) throws` | Save the workbook to a file (synchronous; `@MainActor`). |
 | `save(to url: URL) async throws` | Save the workbook to a file (asynchronous; `@MainActor`). |
-| `importCSV(_:into:separator:hasHeader:)` | Import CSV into an existing sheet. |
+| `importCSV(_:into:hasHeader:)` | Import CSV into an existing sheet (comma-separated). |
 | `importTSV(_:into:hasHeader:)` | Import TSV into an existing sheet. |
-| `exportSheetToCSV(_ sheet:separator:) -> String` | Export a sheet to CSV. |
+| `exportSheetToCSV(_ sheet:) -> String` | Export a sheet to CSV (comma-separated). |
 | `exportSheetToTSV(_ sheet:) -> String` | Export a sheet to TSV. |
 
 ### Sheet API
@@ -1489,7 +1489,7 @@ This section lists the full public API of XLKit. All types and members are avail
 | `embedImage(_ data:at:of:scale:maxWidth:maxHeight:) async throws -> Bool` | Embed image with scaling parameters. |
 | `embedImage(from url: URL, at coordinate: String, displaySize: CGSize? = nil) async throws -> Bool` | Embed image from file URL. |
 | `embedImage(from path: String, at coordinate: String, displaySize: CGSize? = nil) async throws -> Bool` | Embed image from file path. |
-| `exportToCSV(separator: String = ",") -> String` | Export sheet to CSV. |
+| `exportToCSV() -> String` | Export sheet to CSV (comma-separated). |
 | `exportToTSV() -> String` | Export sheet to TSV. |
 
 **Other**
@@ -1635,15 +1635,15 @@ Static configuration and methods (`@MainActor`):
 
 ### CSVUtils
 
-Static methods; typically used via `Workbook`/`Sheet` instance methods. CSV/TSV parsing and generation is powered by the [swift-textfile](https://github.com/orchetect/swift-textfile) library for robust handling of quoted fields, escaped quotes, and edge cases.
+Static methods; typically used via `Workbook`/`Sheet` instance methods. Only CSV (comma) and TSV (tab) are supported. Parsing and generation are powered by the [swift-textfile](https://github.com/orchetect/swift-textfile) library for spec-compliant handling of quoted fields, escaped quotes, and edge cases (e.g. RFC 4180 for CSV).
 
 | Member | Description |
 |--------|-------------|
-| `exportToCSV(sheet: Sheet, separator: String = ",") -> String` | Export sheet to CSV. Uses TextFile for comma-separated values; falls back to manual generation for custom separators. |
-| `exportToTSV(sheet: Sheet) -> String` | Export sheet to TSV. Uses TextFile for tab-separated values. |
-| `importFromCSV(sheet: Sheet, csvData: String, separator: String, hasHeader: Bool)` | Import CSV into sheet. Uses TextFile for comma-separated values; falls back to manual parsing for custom separators. |
-| `importFromTSV(sheet: Sheet, tsvData: String, hasHeader: Bool)` | Import TSV into sheet. Uses TextFile for tab-separated values. |
-| `createWorkbookFromCSV(csvData: String, sheetName: String, separator: String, hasHeader: Bool) -> Workbook` | New workbook from CSV. |
+| `exportToCSV(sheet: Sheet) -> String` | Export sheet to CSV (comma-separated; spec-compliant via TextFile). |
+| `exportToTSV(sheet: Sheet) -> String` | Export sheet to TSV (tab-separated; spec-compliant via TextFile). |
+| `importFromCSV(sheet: Sheet, csvData: String, hasHeader: Bool)` | Import CSV into sheet (comma-separated). |
+| `importFromTSV(sheet: Sheet, tsvData: String, hasHeader: Bool)` | Import TSV into sheet. |
+| `createWorkbookFromCSV(csvData: String, sheetName: String, hasHeader: Bool) -> Workbook` | New workbook from CSV (comma-separated). |
 | `createWorkbookFromTSV(tsvData: String, sheetName: String, hasHeader: Bool) -> Workbook` | New workbook from TSV. |
 
 ### XLKitError
