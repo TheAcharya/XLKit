@@ -1,5 +1,21 @@
 # Changelog
 
+### 1.1.3
+
+**🎉 Released:**
+- 29th March 2026
+
+**🔧 Improvements:**
+- Reorganised user documentation into chapter-based manuals under `Documentation/Manual/` (index, modules/source map, features, full API reference); `Documentation/Manual.md` is now a short pointer; updated `Documentation/README.md`, root `README.md`, `AGENT.MD`, and `.cursorrules` for contributor expectations
+- Expanded the manual API reference and aligned code examples with the real API (`CellFormat`, `setRange`, etc.)
+- Refactored `XLKitFormatters/CSVUtils` to remove duplicate CSV/TSV export table-building logic via a shared private helper (`buildStringTable(from:maxRow:maxColumn:)`)
+- Improved TSV API docs for consistency by explicitly documenting tab-separated behaviour in `exportToTSV`, `importFromTSV`, and `createWorkbookFromTSV`
+- Improved test maintainability in `CSVTests` by introducing shared CSV/TSV fixtures and replacing escaped-quote inline strings with readable raw multiline string literals
+- Updated `XLKitTestBase` helpers to use a reusable static workbook builder and made temp-file cleanup resilient when files are already missing
+- Updated Swift package dependencies
+
+---
+
 ### 1.1.2
 
 **🎉 Released:**

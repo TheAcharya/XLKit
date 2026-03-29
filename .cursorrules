@@ -949,6 +949,10 @@ API Design
 
 ## Documentation Maintenance Requirements
 
+### Structured user manual
+
+The end-user manual is split into chapters under **`Documentation/Manual/`** (index: **`Documentation/Manual/README.md`**). When you add or change public APIs, update the relevant chapter and **`Documentation/Manual/12-Complete-API-Reference.md`**.
+
 ### Critical Update Requirements
 
 MANDATORY: This .cursorrules file must be updated whenever:

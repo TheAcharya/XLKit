@@ -32,30 +32,13 @@ public struct CSVUtils {
         }
 
         // Build StringTable from sheet data
-        var stringTable: StringTable = []
-
-        for row in 1...maxRow {
-            var rowData: [String] = []
-
-            for column in 1...maxColumn {
-                let coord = CellCoordinate(row: row, column: column)
-                let cellAddress = coord.excelAddress
-
-                if let cellValue = sheet.getCell(cellAddress) {
-                    rowData.append(cellValue.stringValue)
-                } else {
-                    rowData.append("")
-                }
-            }
-
-            stringTable.append(rowData)
-        }
+        let stringTable = buildStringTable(from: sheet, maxRow: maxRow, maxColumn: maxColumn)
 
         let csv = CSV(table: stringTable)
         return csv.rawText
     }
     
-    /// Exports a sheet to TSV format
+    /// Exports a sheet to TSV format (tab-separated).
     public static func exportToTSV(sheet: Sheet) -> String {
         // Find max row/column from used cells
         let usedCells = sheet.getUsedCells()
@@ -69,24 +52,7 @@ public struct CSVUtils {
         }
         
         // Build StringTable from sheet data
-        var stringTable: StringTable = []
-        
-        for row in 1...maxRow {
-            var rowData: [String] = []
-            
-            for column in 1...maxColumn {
-                let coord = CellCoordinate(row: row, column: column)
-                let cellAddress = coord.excelAddress
-                
-                if let cellValue = sheet.getCell(cellAddress) {
-                    rowData.append(cellValue.stringValue)
-                } else {
-                    rowData.append("")
-                }
-            }
-            
-            stringTable.append(rowData)
-        }
+        let stringTable = buildStringTable(from: sheet, maxRow: maxRow, maxColumn: maxColumn)
         
         // Use TextFile for TSV generation
         let tsv = TSV(table: stringTable)
@@ -122,7 +88,7 @@ public struct CSVUtils {
         }
     }
     
-    /// Imports TSV data into a sheet
+    /// Imports TSV data into a sheet (tab-separated).
     public static func importFromTSV(sheet: Sheet, tsvData: String, hasHeader: Bool = false) {
         // Use TextFile for TSV parsing
         let tsv = TSV(rawText: tsvData)
@@ -160,7 +126,7 @@ public struct CSVUtils {
         return workbook
     }
     
-    /// Creates a workbook from TSV data
+    /// Creates a workbook from TSV data (tab-separated).
     public static func createWorkbookFromTSV(tsvData: String, sheetName: String = "Sheet1", hasHeader: Bool = false) -> Workbook {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: sheetName)
@@ -170,6 +136,31 @@ public struct CSVUtils {
     
     // MARK: - Private Helper Methods
     
+    /// Builds a table of string values for CSV/TSV export.
+    private static func buildStringTable(from sheet: Sheet, maxRow: Int, maxColumn: Int) -> StringTable {
+        var stringTable: StringTable = []
+        guard maxRow > 0, maxColumn > 0 else { return stringTable }
+
+        for row in 1...maxRow {
+            var rowData: [String] = []
+
+            for column in 1...maxColumn {
+                let coord = CellCoordinate(row: row, column: column)
+                let cellAddress = coord.excelAddress
+
+                if let cellValue = sheet.getCell(cellAddress) {
+                    rowData.append(cellValue.stringValue)
+                } else {
+                    rowData.append("")
+                }
+            }
+
+            stringTable.append(rowData)
+        }
+
+        return stringTable
+    }
+
     /// Parses CSV value to appropriate CellValue type
     private static func parseCSVValue(_ value: String) -> CellValue {
         let trimmed = value.trimmingCharacters(in: .whitespaces)

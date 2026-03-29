@@ -1,7 +1,7 @@
 <p align="center">
-  <a href="https://github.com/TheAcharya/XLKit"><img src="Assets/XLKit_Icon.png" height="200">
-  <h1 align="center">XLKit</h1>
+  <a href="https://github.com/TheAcharya/XLKit"><img src="Assets/XLKit_Icon.png" height="200" alt="XLKit"></a>
 </p>
+<h1 align="center">XLKit</h1>
 
 
 <p align="center"><a href="https://github.com/TheAcharya/XLKit/blob/main/LICENSE"><img src="http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat" alt="license"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20iOS-lightgrey.svg?style=flat" alt="platform"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml"><img src="https://github.com/TheAcharya/XLKit/actions/workflows/build.yml/badge.svg" alt="build"/></a>&nbsp;<a href="https://github.com/TheAcharya/XLKit/actions/workflows/codeql.yml"><img src="https://github.com/TheAcharya/XLKit/actions/workflows/codeql.yml/badge.svg" alt="codeql"/></a></p>
@@ -20,7 +20,6 @@ This codebase is developed using AI agents.
 ## Table of Contents
 
 - [Features](#features)
-- [Recent Improvements](#recent-improvements)
 - [Requirements](#requirements)
 - [Installing](#installing)
 - [Quick Start](#quick-start)
@@ -42,15 +41,15 @@ This codebase is developed using AI agents.
 - CSV/TSV Import/Export: Built-in support for importing and exporting CSV/TSV data (powered by swift-textfile)
 - Async & Sync Operations: Save workbooks with one line (async or sync)
 - Type-Safe: Strong enums and structs for all data types
-- Excel Compliance: Full OpenXML compliance with CoreXLSX validation
-- Minimal Dependencies: CoreXLSX, ZIPFoundation, swift-textfile - all reputable, open-source libraries
+- Excel Compliance: OpenXML `.xlsx` generation; the bundled test runner validates output with CoreXLSX
+- Minimal library dependencies: **ZIPFoundation** and **swift-textfile** ([CoreXLSX](https://github.com/CoreOffice/CoreXLSX) is only linked by `XLKitTestRunner` for validation, not by the `XLKit` library product)
 - Comprehensive Testing: 59 tests with 100% API coverage, including all text alignment options (horizontal, vertical, combined), number formatting, border and merge functionality, column ordering validation, CSV/TSV edge cases, and automated validation
 - Security Features: Comprehensive security features for production use
 
 ## Requirements
 
 - macOS: 12.0+
-- iOS: 15.0+ (available but not tested)
+- iOS: 15.0+ (builds and CLI scenarios are exercised in CI; see `.github/workflows/`)
 - Swift: 6.0+
 
 ## Installing
@@ -70,7 +69,7 @@ Add XLKit to your `Package.swift` dependencies:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/TheAcharya/XLKit.git", from: "1.1.2")
+    .package(url: "https://github.com/TheAcharya/XLKit.git", from: "1.1.3")
 ]
 ```
 
@@ -141,20 +140,8 @@ try await workbook.save(to: URL(fileURLWithPath: "employees.xlsx"))
 
 ## Documentation
 
-Manual and reference documentation is located in the **Documentation** folder:
-
-- **[Readme](Documentation/README.md)** – Overview of documentation contents
-- **[Manual](Documentation/Manual.md)** – Complete user manual, including:
-  - Security features (SecurityManager, rate limiting, logging, quarantine, checksums)
-  - Performance considerations and file format support
-  - iOS support and file system considerations
-  - Core concepts (Workbook, Sheet, cells, coordinates)
-  - Basic and advanced usage with code examples
-  - CSV/TSV import and export
-  - Image support and aspect ratio preservation
-  - Number formats, text alignment, and cell formatting
-  - Error handling
-  - Testing, validation, and code style
+- **[Documentation README](Documentation/README.md)** – How the docs folder is organised
+- **[Manual index](Documentation/Manual/README.md)** – Table of contents and links to all chapters (overview, architecture, core model, CSV/TSV, images, formatting, security, iOS, testing, examples, full API reference)
 
 ## Credits
 

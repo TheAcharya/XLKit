@@ -32,9 +32,9 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/CoreOffice/CoreXLSX.git", from: "0.14.0"),
-        .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.0"),
-        .package(url: "https://github.com/orchetect/swift-textfile.git", from: "0.4.0")
+        .package(url: "https://github.com/CoreOffice/CoreXLSX.git", from: "0.14.2"),
+        .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.20"),
+        .package(url: "https://github.com/orchetect/swift-textfile.git", from: "0.5.0")
     ],
     targets: [
         .target(

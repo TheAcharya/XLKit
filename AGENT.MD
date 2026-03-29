@@ -488,6 +488,8 @@ Border and Merge Testing:
 
 ### Documentation
 
+User manual (structured chapters, full public API tables): **`Documentation/Manual/README.md`** (see also `Documentation/README.md`). Update or add a chapter when you add features; keep the [Chapter 12 API reference](Documentation/Manual/12-Complete-API-Reference.md) aligned with public APIs.
+
 Code Documentation:
 - All public APIs must have doc comments
 - Include parameter descriptions

@@ -57,7 +57,7 @@ class XLKitTestBase: XCTestCase {
     }
 
     /// Helper to construct a standard test workbook with a single sheet and sample content.
-    private func makeTestWorkbook() -> Workbook {
+    static func makeTestWorkbook() -> Workbook {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         sheet.setCell("A1", value: .string("Test"))
@@ -67,17 +67,22 @@ class XLKitTestBase: XCTestCase {
     /// Best-effort cleanup for temporary workbook files used in tests.
     /// Logs any failure via `XCTFail` so file system issues are visible in test output.
     private func cleanupTempFile(at url: URL) {
+        let path = url.path
+        guard FileManager.default.fileExists(atPath: path) else {
+            return
+        }
+
         do {
             try FileManager.default.removeItem(at: url)
         } catch {
-            XCTFail("Failed to remove temporary workbook at \(url.path): \(error)")
+            XCTFail("Failed to remove temporary workbook at \(path): \(error)")
         }
     }
     
     /// Helper to save a workbook to a temporary URL synchronously and ensure cleanup.
     func withSavedTempWorkbookSync(prefix: String,
                                    _ body: (_ workbook: Workbook, _ url: URL) throws -> Void) throws {
-        let workbook = makeTestWorkbook()
+        let workbook = Self.makeTestWorkbook()
         
         let tempURL = makeTempWorkbookURL(prefix: prefix)
         // Save the workbook to disk so callers can rely on a real file at tempURL.
@@ -93,7 +98,7 @@ class XLKitTestBase: XCTestCase {
     /// Helper to save a workbook to a temporary URL asynchronously and ensure cleanup.
     func withSavedTempWorkbookAsync(prefix: String,
                                     _ body: @MainActor (_ workbook: Workbook, _ url: URL) async throws -> Void) async throws {
-        let workbook = makeTestWorkbook()
+        let workbook = Self.makeTestWorkbook()
         
         let tempURL = makeTempWorkbookURL(prefix: prefix)
         // Save the workbook to disk before invoking the async body.

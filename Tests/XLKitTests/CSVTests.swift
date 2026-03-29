@@ -9,13 +9,22 @@ import XLKit
 
 @MainActor
 final class CSVTests: XLKitTestBase {
+    /// Shared CSV fixture used across import/convenience-init tests.
+    private static let csvSampleWithHeader = """
+    Name,Age,Salary
+    Alice,30,50000.5
+    Bob,25,45000.75
+    """
+
+    /// Shared TSV fixture used across import/convenience-init tests.
+    private static let tsvSampleWithHeader = """
+    Product\tPrice\tIn Stock
+    Apple\t1.99\ttrue
+    Banana\t0.99\tfalse
+    """
     
     func testWorkbookFromCSV() {
-        let csvData = """
-        Name,Age,Salary
-        Alice,30,50000.5
-        Bob,25,45000.75
-        """
+        let csvData = Self.csvSampleWithHeader
         
         let workbook = Workbook(fromCSV: csvData, hasHeader: true)
         let sheets = workbook.getSheets()
@@ -34,11 +43,7 @@ final class CSVTests: XLKitTestBase {
     }
     
     func testWorkbookFromTSV() {
-        let tsvData = """
-        Product\tPrice\tIn Stock
-        Apple\t1.99\ttrue
-        Banana\t0.99\tfalse
-        """
+        let tsvData = Self.tsvSampleWithHeader
         
         let workbook = Workbook(fromTSV: tsvData, hasHeader: true)
         guard let sheet = workbook.getSheets().first else {
@@ -86,11 +91,7 @@ final class CSVTests: XLKitTestBase {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         
-        let csvData = """
-        Name,Age,Salary
-        Alice,30,50000.5
-        Bob,25,45000.75
-        """
+        let csvData = Self.csvSampleWithHeader
         
         workbook.importCSV(csvData, into: sheet, hasHeader: true)
         
@@ -106,11 +107,7 @@ final class CSVTests: XLKitTestBase {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         
-        let tsvData = """
-        Product\tPrice\tIn Stock
-        Apple\t1.99\ttrue
-        Banana\t0.99\tfalse
-        """
+        let tsvData = Self.tsvSampleWithHeader
         
         workbook.importTSV(tsvData, into: sheet, hasHeader: true)
         
@@ -170,7 +167,11 @@ final class CSVTests: XLKitTestBase {
     
     func testCSVWithEscapedQuotes() {
         // Test CSV with escaped quotes (double quotes) - swift-textfile handles this
-        let csvData = "Name,Quote\nAlice,\"She said \"\"Hello\"\"\"\nBob,\"He said \"\"Goodbye\"\"\""
+        let csvData = #"""
+        Name,Quote
+        Alice,"She said ""Hello"""
+        Bob,"He said ""Goodbye"""
+        """#
         
         let workbook = Workbook(fromCSV: csvData, hasHeader: true)
         guard let sheet = workbook.getSheets().first else {
