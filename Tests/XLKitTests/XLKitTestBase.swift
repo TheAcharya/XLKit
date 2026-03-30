@@ -23,12 +23,12 @@ class XLKitTestBase: XCTestCase {
         components.second = second
         
         var calendar = Calendar(identifier: .gregorian)
-        if let utcTimeZone = TimeZone(secondsFromGMT: 0) {
-            calendar.timeZone = utcTimeZone
-        } else {
-            XCTFail("Failed to create UTC time zone from GMT offset; falling back to .gmt.")
-            calendar.timeZone = .gmt
-        }
+        // `TimeZone(secondsFromGMT:)` with offset 0 yields UTC; on Apple platforms this is effectively always
+        // non-nil for valid offsets. The `??` chain is a defensive fallback (no `TimeZone.gmt`, which is iOS 16+).
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)
+            ?? TimeZone(identifier: "GMT")
+            ?? TimeZone(identifier: "UTC")
+            ?? TimeZone.current
         
         guard let date = calendar.date(from: components) else {
             XCTFail("""

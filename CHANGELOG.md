@@ -7,7 +7,7 @@
 
 **🔧 Improvements:**
 - Updated `XLKitFormatters/CSVUtils` to adopt swift-textfile’s `text` / `init(text:)` APIs (replacing deprecated `rawText` / `init(rawText:)`) so builds stay warning-free on current swift-textfile
-- Updated `Tests/XLKitTests/XLKitTestBase` to replace the UTC `TimeZone(secondsFromGMT:)` force unwrap with optional binding, `XCTFail` messaging, and a `.gmt` fallback aligned with the test suite’s avoidance of force unwraps
+- Updated `Tests/XLKitTests/XLKitTestBase` so `makeUTCDate` sets the calendar time zone via `TimeZone(secondsFromGMT: 0)` with a nil-coalescing fallback to `GMT` / `UTC` / `TimeZone.current` (documents the usual non-nil UTC case, avoids unreachable `XCTFail` branches, and avoids `TimeZone.gmt`, which requires iOS 16+ while the package supports iOS 15+)
 - Made `cleanupTempFile(at:)` and `makeBorderedFormat(top:bottom:color:)` `internal` on `XLKitTestBase` so subclasses can override temp-file cleanup and tests can reuse bordered-format construction across files
 
 ---
