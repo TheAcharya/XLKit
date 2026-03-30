@@ -41,7 +41,7 @@ Add XLKit to your `Package.swift` dependencies:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/TheAcharya/XLKit.git", from: "1.1.3")
+    .package(url: "https://github.com/TheAcharya/XLKit.git", from: "1.1.4")
 ]
 ```
 

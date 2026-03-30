@@ -23,8 +23,12 @@ class XLKitTestBase: XCTestCase {
         components.second = second
         
         var calendar = Calendar(identifier: .gregorian)
-        // TimeZone(secondsFromGMT: 0) never returns nil, so force unwrap is safe
-        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        if let utcTimeZone = TimeZone(secondsFromGMT: 0) {
+            calendar.timeZone = utcTimeZone
+        } else {
+            XCTFail("Failed to create UTC time zone from GMT offset; falling back to .gmt.")
+            calendar.timeZone = .gmt
+        }
         
         guard let date = calendar.date(from: components) else {
             XCTFail("""
@@ -66,7 +70,8 @@ class XLKitTestBase: XCTestCase {
 
     /// Best-effort cleanup for temporary workbook files used in tests.
     /// Logs any failure via `XCTFail` so file system issues are visible in test output.
-    private func cleanupTempFile(at url: URL) {
+    /// Internal so test subclasses may override for specialized cleanup scenarios.
+    internal func cleanupTempFile(at url: URL) {
         let path = url.path
         guard FileManager.default.fileExists(atPath: path) else {
             return
@@ -112,7 +117,7 @@ class XLKitTestBase: XCTestCase {
     }
     
     /// Helper to create a bordered `CellFormat` with configurable top/bottom borders and optional color.
-    private static func makeBorderedFormat(top: BorderStyle, bottom: BorderStyle, color: String? = nil) -> CellFormat {
+    internal static func makeBorderedFormat(top: BorderStyle, bottom: BorderStyle, color: String? = nil) -> CellFormat {
         var format = CellFormat.bordered(style: .thin, color: color)
         format.borderTop = top
         format.borderBottom = bottom

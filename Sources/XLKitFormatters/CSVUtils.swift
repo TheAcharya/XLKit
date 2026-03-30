@@ -35,7 +35,7 @@ public struct CSVUtils {
         let stringTable = buildStringTable(from: sheet, maxRow: maxRow, maxColumn: maxColumn)
 
         let csv = CSV(table: stringTable)
-        return csv.rawText
+        return csv.text
     }
     
     /// Exports a sheet to TSV format (tab-separated).
@@ -56,12 +56,12 @@ public struct CSVUtils {
         
         // Use TextFile for TSV generation
         let tsv = TSV(table: stringTable)
-        return tsv.rawText
+        return tsv.text
     }
     
     /// Imports CSV data into a sheet (comma-separated, RFC 4180-style).
     public static func importFromCSV(sheet: Sheet, csvData: String, hasHeader: Bool = false) {
-        let csv = CSV(rawText: csvData)
+        let csv = CSV(text: csvData)
         let stringTable = csv.table
 
         // Determine which rows to import
@@ -91,7 +91,7 @@ public struct CSVUtils {
     /// Imports TSV data into a sheet (tab-separated).
     public static func importFromTSV(sheet: Sheet, tsvData: String, hasHeader: Bool = false) {
         // Use TextFile for TSV parsing
-        let tsv = TSV(rawText: tsvData)
+        let tsv = TSV(text: tsvData)
         let stringTable = tsv.table
         
         // Determine which rows to import

@@ -1,5 +1,17 @@
 # Changelog
 
+### 1.1.4
+
+**🎉 Released:**
+- 30th March 2026
+
+**🔧 Improvements:**
+- Updated `XLKitFormatters/CSVUtils` to adopt swift-textfile’s `text` / `init(text:)` APIs (replacing deprecated `rawText` / `init(rawText:)`) so builds stay warning-free on current swift-textfile
+- Updated `Tests/XLKitTests/XLKitTestBase` to replace the UTC `TimeZone(secondsFromGMT:)` force unwrap with optional binding, `XCTFail` messaging, and a `.gmt` fallback aligned with the test suite’s avoidance of force unwraps
+- Made `cleanupTempFile(at:)` and `makeBorderedFormat(top:bottom:color:)` `internal` on `XLKitTestBase` so subclasses can override temp-file cleanup and tests can reuse bordered-format construction across files
+
+---
+
 ### 1.1.3
 
 **🎉 Released:**
