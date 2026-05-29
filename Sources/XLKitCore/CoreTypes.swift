@@ -109,12 +109,24 @@ public final class Workbook {
     // CSV/TSV operations are implemented in Workbook+API.swift to avoid circular dependencies
 }
 
+/// Visibility of a sheet in the workbook tab bar
+public enum SheetState: String {
+    /// Sheet is shown in the tab bar (default)
+    case visible
+    /// Sheet is hidden but can be unhidden by the user from the workbook UI
+    case hidden
+    /// Sheet is hidden and cannot be unhidden from the workbook UI; only programmatic access can restore it
+    case veryHidden
+}
+
 /// Represents a worksheet in an Excel workbook
 public final class Sheet: Equatable {
     /// The name of the sheet
     public let name: String
     /// The unique identifier of the sheet within the workbook
     public let id: Int
+    /// Visibility of the sheet in the workbook tab bar
+    public var state: SheetState = .visible
     /// Dictionary mapping cell coordinates to their values
     public var cells: [String: CellValue] = [:]
     /// Array of merged cell ranges

@@ -18,12 +18,13 @@ This document provides an organized overview of all tests in the XLKit library, 
 - [Column & Row Sizing](#column--row-sizing)
 - [Column Ordering Tests](#column-ordering-tests)
 - [Sheet Utility Tests](#sheet-utility-tests)
+- [Sheet State Tests](#sheet-state-tests)
 - [XLKitTestRunner](#xlkittestrunner)
 - [Test Execution & Validation](#test-execution--validation)
 - [Coverage & Quality Assurance](#coverage--quality-assurance)
 
 ## Test Overview
-- Total Tests: 59
+- Total Tests: 66
 - 100% coverage of public APIs
 - All generated files validated with CoreXLSX
 - Security features integrated throughout all tests
@@ -52,7 +53,8 @@ Tests/XLKitTests/
 ├── FileOperationTests.swift      # File operations (2 tests)
 ├── ImageTests.swift              # Image management (2 tests)
 ├── ColumnOrderingTests.swift     # Column ordering (2 tests)
-└── SheetUtilityTests.swift      # Sheet utilities (6 tests)
+├── SheetUtilityTests.swift       # Sheet utilities (6 tests)
+└── SheetStateTests.swift         # Sheet visibility state (7 tests)
 ```
 
 ### Shared Test Base (`XLKitTestBase.swift`)
@@ -235,6 +237,18 @@ All tests verify pixel-perfect scaling, Excel cell dimension matching, and zero 
 - `testSheetUtilityProperties()`: Sheet utility properties and cell counting
 - `testSheetConvenienceInitializer()`: Sheet convenience initializer with data
 
+## Sheet State Tests
+
+**File**: `SheetStateTests.swift` (7 tests)
+
+- `testDefaultStateIsVisible()`: New sheets default to `.visible`
+- `testVisibleSheetOmitsStateAttribute()`: Visible sheets emit no `state` attribute so existing files stay byte-identical
+- `testHiddenSheetEmitsStateAttribute()`: `.hidden` sheets emit `state="hidden"`
+- `testVeryHiddenSheetEmitsStateAttribute()`: `.veryHidden` sheets emit `state="veryHidden"`
+- `testActiveTabOmittedWhenFirstSheetVisible()`: No `activeTab` attribute when the first sheet is visible
+- `testActiveTabPointsAtFirstVisibleSheet()`: `activeTab` points at the first visible sheet when earlier sheets are hidden
+- `testSavingWorkbookWithHiddenSheetSucceeds()`: End-to-end save with a hidden tech sheet writes a valid file
+
 ## XLKitTestRunner
 
 A modular command-line tool for generating Excel files for testing and demonstration purposes.
@@ -342,7 +356,8 @@ swift run XLKitTestRunner help
 | CSV/TSV            | CSVTests.swift          | 12         | 100%            |
 | Column Ordering    | ColumnOrderingTests.swift | 2        | 100%            |
 | Sheet Utilities    | SheetUtilityTests.swift | 6          | 100%            |
-| **Total**          | **13 test files**      | **59**     | **100%**        |
+| Sheet State        | SheetStateTests.swift   | 7          | 100%            |
+| **Total**          | **14 test files**      | **66**     | **100%**        |
 
 ### Quality Standards
 - All generated files pass CoreXLSX validation

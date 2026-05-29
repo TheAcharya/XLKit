@@ -119,12 +119,13 @@ public struct XLSXEngine {
         content += "<fileVersion appName=\"xl\" lastEdited=\"4\" lowestEdited=\"4\" rupBuild=\"4505\"/>"
         content += "<workbookPr defaultThemeVersion=\"124226\"/>"
         content += "<bookViews>"
-        content += "<workbookView xWindow=\"240\" yWindow=\"15\" windowWidth=\"16095\" windowHeight=\"9660\"/>"
+        let sheets = workbook.getSheets()
+        content += "<workbookView xWindow=\"240\" yWindow=\"15\" windowWidth=\"16095\" windowHeight=\"9660\"\(activeTabAttribute(for: sheets))/>"
         content += "</bookViews>"
         content += "<sheets>"
         
-        for sheet in workbook.getSheets() {
-            content += "<sheet name=\"\(CoreUtils.escapeXML(sheet.name))\" sheetId=\"\(sheet.id)\" r:id=\"rId\(sheet.id)\"/>"
+        for sheet in sheets {
+            content += "<sheet name=\"\(CoreUtils.escapeXML(sheet.name))\"\(sheetStateAttribute(sheet)) sheetId=\"\(sheet.id)\" r:id=\"rId\(sheet.id)\"/>"
         }
         
         content += "</sheets>"
@@ -132,6 +133,17 @@ public struct XLSXEngine {
         content += "</workbook>"
         
         return content
+    }
+    
+    /// Renders the optional `state` attribute for a `<sheet>` element; empty for visible sheets so existing files stay byte-identical.
+    static func sheetStateAttribute(_ sheet: Sheet) -> String {
+        sheet.state == .visible ? "" : " state=\"\(sheet.state.rawValue)\""
+    }
+    
+    /// Renders the optional `activeTab` attribute for `<workbookView>`; emitted only when the first visible sheet is not at index 0, otherwise Excel refuses to open a workbook whose default-active sheet is hidden.
+    static func activeTabAttribute(for sheets: [Sheet]) -> String {
+        let firstVisible = sheets.firstIndex { $0.state == .visible } ?? 0
+        return firstVisible > 0 ? " activeTab=\"\(firstVisible)\"" : ""
     }
     
     private static func generateStylesAndStrings(xlDir: URL, workbook: Workbook) throws -> ([String: Int], [String: Int]) {
