@@ -146,6 +146,37 @@ public struct XLSXEngine {
         return firstVisible > 0 ? " activeTab=\"\(firstVisible)\"" : ""
     }
     
+    /// Renders a `<sheetProtection>` element. Each attribute is emitted only when its property is non-nil, so the resulting element carries exactly the choices the caller made.
+    static func sheetProtectionXML(_ protection: SheetProtection) -> String {
+        var content = "<sheetProtection"
+        func append(_ name: String, _ value: Bool?) {
+            if let value { content += " \(name)=\"\(value ? 1 : 0)\"" }
+        }
+        append("sheet", protection.sheet)
+        if let password = protection.password { content += " password=\"\(password)\"" }
+        if let algorithmName = protection.algorithmName { content += " algorithmName=\"\(algorithmName)\"" }
+        if let hashValue = protection.hashValue { content += " hashValue=\"\(hashValue)\"" }
+        if let saltValue = protection.saltValue { content += " saltValue=\"\(saltValue)\"" }
+        if let spinCount = protection.spinCount { content += " spinCount=\"\(spinCount)\"" }
+        append("objects", protection.objects)
+        append("scenarios", protection.scenarios)
+        append("formatCells", protection.formatCells)
+        append("formatColumns", protection.formatColumns)
+        append("formatRows", protection.formatRows)
+        append("insertColumns", protection.insertColumns)
+        append("insertRows", protection.insertRows)
+        append("insertHyperlinks", protection.insertHyperlinks)
+        append("deleteColumns", protection.deleteColumns)
+        append("deleteRows", protection.deleteRows)
+        append("selectLockedCells", protection.selectLockedCells)
+        append("selectUnlockedCells", protection.selectUnlockedCells)
+        append("sort", protection.sort)
+        append("autoFilter", protection.autoFilter)
+        append("pivotTables", protection.pivotTables)
+        content += "/>"
+        return content
+    }
+    
     private static func generateStylesAndStrings(xlDir: URL, workbook: Workbook) throws -> ([String: Int], [String: Int]) {
         // Collect all unique formats from all sheets
         var uniqueFormats: [CellFormat] = []
@@ -512,6 +543,11 @@ public struct XLSXEngine {
         }
         
         content += "</sheetData>"
+        
+        // Add sheet protection if configured; must come after </sheetData> per ECMA-376
+        if let protection = sheet.protection {
+            content += sheetProtectionXML(protection)
+        }
         
         // Add merged cells if any
         let mergedRanges = sheet.getMergedRanges()

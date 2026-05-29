@@ -119,6 +119,44 @@ public enum SheetState: String {
     case veryHidden
 }
 
+/// Per-sheet protection settings, mapped 1:1 to the `<sheetProtection>` XLSX element.
+///
+/// `nil` properties mean the attribute is omitted and the XLSX-defined default applies.
+/// Setting `Sheet.protection` to a non-nil value enables Excel's "Protect Sheet" behaviour
+/// on opening the file; cells with the default locked styling become read-only.
+public struct SheetProtection {
+    /// Whether protection is enforced on the sheet. Default: `true`.
+    public var sheet: Bool? = true
+    /// Legacy 16-bit password hash. Omit for unprotected dialog (still effective).
+    public var password: String?
+    /// Algorithm name for modern password hashing (e.g. `"SHA-512"`).
+    public var algorithmName: String?
+    /// Modern password hash, used with `algorithmName`, `saltValue`, `spinCount`.
+    public var hashValue: String?
+    /// Salt for modern password hash.
+    public var saltValue: String?
+    /// Iteration count for modern password hash.
+    public var spinCount: Int?
+    
+    public var objects: Bool?
+    public var scenarios: Bool?
+    public var formatCells: Bool?
+    public var formatColumns: Bool?
+    public var formatRows: Bool?
+    public var insertColumns: Bool?
+    public var insertRows: Bool?
+    public var insertHyperlinks: Bool?
+    public var deleteColumns: Bool?
+    public var deleteRows: Bool?
+    public var selectLockedCells: Bool?
+    public var selectUnlockedCells: Bool?
+    public var sort: Bool?
+    public var autoFilter: Bool?
+    public var pivotTables: Bool?
+    
+    public init() {}
+}
+
 /// Represents a worksheet in an Excel workbook
 public final class Sheet: Equatable {
     /// The name of the sheet
@@ -127,6 +165,8 @@ public final class Sheet: Equatable {
     public let id: Int
     /// Visibility of the sheet in the workbook tab bar
     public var state: SheetState = .visible
+    /// Protection settings for the sheet; `nil` means the sheet is not protected
+    public var protection: SheetProtection?
     /// Dictionary mapping cell coordinates to their values
     public var cells: [String: CellValue] = [:]
     /// Array of merged cell ranges
