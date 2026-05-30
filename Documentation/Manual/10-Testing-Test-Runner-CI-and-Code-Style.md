@@ -6,7 +6,7 @@ Navigation: [← Chapter 09](09-Errors-CoreUtils-and-iOS.md) · [Manual index](R
 
 ## Unit tests (`XLKitTests`)
 
-The package test target **`XLKitTests`** exercises public APIs (workbook/sheet, CSV, images, formatting, merges, borders, file save, column ordering, etc.). Tests are **`@MainActor`** and inherit shared helpers from **`XLKitTestBase`**.
+The package test target **`XLKitTests`** exercises public APIs (workbook/sheet, CSV, images, formatting, merges, borders, sheet state, sheet protection, file save, column ordering, etc.). Tests are **`@MainActor`** and inherit shared helpers from **`XLKitTestBase`**.
 
 ### Run everything locally
 
@@ -54,6 +54,15 @@ Use **`XLKitTestBase.makeUTCDate`** (or **`fixedTestDate`** / **`epochDate`**) i
 ### Border helpers
 
 **`XLKitTestBase`** exposes **`makeThinBorderFormat()`**, **`makeMediumRedBorderFormat()`**, **`makeThickBlueBorderFormat()`** for consistent border tests.
+
+### Sheet state and protection tests
+
+| File | Tests | Coverage |
+|------|-------|----------|
+| **`SheetStateTests.swift`** | 7 | `.visible` / `.hidden` / `.veryHidden`, workbook `state` and `activeTab` XML, save round-trip |
+| **`SheetProtectionTests.swift`** | 9 | Default `nil` protection, minimal `<sheetProtection>`, legacy/modern passwords, granular permission flags, save round-trip |
+
+The suite currently has **75 tests** across **15** focused files (see **`Tests/README.md`**).
 
 ---
 
