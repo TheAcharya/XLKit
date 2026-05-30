@@ -109,12 +109,84 @@ public final class Workbook {
     // CSV/TSV operations are implemented in Workbook+API.swift to avoid circular dependencies
 }
 
+/// Visibility of a sheet in the workbook tab bar
+public enum SheetState: String {
+    /// Sheet is shown in the tab bar (default)
+    case visible
+    /// Sheet is hidden but can be unhidden by the user from the workbook UI
+    case hidden
+    /// Sheet is hidden and cannot be unhidden from the workbook UI; only programmatic access can restore it
+    case veryHidden
+}
+
+/// Per-sheet protection settings, mapped 1:1 to the `<sheetProtection>` XLSX element.
+///
+/// `nil` properties mean the attribute is omitted and the XLSX-defined default applies.
+/// Setting `Sheet.protection` to a non-nil value enables Excel's "Protect Sheet" behaviour
+/// on opening the file; cells with the default locked styling become read-only.
+///
+/// Most boolean flags use inverted semantics — `true` means "this action is locked when
+/// the sheet is protected", not "this action is allowed." The XLSX-defined defaults
+/// already lock most actions down, so leaving a flag `nil` is usually correct unless you
+/// want to explicitly *allow* a specific action on the protected sheet.
+public struct SheetProtection {
+    /// Whether protection is enforced on the sheet. Default: `true`.
+    public var sheet: Bool? = true
+    /// Legacy 16-bit password hash. Omit for unprotected dialog (still effective).
+    public var password: String?
+    /// Algorithm name for modern password hashing (e.g. `"SHA-512"`).
+    public var algorithmName: String?
+    /// Modern password hash, used with `algorithmName`, `saltValue`, `spinCount`.
+    public var hashValue: String?
+    /// Salt for modern password hash.
+    public var saltValue: String?
+    /// Iteration count for modern password hash.
+    public var spinCount: Int?
+    
+    /// `true` locks drawing objects (shapes, charts, images) when the sheet is protected. XLSX default: `false`.
+    public var objects: Bool?
+    /// `true` locks scenario edits when the sheet is protected. XLSX default: `false`.
+    public var scenarios: Bool?
+    /// `true` locks cell formatting when the sheet is protected. XLSX default: `true`.
+    public var formatCells: Bool?
+    /// `true` locks column formatting when the sheet is protected. XLSX default: `true`.
+    public var formatColumns: Bool?
+    /// `true` locks row formatting when the sheet is protected. XLSX default: `true`.
+    public var formatRows: Bool?
+    /// `true` locks column insertion when the sheet is protected. XLSX default: `true`.
+    public var insertColumns: Bool?
+    /// `true` locks row insertion when the sheet is protected. XLSX default: `true`.
+    public var insertRows: Bool?
+    /// `true` locks hyperlink insertion when the sheet is protected. XLSX default: `true`.
+    public var insertHyperlinks: Bool?
+    /// `true` locks column deletion when the sheet is protected. XLSX default: `true`.
+    public var deleteColumns: Bool?
+    /// `true` locks row deletion when the sheet is protected. XLSX default: `true`.
+    public var deleteRows: Bool?
+    /// `true` blocks selection of locked cells when the sheet is protected. XLSX default: `false` — users can click locked cells but not edit them.
+    public var selectLockedCells: Bool?
+    /// `true` blocks selection of unlocked cells when the sheet is protected. XLSX default: `false`.
+    public var selectUnlockedCells: Bool?
+    /// `true` locks sort operations when the sheet is protected. XLSX default: `true`.
+    public var sort: Bool?
+    /// `true` locks AutoFilter when the sheet is protected. XLSX default: `true`.
+    public var autoFilter: Bool?
+    /// `true` locks PivotTable operations when the sheet is protected. XLSX default: `true`.
+    public var pivotTables: Bool?
+    
+    public init() {}
+}
+
 /// Represents a worksheet in an Excel workbook
 public final class Sheet: Equatable {
     /// The name of the sheet
     public let name: String
     /// The unique identifier of the sheet within the workbook
     public let id: Int
+    /// Visibility of the sheet in the workbook tab bar
+    public var state: SheetState = .visible
+    /// Protection settings for the sheet; `nil` means the sheet is not protected
+    public var protection: SheetProtection?
     /// Dictionary mapping cell coordinates to their values
     public var cells: [String: CellValue] = [:]
     /// Array of merged cell ranges
