@@ -119,18 +119,61 @@ public struct XLSXEngine {
         content += "<fileVersion appName=\"xl\" lastEdited=\"4\" lowestEdited=\"4\" rupBuild=\"4505\"/>"
         content += "<workbookPr defaultThemeVersion=\"124226\"/>"
         content += "<bookViews>"
-        content += "<workbookView xWindow=\"240\" yWindow=\"15\" windowWidth=\"16095\" windowHeight=\"9660\"/>"
+        let sheets = workbook.getSheets()
+        content += "<workbookView xWindow=\"240\" yWindow=\"15\" windowWidth=\"16095\" windowHeight=\"9660\"\(activeTabAttribute(for: sheets))/>"
         content += "</bookViews>"
         content += "<sheets>"
         
-        for sheet in workbook.getSheets() {
-            content += "<sheet name=\"\(CoreUtils.escapeXML(sheet.name))\" sheetId=\"\(sheet.id)\" r:id=\"rId\(sheet.id)\"/>"
+        for sheet in sheets {
+            content += "<sheet name=\"\(CoreUtils.escapeXML(sheet.name))\"\(sheetStateAttribute(sheet)) sheetId=\"\(sheet.id)\" r:id=\"rId\(sheet.id)\"/>"
         }
         
         content += "</sheets>"
         content += "<calcPr calcId=\"124519\" fullCalcOnLoad=\"1\"/>"
         content += "</workbook>"
         
+        return content
+    }
+    
+    /// Renders the optional `state` attribute for a `<sheet>` element; empty for visible sheets so existing files stay byte-identical.
+    static func sheetStateAttribute(_ sheet: Sheet) -> String {
+        sheet.state == .visible ? "" : " state=\"\(sheet.state.rawValue)\""
+    }
+    
+    /// Renders the optional `activeTab` attribute for `<workbookView>`; emitted only when the first visible sheet is not at index 0, otherwise Excel refuses to open a workbook whose default-active sheet is hidden.
+    static func activeTabAttribute(for sheets: [Sheet]) -> String {
+        let firstVisible = sheets.firstIndex { $0.state == .visible } ?? 0
+        return firstVisible > 0 ? " activeTab=\"\(firstVisible)\"" : ""
+    }
+    
+    /// Renders a `<sheetProtection>` element. Each attribute is emitted only when its property is non-nil, so the resulting element carries exactly the choices the caller made.
+    static func sheetProtectionXML(_ protection: SheetProtection) -> String {
+        var content = "<sheetProtection"
+        func append(_ name: String, _ value: Bool?) {
+            if let value { content += " \(name)=\"\(value ? 1 : 0)\"" }
+        }
+        append("sheet", protection.sheet)
+        if let password = protection.password { content += " password=\"\(password)\"" }
+        if let algorithmName = protection.algorithmName { content += " algorithmName=\"\(algorithmName)\"" }
+        if let hashValue = protection.hashValue { content += " hashValue=\"\(hashValue)\"" }
+        if let saltValue = protection.saltValue { content += " saltValue=\"\(saltValue)\"" }
+        if let spinCount = protection.spinCount { content += " spinCount=\"\(spinCount)\"" }
+        append("objects", protection.objects)
+        append("scenarios", protection.scenarios)
+        append("formatCells", protection.formatCells)
+        append("formatColumns", protection.formatColumns)
+        append("formatRows", protection.formatRows)
+        append("insertColumns", protection.insertColumns)
+        append("insertRows", protection.insertRows)
+        append("insertHyperlinks", protection.insertHyperlinks)
+        append("deleteColumns", protection.deleteColumns)
+        append("deleteRows", protection.deleteRows)
+        append("selectLockedCells", protection.selectLockedCells)
+        append("selectUnlockedCells", protection.selectUnlockedCells)
+        append("sort", protection.sort)
+        append("autoFilter", protection.autoFilter)
+        append("pivotTables", protection.pivotTables)
+        content += "/>"
         return content
     }
     
@@ -500,6 +543,11 @@ public struct XLSXEngine {
         }
         
         content += "</sheetData>"
+        
+        // Add sheet protection if configured; must come after </sheetData> per ECMA-376
+        if let protection = sheet.protection {
+            content += sheetProtectionXML(protection)
+        }
         
         // Add merged cells if any
         let mergedRanges = sheet.getMergedRanges()

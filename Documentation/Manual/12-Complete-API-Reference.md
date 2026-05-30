@@ -105,7 +105,9 @@ This chapter lists the full public API of XLKit. All types and members are avail
 
 | Method / Property | Description |
 |------------------|-------------|
-| `clear()` | Clear all cells, formats, images, merged ranges, and dimensions. |
+| `state: SheetState` | Sheet visibility in the tab bar (`.visible`, `.hidden`, `.veryHidden`). Default: `.visible`. |
+| `protection: SheetProtection?` | Per-sheet protection settings; `nil` (default) means unprotected. |
+| `clear()` | Clear all cells, formats, images, merged ranges, and dimensions (does not reset `state` or `protection`). |
 | `allCells: [String: CellValue]` | All cells with values. |
 | `allFormattedCells: [String: Cell]` | All cells with value and format. |
 | `isEmpty: Bool` | Whether the sheet has any content. |
@@ -114,6 +116,43 @@ This chapter lists the full public API of XLKit. All types and members are avail
 | `name: String` | Sheet name. |
 | `id: Int` | Sheet id. |
 | `cells`, `mergedRanges`, `columnWidths`, `rowHeights`, `images`, `cellFormats` | Internal storage (public for access). |
+
+### SheetState (enum)
+
+| Case | Description |
+|------|-------------|
+| `.visible` | Sheet shown in tab bar (default); no `state` attribute in workbook XML. |
+| `.hidden` | Hidden from tab bar; user can unhide in Excel. Emits `state="hidden"`. |
+| `.veryHidden` | Hidden and not unhideable from Excel UI. Emits `state="veryHidden"`. |
+
+### SheetProtection (struct)
+
+Maps 1:1 to the `<sheetProtection>` XLSX element. Boolean flags use **inverted lock semantics** — `true` means the action is locked when the sheet is protected.
+
+| Property | Description |
+|----------|-------------|
+| `sheet: Bool?` | Whether protection is enforced. Default: `true`. |
+| `password: String?` | Legacy 16-bit password hash. |
+| `algorithmName: String?` | Modern hash algorithm (e.g. `"SHA-512"`). |
+| `hashValue: String?` | Modern password hash. |
+| `saltValue: String?` | Salt for modern hash. |
+| `spinCount: Int?` | Iteration count for modern hash. |
+| `objects: Bool?` | Lock drawing objects. XLSX default: `false`. |
+| `scenarios: Bool?` | Lock scenario edits. XLSX default: `false`. |
+| `formatCells: Bool?` | Lock cell formatting. XLSX default: `true`. |
+| `formatColumns: Bool?` | Lock column formatting. XLSX default: `true`. |
+| `formatRows: Bool?` | Lock row formatting. XLSX default: `true`. |
+| `insertColumns: Bool?` | Lock column insertion. XLSX default: `true`. |
+| `insertRows: Bool?` | Lock row insertion. XLSX default: `true`. |
+| `insertHyperlinks: Bool?` | Lock hyperlink insertion. XLSX default: `true`. |
+| `deleteColumns: Bool?` | Lock column deletion. XLSX default: `true`. |
+| `deleteRows: Bool?` | Lock row deletion. XLSX default: `true`. |
+| `selectLockedCells: Bool?` | Block selection of locked cells. XLSX default: `false`. |
+| `selectUnlockedCells: Bool?` | Block selection of unlocked cells. XLSX default: `false`. |
+| `sort: Bool?` | Lock sort operations. XLSX default: `true`. |
+| `autoFilter: Bool?` | Lock AutoFilter. XLSX default: `true`. |
+| `pivotTables: Bool?` | Lock PivotTable operations. XLSX default: `true`. |
+| `init()` | Create with defaults (`sheet: true`, all permission flags `nil`). |
 
 ### Cell & coordinate types
 
@@ -168,6 +207,7 @@ Static factories: `text(fontName:fontSize:fontWeight:fontStyle:color:)`, `header
 
 ### Enums
 
+- **SheetState**: `.visible`, `.hidden`, `.veryHidden`
 - **FontWeight**: `.normal`, `.bold`
 - **FontStyle**: `.normal`, `.italic`
 - **TextDecoration**: `.none`, `.underline`, `.strikethrough`, `.underlineStrikethrough`

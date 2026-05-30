@@ -20,6 +20,7 @@
   - [CSV/TSV Operations](#csvtsv-operations)
   - [Image Operations](#image-operations)
 - [Recent Improvements](#recent-improvements)
+  - [Sheet Visibility and Protection](#sheet-visibility-and-protection-2026-05-30-pr-23)
   - [iOS Compatibility Fix](#ios-compatibility-fix-2025-07-14)
   - [Perfect Aspect Ratio Preservation](#perfect-aspect-ratio-preservation-2025-07-07)
   - [Scaling API Investigation and Fixes](#scaling-api-investigation-and-fixes-2025-07-12)
@@ -89,7 +90,7 @@ XLKit/
 │           └── TestGeneratorTemplate.swift # Template for new tests (224 lines)
 ├── Tests/                      # Unit tests
 │   ├── README.md               # Test documentation (371 lines)
-│   └── XLKitTests/             # Test suite (13 focused test files)
+│   └── XLKitTests/             # Test suite (15 focused test files)
 │       ├── XLKitTestBase.swift # Shared base class with common helpers (136 lines)
 │       ├── CoreTests.swift     # Workbook and sheet operations (5 tests)
 │       ├── CellValueTests.swift # Cell values and data types (6 tests)
@@ -103,8 +104,10 @@ XLKit/
 │       ├── FileOperationTests.swift # File operations (2 tests)
 │       ├── ImageTests.swift     # Image management (2 tests)
 │       ├── ColumnOrderingTests.swift # Column ordering (2 tests)
-│       └── SheetUtilityTests.swift # Sheet utilities (6 tests)
-│       # Total: 59 tests across 13 focused test files
+│       ├── SheetUtilityTests.swift # Sheet utilities (6 tests)
+│       ├── SheetStateTests.swift # Sheet visibility state (7 tests)
+│       └── SheetProtectionTests.swift # Sheet protection (9 tests)
+│       # Total: 75 tests across 15 focused test files
 ├── Test-Data/                  # Test data files
 │   ├── README.md               # Test data documentation (44 lines)
 │   └── Embed-Test/             # Image embedding test data
@@ -418,6 +421,8 @@ Test Coverage Requirements:
 - Test merged cells with complex scenarios
 - Test number formatting (currency, percentage, custom formats)
 - Test column ordering for sheets with more than 26 columns (A-Z, AA, AB, etc.)
+- Test sheet visibility state (`.visible`, `.hidden`, `.veryHidden`) and `activeTab` workbook XML
+- Test sheet protection (`SheetProtection`) including legacy/modern passwords and granular permission flags
 - Test platform compatibility and iOS-specific features
 
 Test Patterns:
@@ -528,6 +533,8 @@ Sheet Class:
 public final class Sheet: Equatable {
     public let name: String
     public let id: Int
+    public var state: SheetState = .visible
+    public var protection: SheetProtection?
     private var cells: [String: CellValue] = [:]
     private var mergedRanges: [CellRange] = []
     private var columnWidths: [Int: Double] = [:]
@@ -536,9 +543,37 @@ public final class Sheet: Equatable {
     private var cellFormats: [String: CellFormat] = [:]
 }
 ```
-- Represents a worksheet with cells, formatting, and images
+- Represents a worksheet with cells, formatting, images, visibility, and protection
 - Supports cell operations, range operations, and image embedding
+- `state` controls tab-bar visibility (`.visible`, `.hidden`, `.veryHidden`)
+- `protection` enables Excel "Protect Sheet" when set to non-nil `SheetProtection`
 - Not Sendable due to mutable state requirements
+
+SheetState Enum:
+```swift
+public enum SheetState: String {
+    case visible      // default — shown in tab bar
+    case hidden       // hidden; user can unhide in Excel UI
+    case veryHidden   // hidden; not unhideable from Excel UI
+}
+```
+
+SheetProtection Struct:
+```swift
+public struct SheetProtection {
+    public var sheet: Bool? = true
+    public var password: String?
+    public var algorithmName: String?
+    public var hashValue: String?
+    public var saltValue: String?
+    public var spinCount: Int?
+    // 15 granular permission flags (objects, scenarios, formatCells, ...)
+    public init() {}
+}
+```
+- Maps 1:1 to `<sheetProtection>` XLSX element
+- Boolean flags use inverted lock semantics (`true` = action locked)
+- `nil` properties omit the attribute (XLSX default applies)
 
 CellValue Enum:
 ```swift
@@ -694,6 +729,22 @@ sheet.setCell("A1", cell: Cell.string("Red Text", format: CellFormat.text(color:
 
 // Set range of cells
 sheet.setRange("A1:A10", value: .string("Batch"))
+```
+
+Sheet Visibility and Protection:
+```swift
+// Hide auxiliary sheets from the tab bar
+techSheet.state = .hidden       // user can unhide in Excel
+configSheet.state = .veryHidden  // not unhideable from Excel UI
+
+// Protect a sheet (locked cells become read-only in Excel)
+dataSheet.protection = SheetProtection()
+
+// Fine-grained protection with inverted lock semantics
+var protection = SheetProtection()
+protection.formatCells = false       // explicitly allow formatting
+protection.selectLockedCells = true  // block selection of locked cells
+dataSheet.protection = protection
 ```
 
 Range Operations:
@@ -884,6 +935,17 @@ try await sheet.embedImageAutoSized(
 - Increased test count from 55 to 59 with 100% API coverage maintained
 - Test files: `CoreTests.swift` (5 tests), `CellValueTests.swift` (6 tests), `CoordinateTests.swift` (2 tests), `FormattingTests.swift` (8 tests), `NumberFormatTests.swift` (5 tests), `TextWrappingTests.swift` (2 tests), `BorderTests.swift` (3 tests), `MergeTests.swift` (4 tests), `CSVTests.swift` (12 tests), `FileOperationTests.swift` (2 tests), `ImageTests.swift` (2 tests), `ColumnOrderingTests.swift` (2 tests), `SheetUtilityTests.swift` (6 tests)
 
+### Sheet Visibility and Protection (2026-05-30, PR #23)
+- Added `SheetState` enum (`.visible`, `.hidden`, `.veryHidden`) and `Sheet.state` property
+- Added `SheetProtection` struct with legacy/modern password support and 15 ECMA-376 granular permission flags
+- Added `Sheet.protection` property; non-nil enables Excel "Protect Sheet" on open
+- XLSX engine emits `state` on `<sheet>`, `activeTab` on `<workbookView>` when first sheet is hidden, and `<sheetProtection>` after `</sheetData>`
+- Visible/unprotected sheets emit no extra XML (backward-compatible byte-identical output)
+- Excel, LibreOffice, and Google Sheets respect both features; Apple Numbers ignores them
+- Added `SheetStateTests.swift` (7 tests) and `SheetProtectionTests.swift` (9 tests)
+- Increased test count from 59 to 75 with 100% API coverage maintained
+- Documented in `Documentation/Manual/` chapters 03, 11, and 12
+
 ### iOS Compatibility Fix (2025-07-14)
 - Fixed iOS build error: `'homeDirectoryForCurrentUser' is unavailable in iOS`
 - Implemented platform-specific conditionals for file system operations
@@ -932,6 +994,8 @@ Key Features:
 - Validates files using CoreXLSX
 - Supports all Excel data types and formatting
 - Generates proper font colour XML with theme colour support
+- Emits sheet `state` attributes and `activeTab` for hidden sheets in workbook XML
+- Emits `<sheetProtection>` in worksheet XML when `Sheet.protection` is set
 
 ### Image Embedding Scaling API
 

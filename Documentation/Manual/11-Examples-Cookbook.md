@@ -125,3 +125,28 @@ do {
 }
 ```
 
+### Example 6: Hidden and protected sheets
+
+Hide a technical sheet from the tab bar and protect a data sheet so cells are read-only in Excel.
+
+```swift
+import XLKit
+
+let workbook = Workbook()
+let strings = workbook.addSheet(name: "Strings")
+let data = workbook.addSheet(name: "Data")
+
+// Hide the auxiliary sheet (user can unhide in Excel)
+strings.state = .hidden
+strings.setCell("A1", string: "Internal lookup table")
+
+// Protect the data sheet (locked cells become read-only)
+data.setCell("A1", string: "Revenue", format: CellFormat.header())
+data.setCell("B1", number: 125_000, format: CellFormat.currency())
+data.protection = SheetProtection()
+
+try workbook.save(to: CoreUtils.safeFileURL(for: "protected-report.xlsx"))
+```
+
+Use `.veryHidden` when the sheet must not be unhidden from the Excel UI. Set individual `SheetProtection` flags to `false` to explicitly allow specific actions on a protected sheet (see [Chapter 03](03-Core-Model-Workbook-Sheet-and-Cells.md)).
+

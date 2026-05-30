@@ -90,6 +90,18 @@ sheet.setCell("A1", string: "Bordered Cell", format: borderedFormat)
 // Clear all data
 sheet.clear()
 
+// Sheet visibility (tab bar)
+sheet.state = .visible      // default — shown in tab bar
+sheet.state = .hidden         // hidden; user can unhide from Excel UI
+sheet.state = .veryHidden     // hidden; cannot be unhidden from Excel UI
+
+// Sheet protection (Excel "Protect Sheet")
+sheet.protection = SheetProtection()  // enable protection with XLSX defaults
+var protection = SheetProtection()
+protection.password = "CC3F"          // optional legacy password hash
+protection.selectLockedCells = true   // true = lock that action (inverted semantics)
+sheet.protection = protection
+
 // Utility properties
 let allCells = sheet.allCells                    // [String: CellValue]
 let allFormattedCells = sheet.allFormattedCells  // [String: Cell]
@@ -146,4 +158,47 @@ print(range.excelRange) // "A1:C3"
 // Parse Excel ranges
 let range2 = CellRange(excelRange: "A1:B5")
 ```
+
+### Sheet visibility and protection
+
+Sheets can be marked as auxiliary (hidden from the tab bar) or read-only (protected) when the workbook opens in Excel, LibreOffice Calc, or Google Sheets. Apple Numbers ignores these XLSX features.
+
+#### `SheetState`
+
+| Value | Behaviour |
+|-------|-----------|
+| `.visible` (default) | Sheet appears in the tab bar. No extra XML is emitted. |
+| `.hidden` | Sheet is hidden; the user can unhide it from the workbook UI. |
+| `.veryHidden` | Sheet is hidden and cannot be unhidden from the UI (programmatic access only). |
+
+When the first sheet(s) in the workbook are hidden, XLKit emits `activeTab` on `<workbookView>` pointing at the first visible sheet so Excel opens the file correctly.
+
+```swift
+let workbook = Workbook()
+let tech = workbook.addSheet(name: "Strings")
+let data = workbook.addSheet(name: "Data")
+
+tech.state = .hidden
+data.setCell("A1", string: "User-facing data")
+
+try workbook.save(to: url)
+```
+
+#### `SheetProtection`
+
+Set `sheet.protection` to a non-nil `SheetProtection` to enable Excel's "Protect Sheet" behaviour. Cells with default locked styling become read-only. Set `protection` to `nil` (default) for an unprotected sheet — no `<sheetProtection>` element is emitted.
+
+**Important:** Boolean permission flags use **inverted lock semantics** — `true` means the action is **locked** (not allowed) when the sheet is protected, not "allowed." Omit a flag (`nil`) to use the XLSX-defined default.
+
+```swift
+var protection = SheetProtection()
+protection.sheet = true              // enforce protection (default)
+protection.formatCells = false       // explicitly allow formatting
+protection.selectLockedCells = true  // block selection of locked cells
+sheet.protection = protection
+```
+
+For password-protected sheets, supply either a legacy `password` hash or the modern hash quartet (`algorithmName`, `hashValue`, `saltValue`, `spinCount`).
+
+**Note:** `sheet.clear()` clears cells, formats, images, merges, and dimensions but does **not** reset `state` or `protection`.
 

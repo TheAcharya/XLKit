@@ -2,7 +2,7 @@
 
 Navigation: [Manual index](README.md) · Next: [Chapter 02 — Architecture](02-Architecture-Modules-and-Source-Map.md)
 
-XLKit is a Swift library for creating Excel `.xlsx` workbooks on **macOS 12+** and **iOS 15+**. It provides a fluent API for cells, formatting, CSV/TSV, images, and OpenXML-compliant export. This chapter covers performance, compatibility, requirements, and installation.
+XLKit is a Swift library for creating Excel `.xlsx` workbooks on **macOS 12+** and **iOS 15+**. It provides a fluent API for cells, formatting, CSV/TSV, images, sheet visibility, sheet protection, and OpenXML-compliant export. This chapter covers performance, compatibility, requirements, and installation.
 
 ## Performance Considerations
 

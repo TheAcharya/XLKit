@@ -24,7 +24,7 @@ XLKitXLSX → XLKitCore, XLKitFormatters, XLKitImages, ZIPFoundation
 
 | Module | Responsibility |
 |--------|----------------|
-| **XLKitCore** | Domain model: `Workbook`, `Sheet`, `CellValue`, `Cell`, `CellFormat`, coordinates, `ExcelImage`, `XLKitError`, `CoreUtils`, `SecurityManager`. |
+| **XLKitCore** | Domain model: `Workbook`, `Sheet`, `CellValue`, `Cell`, `CellFormat`, `SheetState`, `SheetProtection`, coordinates, `ExcelImage`, `XLKitError`, `CoreUtils`, `SecurityManager`. |
 | **XLKitFormatters** | `CSVUtils` — RFC-style CSV and TSV import/export via [swift-textfile](https://github.com/orchetect/swift-textfile). |
 | **XLKitImages** | `ImageUtils` (format detection, dimensions, `ExcelImage` construction), `ImageSizingUtils` (aspect fit, EMUs, Excel column/row width formulas). |
 | **XLKitXLSX** | `XLSXEngine` — builds the Open XML package (styles, shared strings, worksheets, drawings, relationships) and zips it with ZIPFoundation. |
@@ -37,7 +37,8 @@ The `XLKit` **struct** in `XLKit.swift` is an empty namespace; all behaviour liv
 1. You build a `Workbook` in memory (sheets, cells, formats, images).
 2. `workbook.save(to: url)` (sync or async) calls `XLSXEngine.generateXLSX(workbook:to:)`.
 3. The engine applies **SecurityManager** (rate limit, optional path rules), writes OOXML parts under a temporary directory, then creates a **ZIP** archive as `.xlsx`.
-4. Optional **SHA-256** checksum sidecar if `SecurityManager.enableChecksumStorage` is `true`.
+4. Workbook XML includes per-sheet `state` attributes (`.hidden` / `.veryHidden`) and `activeTab` on `<workbookView>` when the first sheet is hidden. Worksheet XML includes `<sheetProtection>` after `</sheetData>` when `Sheet.protection` is set.
+5. Optional **SHA-256** checksum sidecar if `SecurityManager.enableChecksumStorage` is `true`.
 
 For low-level or test use, you may call `XLSXEngine.generateXLSX` directly; app code should normally use `save(to:)`. `XLSXEngine.formatToKey(_:)` is public for hashing/deduplicating `CellFormat` instances (styles XML uses the same keying).
 
