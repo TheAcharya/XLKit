@@ -6,8 +6,8 @@
 - 30th May 2026
 
 **🔧 Improvements:**
-- Added `Sheet.state` (`.visible` / `.hidden` / `.veryHidden`) to control sheet visibility; existing workbooks remain byte-identical as unaffected sheets emit no new XML Thanks @way-to-code!
-- Added `Sheet.protection` (`SheetProtection?`) to mark sheets as read-only, with support for legacy and modern password hashing and granular ECMA-376 permission flags Thanks @way-to-code!
+- Added `Sheet.state` (`.visible` / `.hidden` / `.veryHidden`) to control sheet visibility; existing workbooks remain byte-identical as unaffected sheets emit no new XML (#23) Thanks @way-to-code!
+- Added `Sheet.protection` (`SheetProtection?`) to mark sheets as read-only, with support for legacy and modern password hashing and granular ECMA-376 permission flags (#23) Thanks @way-to-code!
 - Documented all 15 boolean permission flags on `SheetProtection`, including the XLSX inverted-boolean semantics (`true` = locked/not allowed)
 - Expanded unit test coverage from 60 to 75 tests
 
