@@ -6,12 +6,12 @@
 - 3rd June 2026
 
 **🔧 Improvements:**
-- Added `CoreUtils.excelLegacySheetPasswordHash(for:)` to compute the correct legacy 16-bit worksheet protection password hash for Excel's `sheetProtection@password` attribute (the OOXML-documented algorithm is incorrect; this matches Excel and LibreOffice)
-- Added `CoreUtils.excelModernSheetPasswordHash(for:spinCount:salt:)` and `CoreUtils.configureSheetPassword(_:plaintext:legacy:modern:spinCount:salt:)` for SHA-512 worksheet protection (Excel 2013+)
-- Added `XLKitTestRunner sheet-password <plaintext>` developer command to print legacy/modern hash fields and a Swift snippet; `--demo-salts` with **1234** also prints salts from `ComprehensiveDemoProtection.swift` (same as `Comprehensive-Demo.xlsx`)
-- Extended `XLKitTestRunner` comprehensive demo with sheet visibility and protection (11 sheets); password-protected sheets use **1234** via `configureSheetPassword`, with demo constants in `ComprehensiveDemoProtection.swift` (TestRunner only, not public XLKitCore API)
-- Documented protected-sheet passwords and password helpers in `Sources/XLKitTestRunner/README.md`, `Test-Workflows/README.md`, `Tests/README.md`, and manual chapters 03, 09, 10, and 12
-- Expanded `SheetProtectionTests` (legacy + modern hash vectors, `configureSheetPassword`); unit test coverage from 75 to 80 tests
+- Added helpers to set worksheet passwords from plain text so protected sheets open correctly in Excel and LibreOffice (older four-character hashes and Excel 2013+ SHA-512)
+- Added `configureSheetPassword` to apply both password styles in one call instead of copying hash values by hand
+- Added `XLKitTestRunner sheet-password` for developers: prints the values you need and sample Swift code (`--demo-salts` with **1234** matches the comprehensive demo workbook)
+- Expanded the comprehensive demo to 11 sheets, including hidden sheets and password-protected examples (demo password **1234**); demo-only settings live in the test runner, not the public library API
+- Documented which sheets use a password and how to try the demo in the test runner README, Test-Workflows README, tests README, and manual chapters 03, 09, 10, and 12
+- Expanded sheet protection tests; unit test count from 75 to 80
 
 ---
 
