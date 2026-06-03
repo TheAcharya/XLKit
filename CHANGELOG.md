@@ -1,5 +1,20 @@
 # Changelog
 
+### 1.1.6
+
+**🎉 Released:**
+- 3rd June 2026
+
+**🔧 Improvements:**
+- Added `CoreUtils.excelLegacySheetPasswordHash(for:)` to compute the correct legacy 16-bit worksheet protection password hash for Excel's `sheetProtection@password` attribute (the OOXML-documented algorithm is incorrect; this matches Excel and LibreOffice)
+- Added `CoreUtils.excelModernSheetPasswordHash(for:spinCount:salt:)` and `CoreUtils.configureSheetPassword(_:plaintext:legacy:modern:spinCount:salt:)` for SHA-512 worksheet protection (Excel 2013+)
+- Added `XLKitTestRunner sheet-password <plaintext>` developer command to print legacy/modern fields and a Swift snippet; `--demo-salts` shows fixed salts for comprehensive-demo password **1234**
+- Extended `XLKitTestRunner` comprehensive demo with sheet visibility and protection; demo password **1234** via `configureSheetPassword` and reproducible demo salts (no hardcoded hash strings)
+- Documented protected-sheet passwords in `Sources/XLKitTestRunner/README.md`
+- Expanded `SheetProtectionTests` (legacy + modern hash vectors, configure helper); unit test coverage from 75 to 80 tests
+
+---
+
 ### 1.1.5
 
 **🎉 Released:**

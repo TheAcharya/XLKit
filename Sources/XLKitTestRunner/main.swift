@@ -58,6 +58,16 @@ let mainTask = Task {
             print("[DEBUG] About to call testNumberFormats()")
             try await ExcelGenerators.testNumberFormats()
             print("[DEBUG] testNumberFormats() completed")
+        case "sheet-password", "sheet-password-hash", "password-hash":
+            guard args.count >= 3 else {
+                print("[ERROR] Missing password argument")
+                print("Usage: swift run XLKitTestRunner sheet-password <plaintext> [--demo-salts]")
+                exitCode = 1
+                return
+            }
+            let password = args[2]
+            let useDemoSalts = args.contains("--demo-salts")
+            try SheetPasswordUtilities.printPasswordHashes(for: password, useComprehensiveDemoSalts: useDemoSalts)
         case "help", "-h", "--help":
             printHelp()
         default:
@@ -91,6 +101,7 @@ func printHelp() {
       security-demo, security - Demonstrate file path security restrictions
       ios-test, ios           - Test iOS file system compatibility
       number-formats, formats - Test number formatting (currency, percentage, custom)
+      sheet-password, password-hash - Print legacy + SHA-512 protection fields for a password
       help, -h, --help        - Show this help message
     
     Examples:
@@ -98,6 +109,8 @@ func printHelp() {
       swift run XLKitTestRunner security-demo
       swift run XLKitTestRunner ios-test
       swift run XLKitTestRunner number-formats
+      swift run XLKitTestRunner sheet-password 789648
+      swift run XLKitTestRunner sheet-password 1234 --demo-salts
       swift run XLKitTestRunner help
     
     

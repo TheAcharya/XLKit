@@ -23,6 +23,60 @@ final class SheetProtectionTests: XLKitTestBase {
         XCTAssertNil(protection.password)
     }
     
+    func testLegacyPasswordHashFor1234() {
+        XCTAssertEqual(CoreUtils.excelLegacySheetPasswordHash(for: "1234"), "CC3D")
+    }
+    
+    func testModernPasswordHashFor1234ComprehensiveDemoPasswordSheet() throws {
+        let modern = try CoreUtils.excelModernSheetPasswordHash(
+            for: "1234",
+            salt: CoreUtils.comprehensiveDemoPasswordSheetSalt
+        )
+        XCTAssertEqual(modern.algorithmName, "SHA-512")
+        XCTAssertEqual(modern.saltValue, "WExLaXRQYXNzRGVtbzEhIQ==")
+        XCTAssertEqual(
+            modern.hashValue,
+            "r5j81/AZyLlOvDcoZdtgz0KZV/LU28sGe5LjE5dbkmalhvrdLKmD7xSLn403UyjjZwyOqjApNK3taOIZ8qZIYQ=="
+        )
+        XCTAssertEqual(modern.spinCount, 100_000)
+    }
+    
+    func testModernPasswordHashFor1234ComprehensiveDemoModernSheet() throws {
+        let modern = try CoreUtils.excelModernSheetPasswordHash(
+            for: "1234",
+            salt: CoreUtils.comprehensiveDemoModernSheetSalt
+        )
+        XCTAssertEqual(modern.saltValue, "WExLaXRNb2RIYXNoRGVtbyE=")
+        XCTAssertEqual(
+            modern.hashValue,
+            "UUuu11+Bm0SBR7dA+v1Fl7xnQTS/EYuHV2QIjv45LWN3a3xxWaIDiu2/VdJz4h2nivwAeU5N8oZBe5ClFu/IaQ=="
+        )
+    }
+    
+    func testConfigureSheetPasswordAppliesLegacyAndModern() throws {
+        var protection = SheetProtection()
+        try CoreUtils.configureSheetPassword(
+            &protection,
+            plaintext: "789648",
+            salt: Data("XLKitTestSalt!!".utf8)
+        )
+        XCTAssertEqual(protection.password, CoreUtils.excelLegacySheetPasswordHash(for: "789648"))
+        XCTAssertEqual(protection.algorithmName, "SHA-512")
+        XCTAssertNotNil(protection.saltValue)
+        XCTAssertNotNil(protection.hashValue)
+        XCTAssertEqual(protection.spinCount, 100_000)
+    }
+    
+    func testConfigureSheetPasswordRejectsEmptyPassword() {
+        var protection = SheetProtection()
+        XCTAssertThrowsError(try CoreUtils.configureSheetPassword(&protection, plaintext: "")) { error in
+            guard case .securityError(let message) = error as? XLKitError else {
+                return XCTFail("Expected XLKitError.securityError, got \(error)")
+            }
+            XCTAssertTrue(message.contains("must not be empty"))
+        }
+    }
+    
     func testMinimalProtectionXML() {
         let protection = SheetProtection()
         XCTAssertEqual(XLSXEngine.sheetProtectionXML(protection), "<sheetProtection sheet=\"1\"/>")

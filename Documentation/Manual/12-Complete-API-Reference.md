@@ -237,6 +237,12 @@ Static methods and constants (XLKitCore):
 | `generateChecksum(_ data: Data) -> String` | SHA-256 hex string. |
 | `generateFileChecksum(_ fileURL: URL) throws -> String` | SHA-256 of file contents. |
 | `safeFileURL(for filename: String) -> URL` | Platform-safe URL (e.g. documents dir on iOS). |
+| `excelLegacySheetPasswordHash(for password: String) -> String` | Legacy 16-bit hex for `SheetProtection.password`. |
+| `excelModernSheetPasswordHash(for:spinCount:salt:) throws -> ExcelModernSheetPasswordHash` | SHA-512 salt/hash/spinCount for Excel 2013+. |
+| `configureSheetPassword(_:plaintext:legacy:modern:spinCount:salt:) throws` | Fill `SheetProtection` from plaintext password. |
+| `comprehensiveDemoSheetPassword` | Demo password string (`"1234"`) for TestRunner. |
+| `comprehensiveDemoPasswordSheetSalt` / `comprehensiveDemoModernSheetSalt` | Fixed salts for reproducible comprehensive demo. |
+| `excelModernSheetPasswordDefaultSpinCount` | Default `100_000` spin count. |
 | `maxImageFileSize: Int` | 50 MB. |
 | `maxExcelFileSize: Int` | 100 MB. |
 | `allowedDirectories: [URL]` | Allowed base directories for path validation. |

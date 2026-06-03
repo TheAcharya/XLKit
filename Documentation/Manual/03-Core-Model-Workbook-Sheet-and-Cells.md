@@ -198,7 +198,17 @@ protection.selectLockedCells = true  // block selection of locked cells
 sheet.protection = protection
 ```
 
-For password-protected sheets, supply either a legacy `password` hash or the modern hash quartet (`algorithmName`, `hashValue`, `saltValue`, `spinCount`).
+For password-protected sheets, use `CoreUtils` — do not guess salt/hash values:
+
+```swift
+var protection = SheetProtection()
+try CoreUtils.configureSheetPassword(&protection, plaintext: "mySecret")
+sheet.protection = protection
+```
+
+- **Legacy only:** `protection.password = CoreUtils.excelLegacySheetPasswordHash(for: "mySecret")`
+- **Modern (SHA-512):** `let modern = try CoreUtils.excelModernSheetPasswordHash(for: "mySecret")` then assign `algorithmName`, `saltValue`, `hashValue`, `spinCount`
+- **Developer helper:** `swift run XLKitTestRunner sheet-password mySecret`
 
 **Note:** `sheet.clear()` clears cells, formats, images, merges, and dimensions but does **not** reset `state` or `protection`.
 

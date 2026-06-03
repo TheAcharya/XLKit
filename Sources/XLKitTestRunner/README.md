@@ -9,6 +9,7 @@ Sources/XLKitTestRunner/
 ├── main.swift                    # Entry point with command-line interface
 ├── ExcelGenerators.swift         # Excel generation functions
 ├── ImageEmbedGenerators.swift    # Image embedding test functions
+├── SheetPasswordUtilities.swift  # sheet-password command output
 ├── Templates/                    # Template files for new tests
 │   └── TestGeneratorTemplate.swift
 └── README.md                     # This file
@@ -29,9 +30,14 @@ swift run XLKitTestRunner comprehensive
 swift run XLKitTestRunner security-demo
 swift run XLKitTestRunner ios-test
 
+swift run XLKitTestRunner sheet-password YourPassword
+swift run XLKitTestRunner sheet-password 1234 --demo-salts
+
 # Show help
 swift run XLKitTestRunner help
 ```
+
+Generated `.xlsx` files are listed in **`Test-Workflows/README.md`** at the repo root.
 
 ### Available Test Types
 
@@ -40,6 +46,7 @@ swift run XLKitTestRunner help
 | `no-embeds` / `no-images` | Generate Excel from CSV without images | ✅ Implemented |
 | `embed` / `with-embeds` / `with-images` | Generate Excel with image embeds | ✅ Implemented |
 | `comprehensive` / `demo` | Comprehensive API demonstration with all features | ✅ Implemented |
+| `sheet-password` / `password-hash` | Print legacy + SHA-512 `SheetProtection` fields for a plaintext password | ✅ Implemented |
 | `security-demo` / `security` | Demonstrate file path security restrictions | ✅ Implemented |
 | `ios-test` / `ios` | Test iOS file system compatibility | ✅ Implemented |
 
@@ -63,6 +70,18 @@ Generates an Excel file from CSV data with embedded images. Tests image embeddin
 - Perfect aspect ratio preservation for all images
 - CoreXLSX validation for Excel compliance
 
+### sheet-password / password-hash
+Prints worksheet protection hash values for developers (copy into `SheetProtection` or verify in Excel).
+
+```bash
+swift run XLKitTestRunner sheet-password 789648
+swift run XLKitTestRunner sheet-password 1234 --demo-salts
+```
+
+- First command: legacy hash + SHA-512 with a **random** salt (new salt each run).
+- `--demo-salts` with `1234`: also prints the **fixed** salts used in `Comprehensive-Demo.xlsx`.
+- Prefer `CoreUtils.configureSheetPassword(&protection, plaintext: "…")` in app code instead of hardcoding.
+
 ### comprehensive / demo
 Comprehensive API demonstration showcasing all XLKit features including multiple sheets, formulas, formatting, and image embedding.
 
@@ -74,7 +93,18 @@ Comprehensive API demonstration showcasing all XLKit features including multiple
 - Formulas and calculations
 - Image embedding with various formats
 - Range operations and cell merging
+- Sheet visibility (`.visible`, `.hidden`, `.veryHidden`) and `activeTab` when the first sheet is hidden
+- Sheet protection (`SheetProtection`): default, legacy password, granular flags, modern hash metadata
 - Complete API demonstration
+
+**Protected sheets in `Comprehensive-Demo.xlsx`** (open in Excel to try unprotect):
+
+| Sheet | Password to unprotect | Notes |
+|-------|----------------------|--------|
+| **Protected (Basic)** | *(none)* | Default `SheetProtection()` — sheet is protected; unprotect without entering a password. |
+| **Protected (Password)** | **`1234`** | Legacy hash `CC3D` plus SHA-512 salt/hash (Excel 2013+). Use **1234** in the Unprotect Sheet dialog. |
+| **Protected (Granular)** | *(none)* | No password. After unprotecting: formatting cells and inserting rows are allowed (`formatCells` / `insertRows` = false in XML means not locked); sorting stays locked (`sort` = true). |
+| **Protected (Modern Hash)** | **`1234`** | SHA-512 only (no legacy `password` attribute). Same passphrase as **Protected (Password)**; uses a different salt so the hash differs. |
 
 ### security-demo / security
 Demonstrates file path security restrictions and security features of XLKit.

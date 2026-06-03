@@ -10,5 +10,6 @@ This folder contains the **structured manual** (chapters under `Manual/`) and th
 
 - **[Main README](../README.md)** — Badges, installation one-liner, quick start.
 - **[AGENT.MD](../AGENT.MD)** — Maintainer and AI-agent development guide (architecture, testing expectations, security).
-- **[Tests README](../Tests/README.md)** — Unit test layout.
-- **[Test runner README](../Sources/XLKitTestRunner/README.md)** — CLI usage for `XLKitTestRunner`.
+- **[Tests README](../Tests/README.md)** — Unit test layout (`XLKitTests`, 80 tests).
+- **[Test-Workflows README](../Test-Workflows/README.md)** — Where CLI-generated `.xlsx` files land; commands, comprehensive demo passwords.
+- **[Test runner README](../Sources/XLKitTestRunner/README.md)** — Full `XLKitTestRunner` reference (including `sheet-password`).

@@ -137,6 +137,8 @@ struct ExcelGenerators {
     /// - Range operations and cell merging
     /// - Image embedding with perfect aspect ratio preservation
     /// - Workbook and sheet management
+    /// - Sheet visibility (`.visible`, `.hidden`, `.veryHidden`) and `activeTab` when the first sheet is hidden
+    /// - Sheet protection (`SheetProtection`) with legacy password, modern hash, and granular flags
     /// - CSV/TSV import and export
     /// - Fluent API usage with method chaining
     /// - Excel file validation using CoreXLSX
@@ -146,9 +148,15 @@ struct ExcelGenerators {
         
         // MARK: - Workbook Creation
         let workbook = Workbook()
+        
+        // Hidden first sheet — emits `activeTab` on `<workbookView>` so Excel opens on a visible tab.
+        let launchPad = workbook.addSheet(name: "Launch (Hidden)")
+        launchPad.state = .hidden
+        launchPad.setCell("A1", string: "Hidden launch sheet (activeTab demo)")
+        
         let sheet = workbook.addSheet(name: "API Demo")
         
-        print("[INFO] Created workbook with sheet: \(sheet.name)")
+        print("[INFO] Created workbook with sheets: \(launchPad.name) (hidden), \(sheet.name) (visible)")
         
         // MARK: - Cell Operations
         print("[INFO] Demonstrating cell operations...")
@@ -263,6 +271,74 @@ struct ExcelGenerators {
         
         print("[INFO] ✓ Created sheet with 30 columns (A1 through AD1) to test column ordering")
         
+        // MARK: - Sheet Visibility
+        print("[INFO] Demonstrating sheet visibility states...")
+        
+        let hiddenReference = workbook.addSheet(name: "Reference (Hidden)")
+        hiddenReference.state = .hidden
+        hiddenReference
+            .setRow(1, strings: ["Key", "Value"])
+            .setRow(2, strings: ["Environment", "Demo"])
+            .setRow(3, strings: ["Visibility", "hidden — user can unhide in Excel"])
+        
+        let veryHiddenInternal = workbook.addSheet(name: "Internal (Very Hidden)")
+        veryHiddenInternal.state = .veryHidden
+        veryHiddenInternal.setCell(
+            "A1",
+            string: "Very hidden — not listed in Excel's Unhide dialog",
+            format: CellFormat.header()
+        )
+        veryHiddenInternal.setCell("A2", string: "Restore only via code (state = .veryHidden)")
+        
+        print("[INFO] ✓ Sheet states: visible, hidden, veryHidden")
+        print("[INFO] ✓ First sheet hidden — workbookView activeTab selects API Demo on open")
+        
+        // MARK: - Sheet Protection
+        print("[INFO] Demonstrating sheet protection...")
+        
+        let protectedBasic = workbook.addSheet(name: "Protected (Basic)")
+        protectedBasic.setCell("A1", string: "Default protect sheet", format: CellFormat.header())
+        protectedBasic.setCell("A2", string: "Locked cells are read-only in Excel")
+        protectedBasic.setCell("B2", number: 100)
+        protectedBasic.protection = SheetProtection()
+        
+        let demoPassword = CoreUtils.comprehensiveDemoSheetPassword
+        let protectedPassword = workbook.addSheet(name: "Protected (Password)")
+        protectedPassword.setCell("A1", string: "Unprotect password: \(demoPassword)", format: CellFormat.header())
+        protectedPassword.setCell("A2", string: "Legacy + SHA-512 (Excel 2013+)")
+        var passwordProtection = SheetProtection()
+        try CoreUtils.configureSheetPassword(
+            &passwordProtection,
+            plaintext: demoPassword,
+            salt: CoreUtils.comprehensiveDemoPasswordSheetSalt
+        )
+        passwordProtection.selectLockedCells = true
+        protectedPassword.protection = passwordProtection
+        
+        let protectedGranular = workbook.addSheet(name: "Protected (Granular)")
+        protectedGranular.setCell("A1", string: "Granular flags — no password", format: CellFormat.header())
+        protectedGranular.setCell("A2", string: "May format cells & insert rows; cannot sort")
+        var granularProtection = SheetProtection()
+        granularProtection.formatCells = false
+        granularProtection.insertRows = false
+        granularProtection.sort = true
+        protectedGranular.protection = granularProtection
+        
+        let protectedModern = workbook.addSheet(name: "Protected (Modern Hash)")
+        protectedModern.setCell("A1", string: "SHA-512 only — unprotect with: \(demoPassword)", format: CellFormat.header())
+        protectedModern.setCell("A2", string: "No legacy password attribute in XML")
+        var modernProtection = SheetProtection()
+        try CoreUtils.configureSheetPassword(
+            &modernProtection,
+            plaintext: demoPassword,
+            legacy: false,
+            salt: CoreUtils.comprehensiveDemoModernSheetSalt
+        )
+        protectedModern.protection = modernProtection
+        
+        print("[INFO] ✓ Sheet protection: default, legacy password, granular flags, modern hash")
+        print("[INFO] ✓ Compatible with Excel, LibreOffice, and Google Sheets (Numbers ignores protection)")
+        
         // MARK: - Save and Validate
         print("[INFO] Saving comprehensive demo...")
         
@@ -285,15 +361,53 @@ struct ExcelGenerators {
                 return
             }
             
-            let worksheet = try xlsx.parseWorksheet(at: "xl/worksheets/sheet1.xml")
+            let parsedWorkbooks = try xlsx.parseWorkbooks()
+            guard let parsedWorkbook = parsedWorkbooks.first else {
+                print("[ERROR] No workbook found in comprehensive demo file")
+                return
+            }
+            
+            let worksheets = try xlsx.parseWorksheetPathsAndNames(workbook: parsedWorkbook)
             let sharedStrings = try xlsx.parseSharedStrings()
             
             print("[INFO] ✓ CoreXLSX validation successful")
-            print("[INFO] ✓ Worksheet contains \(worksheet.data?.rows.count ?? 0) rows")
+            print("[INFO] ✓ Workbook contains \(worksheets.count) worksheet(s)")
             print("[INFO] ✓ Shared strings count: \(sharedStrings?.items.count ?? 0)")
             
-            // Validate column ordering sheet (it's the 4th sheet: API Demo, Second Sheet, Fluent Demo, Column Order Test)
-            let columnOrderWorksheet = try xlsx.parseWorksheet(at: "xl/worksheets/sheet4.xml")
+            let sheetNames = Set(worksheets.compactMap(\.name))
+            let expectedSheetNames = [
+                "Launch (Hidden)",
+                "API Demo",
+                "Second Sheet",
+                "Fluent Demo",
+                "Column Order Test",
+                "Reference (Hidden)",
+                "Internal (Very Hidden)",
+                "Protected (Basic)",
+                "Protected (Password)",
+                "Protected (Granular)",
+                "Protected (Modern Hash)",
+            ]
+            for name in expectedSheetNames {
+                if sheetNames.contains(name) {
+                    print("[INFO] ✓ Found sheet: \(name)")
+                } else {
+                    print("[WARNING] Expected sheet not found: \(name)")
+                }
+            }
+            
+            guard let apiDemo = worksheets.first(where: { $0.name == "API Demo" }) else {
+                print("[ERROR] API Demo worksheet missing")
+                return
+            }
+            let apiDemoWorksheet = try xlsx.parseWorksheet(at: apiDemo.path)
+            print("[INFO] ✓ API Demo worksheet contains \(apiDemoWorksheet.data?.rows.count ?? 0) rows")
+            
+            guard let columnOrderEntry = worksheets.first(where: { $0.name == "Column Order Test" }) else {
+                print("[ERROR] Column Order Test worksheet missing")
+                return
+            }
+            let columnOrderWorksheet = try xlsx.parseWorksheet(at: columnOrderEntry.path)
             let columnOrderRows = columnOrderWorksheet.data?.rows ?? []
             print("[INFO] ✓ Column Order Test sheet contains \(columnOrderRows.count) rows")
             
@@ -322,6 +436,8 @@ struct ExcelGenerators {
                     print("[WARNING] Column ordering may have issues")
                 }
             }
+            
+            validateExcelFile(outputPath)
             
         } catch {
             print("[ERROR] CoreXLSX validation failed: \(error)")

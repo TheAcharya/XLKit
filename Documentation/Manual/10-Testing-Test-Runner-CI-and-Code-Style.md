@@ -16,10 +16,10 @@ From the package root:
 swift test
 ```
 
-Run one test type (XCTest filter):
+Run one test class (XCTest filter):
 
 ```bash
-swift test --filter XLKitTests.CSVTests
+swift test --filter XLKitTests.SheetProtectionTests
 ```
 
 ### Pattern: temporary workbook on disk
@@ -38,12 +38,6 @@ final class MyFeatureTests: XLKitTestBase {
             XCTAssertEqual(workbook.getSheets().count, 1)
         }
     }
-
-    func testAsyncSave() async throws {
-        try await withSavedTempWorkbookAsync(prefix: "my-async") { workbook, url in
-            XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
-        }
-    }
 }
 ```
 
@@ -51,51 +45,100 @@ final class MyFeatureTests: XLKitTestBase {
 
 Use **`XLKitTestBase.makeUTCDate`** (or **`fixedTestDate`** / **`epochDate`**) instead of **`Date()`** when assertions depend on serialised values.
 
-### Border helpers
-
-**`XLKitTestBase`** exposes **`makeThinBorderFormat()`**, **`makeMediumRedBorderFormat()`**, **`makeThickBlueBorderFormat()`** for consistent border tests.
-
 ### Sheet state and protection tests
 
 | File | Tests | Coverage |
 |------|-------|----------|
 | **`SheetStateTests.swift`** | 7 | `.visible` / `.hidden` / `.veryHidden`, workbook `state` and `activeTab` XML, save round-trip |
-| **`SheetProtectionTests.swift`** | 9 | Default `nil` protection, minimal `<sheetProtection>`, legacy/modern passwords, granular permission flags, save round-trip |
+| **`SheetProtectionTests.swift`** | 14 | Legacy/modern password hashes, `configureSheetPassword`, `<sheetProtection>` XML, save round-trip |
 
-The suite currently has **75 tests** across **15** focused files (see **`Tests/README.md`**).
+The suite currently has **80 tests** across **15** focused files (see **`Tests/README.md`**).
 
 ---
 
 ## `XLKitTestRunner` (CLI)
 
-The executable **`XLKitTestRunner`** builds sample workbooks and (where noted) validates them with **CoreXLSX**. It is for **demos and CI smoke tests**, not a replacement for **`swift test`**.
+The executable **`XLKitTestRunner`** builds sample workbooks and (where noted) validates them with **CoreXLSX**. Use it for **demos, manual QA, and CI smoke tests** — not as a substitute for **`swift test`**.
 
-### Commands
+### Run from the package root
 
 ```bash
-cd /path/to/XLKit   # package root
+cd /path/to/XLKit
 
 swift run XLKitTestRunner help
-
-swift run XLKitTestRunner no-embeds      # CSV → xlsx, no images
-swift run XLKitTestRunner embed          # CSV + embedded images
-swift run XLKitTestRunner comprehensive  # broad API demo
-swift run XLKitTestRunner security-demo  # path restriction demo
-swift run XLKitTestRunner ios-test       # iOS-oriented sample output
-swift run XLKitTestRunner number-formats # number format showcase
 ```
 
-Aliases such as **`no-images`**, **`with-embeds`**, **`demo`**, **`formats`** are accepted — see **`Sources/XLKitTestRunner/main.swift`** for the full switch.
+### Generate Excel files
 
-### Outputs
+| Command | Aliases | Output |
+|---------|---------|--------|
+| `no-embeds` | `no-images` | `Test-Workflows/Embed-Test.xlsx` |
+| `embed` | `with-embeds`, `with-images` | `Test-Workflows/Embed-Test-Embed.xlsx` |
+| `comprehensive` | `demo` | `Test-Workflows/Comprehensive-Demo.xlsx` |
+| `number-formats` | `formats` | `Test-Workflows/Number-Format-Test.xlsx` |
+| `ios-test` | `ios` | `iOS-Example.xlsx` (repo root) |
+| `security-demo` | `security` | Console only (path restrictions) |
 
-Generated files usually land under **`Test-Workflows/`** (or the project root for some scenarios). See **`Sources/XLKitTestRunner/README.md`** for paths per command.
+```bash
+swift run XLKitTestRunner no-embeds
+swift run XLKitTestRunner embed
+swift run XLKitTestRunner comprehensive
+swift run XLKitTestRunner number-formats
+swift run XLKitTestRunner ios-test
+swift run XLKitTestRunner security-demo
+```
 
-### Add a new scenario
+**`comprehensive`** produces an 11-sheet workbook (formatting, images, CSV patterns, column ordering beyond Z, sheet visibility, sheet protection). Password-protected demo sheets use **`1234`** — see **`Test-Workflows/README.md`** for the sheet list and unprotect passwords.
 
-1. Copy **`Sources/XLKitTestRunner/Templates/TestGeneratorTemplate.swift`** to a new file.
-2. Implement your generator using **`XLKit`** APIs.
-3. Register the subcommand in **`main.swift`** and extend **`printHelp()`**.
+Embed/no-embeds tests read CSV and images from **`Test-Data/Embed-Test/`**.
+
+### Worksheet protection helper (`sheet-password`)
+
+Developer utility: prints legacy hash and SHA-512 fields for a plaintext password (no `.xlsx` written).
+
+```bash
+swift run XLKitTestRunner sheet-password GreatDay
+swift run XLKitTestRunner sheet-password 1234 --demo-salts
+```
+
+| Flag / input | Behaviour |
+|--------------|-----------|
+| `<password>` argument | Required plaintext (e.g. `GreatDay`) |
+| `--demo-salts` | When password is **`1234`**, also prints fixed salts used in **`Comprehensive-Demo.xlsx`** |
+
+Modern `saltValue` / `hashValue` are **random each run** unless you supply a fixed `salt` in code. In apps, use:
+
+```swift
+var protection = SheetProtection()
+try CoreUtils.configureSheetPassword(&protection, plaintext: "GreatDay")
+sheet.protection = protection
+```
+
+See [Chapter 03 — Sheet visibility and protection](03-Core-Model-Workbook-Sheet-and-Cells.md).
+
+### Output locations
+
+| Path | Contents |
+|------|----------|
+| **`Test-Workflows/`** | Most generated `.xlsx` files — see **`Test-Workflows/README.md`** |
+| **Repository root** | `iOS-Example.xlsx` from `ios-test` |
+
+### Add a new CLI scenario
+
+1. Copy **`Sources/XLKitTestRunner/Templates/TestGeneratorTemplate.swift`** to a new generator file.
+2. Implement using **`XLKit`** APIs; validate with **CoreXLSX** when writing `.xlsx`.
+3. Register the subcommand in **`Sources/XLKitTestRunner/main.swift`** and extend **`printHelp()`**.
+4. Document output path in **`Test-Workflows/README.md`** and **`Sources/XLKitTestRunner/README.md`**.
+
+### Source layout
+
+| File | Role |
+|------|------|
+| `main.swift` | CLI switch and help |
+| `ExcelGenerators.swift` | CSV, comprehensive, security, iOS, number formats |
+| `ImageEmbedGenerators.swift` | Image embed workflow |
+| `SheetPasswordUtilities.swift` | `sheet-password` output |
+| `Templates/TestGeneratorTemplate.swift` | Starter for new commands |
 
 ---
 
@@ -105,9 +148,11 @@ Workflows live in **`.github/workflows/`**:
 
 | Workflow | Role |
 |----------|------|
-| **`build.yml`** | macOS build + unit tests + **`swift run XLKitTestRunner`** smoke (`help`, `embed`); duplicate job with Swift tools 6.0; **iOS** simulator build + tests |
+| **`build.yml`** | macOS build + unit tests + **`swift run XLKitTestRunner`** smoke (`help`, `embed`); **iOS** simulator build + tests |
 | **`codeql.yml`** | CodeQL security analysis |
-| **`cli-*.yml`** | Focused CLI runs (e.g. no-embeds, embed, generic, iOS, number-formats) |
+| **`cli-generic.yml`** | `comprehensive`, `security-demo`; uploads **`Comprehensive-Demo.xlsx`** |
+| **`cli-embed.yml`** / **`cli-no-embeds.yml`** | Image embed and CSV-only workflows |
+| **`cli-ios.yml`** | iOS-oriented CLI run |
 
 Pushes that touch only docs/assets may skip builds — see each workflow’s **`paths-ignore`**.
 
@@ -129,6 +174,7 @@ Use the same configuration in Xcode or CI so diffs stay consistent.
 
 ## Where to read more
 
-- **`Tests/README.md`** — Test layout and conventions  
-- **`Sources/XLKitTestRunner/README.md`** — CLI details  
+- **`Test-Workflows/README.md`** — Generated files, comprehensive demo sheets, passwords  
+- **`Sources/XLKitTestRunner/README.md`** — Full CLI reference  
+- **`Tests/README.md`** — Unit test layout  
 - **[Chapter 12 — API reference](12-Complete-API-Reference.md)** — Public surface under test  

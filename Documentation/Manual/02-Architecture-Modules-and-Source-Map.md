@@ -59,6 +59,7 @@ For low-level or test use, you may call `XLSXEngine.generateXLSX` directly; app 
 | `Sources/XLKitTestRunner/main.swift` | CLI entry. |
 | `Sources/XLKitTestRunner/ExcelGenerators.swift` | Demo generators + CoreXLSX checks. |
 | `Sources/XLKitTestRunner/ImageEmbedGenerators.swift` | Image embedding scenarios. |
+| `Sources/XLKitTestRunner/SheetPasswordUtilities.swift` | `sheet-password` dev helper (prints protection hashes). |
 | `Sources/XLKitTestRunner/Templates/TestGeneratorTemplate.swift` | Template for new CLI tests. |
 | `Tests/XLKitTests/*.swift` | Unit tests (see [Chapter 10](10-Testing-Test-Runner-CI-and-Code-Style.md)). |
 

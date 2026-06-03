@@ -7,6 +7,7 @@
 import Foundation
 import CoreGraphics
 import CryptoKit
+import Security
 
 /// Core types and data structures for XLKit
 /// 
@@ -1080,6 +1081,128 @@ public struct CoreUtils {
     /// Generates XML header
     public static func xmlHeader() -> String {
         return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+    }
+    
+    // MARK: - Sheet Protection Password Hash
+    
+    /// Default `spinCount` for Excel SHA-512 worksheet protection (Office Open XML).
+    public static let excelModernSheetPasswordDefaultSpinCount = 100_000
+    
+    /// SHA-512 worksheet protection metadata for `SheetProtection` (Excel 2013+).
+    public struct ExcelModernSheetPasswordHash: Equatable {
+        public let algorithmName: String
+        public let saltValue: String
+        public let hashValue: String
+        public let spinCount: Int
+        
+        public init(algorithmName: String, saltValue: String, hashValue: String, spinCount: Int) {
+            self.algorithmName = algorithmName
+            self.saltValue = saltValue
+            self.hashValue = hashValue
+            self.spinCount = spinCount
+        }
+    }
+    
+    /// Fixed salts used by `XLKitTestRunner` comprehensive demo so `Comprehensive-Demo.xlsx` stays reproducible (password **1234**).
+    public static let comprehensiveDemoSheetPassword = "1234"
+    public static let comprehensiveDemoPasswordSheetSalt = Data("XLKitPassDemo1!!".utf8)
+    public static let comprehensiveDemoModernSheetSalt = Data("XLKitModHashDemo!".utf8)
+    
+    /// Computes the legacy 16-bit worksheet protection password hash for Excel's `sheetProtection@password` attribute.
+    ///
+    /// The OOXML-documented algorithm is incorrect; this matches Excel, LibreOffice, and the
+    /// algorithm used by Excelize (`genSheetPasswd`). Pass the resulting four-character hex
+    /// string (e.g. `"CC3D"` for plaintext `"1234"`) to `SheetProtection.password`.
+    public static func excelLegacySheetPasswordHash(for password: String) -> String {
+        var passwordHash = 0
+        var charPos: UInt = 1
+        for scalar in password.unicodeScalars {
+            var value = Int(scalar.value) << Int(charPos)
+            charPos += 1
+            let rotatedBits = value >> 15
+            value &= 0x7FFF
+            passwordHash ^= value | rotatedBits
+        }
+        passwordHash ^= password.count
+        passwordHash ^= 0xCE4B
+        return String(format: "%04X", passwordHash & 0xFFFF)
+    }
+    
+    /// Generates SHA-512 worksheet protection metadata per Office Open XML / MS-OFFCRYPTO.
+    ///
+    /// - Parameters:
+    ///   - password: Plaintext password (UTF-16LE in the hash).
+    ///   - spinCount: Iteration count (default 100000, matching Excel).
+    ///   - salt: Optional 16-byte salt; when `nil`, a random salt is generated.
+    /// - Returns: Values to assign to `SheetProtection.algorithmName`, `saltValue`, `hashValue`, and `spinCount`.
+    public static func excelModernSheetPasswordHash(
+        for password: String,
+        spinCount: Int = excelModernSheetPasswordDefaultSpinCount,
+        salt: Data? = nil
+    ) throws -> ExcelModernSheetPasswordHash {
+        guard !password.isEmpty else {
+            throw XLKitError.securityError("Sheet protection password must not be empty")
+        }
+        guard spinCount > 0 else {
+            throw XLKitError.securityError("Sheet protection spinCount must be greater than zero")
+        }
+        
+        let saltBytes: Data
+        if let salt {
+            guard !salt.isEmpty else {
+                throw XLKitError.securityError("Sheet protection salt must not be empty")
+            }
+            saltBytes = salt
+        } else {
+            var randomSalt = Data(count: 16)
+            let status = randomSalt.withUnsafeMutableBytes { buffer in
+                guard let base = buffer.baseAddress else { return errSecParam }
+                return SecRandomCopyBytes(kSecRandomDefault, 16, base)
+            }
+            guard status == errSecSuccess else {
+                throw XLKitError.securityError("Failed to generate sheet protection salt")
+            }
+            saltBytes = randomSalt
+        }
+        
+        guard let passwordData = password.data(using: .utf16LittleEndian) else {
+            throw XLKitError.securityError("Failed to encode sheet protection password as UTF-16LE")
+        }
+        
+        var key = Data(SHA512.hash(data: saltBytes + passwordData))
+        for iterator in 0..<spinCount {
+            var littleEndianIterator = UInt32(iterator).littleEndian
+            let iteratorData = withUnsafeBytes(of: &littleEndianIterator) { Data($0) }
+            key = Data(SHA512.hash(data: key + iteratorData))
+        }
+        
+        return ExcelModernSheetPasswordHash(
+            algorithmName: "SHA-512",
+            saltValue: saltBytes.base64EncodedString(),
+            hashValue: key.base64EncodedString(),
+            spinCount: spinCount
+        )
+    }
+    
+    /// Applies legacy and/or modern worksheet password fields on `SheetProtection` from a plaintext password.
+    public static func configureSheetPassword(
+        _ protection: inout SheetProtection,
+        plaintext password: String,
+        legacy: Bool = true,
+        modern: Bool = true,
+        spinCount: Int = excelModernSheetPasswordDefaultSpinCount,
+        salt: Data? = nil
+    ) throws {
+        if legacy {
+            protection.password = excelLegacySheetPasswordHash(for: password)
+        }
+        if modern {
+            let modernHash = try excelModernSheetPasswordHash(for: password, spinCount: spinCount, salt: salt)
+            protection.algorithmName = modernHash.algorithmName
+            protection.saltValue = modernHash.saltValue
+            protection.hashValue = modernHash.hashValue
+            protection.spinCount = modernHash.spinCount
+        }
     }
     
     // MARK: - Security Utilities
