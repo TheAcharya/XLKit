@@ -14,7 +14,7 @@ This manual is split into **chapters** for navigation and maintenance. It mirror
 | [06](06-Images-Embedding-and-Sizing.md) | Images | Formats, embedding, aspect ratio, EMU sizing |
 | [07](07-Formatting-Numbers-Alignment-and-Borders.md) | Formatting | `CellFormat`, numbers, alignment, borders, fonts |
 | [08](08-Security-and-Validation.md) | Security | `SecurityManager`, rate limits, quarantine, checksums |
-| [09](09-Errors-CoreUtils-and-iOS.md) | Errors, CoreUtils, iOS | `XLKitError`, utilities, sandbox & `safeFileURL` |
+| [09](09-Errors-CoreUtils-and-iOS.md) | Errors, CoreUtils, iOS | `XLKitError`, utilities, worksheet protection passwords, sandbox & `safeFileURL` |
 | [10](10-Testing-Test-Runner-CI-and-Code-Style.md) | Testing & CI | Unit tests, `XLKitTestRunner`, CI, style |
 | [11](11-Examples-Cookbook.md) | Examples cookbook | Six end-to-end examples |
 | [12](12-Complete-API-Reference.md) | Complete API reference | Every public type and member |

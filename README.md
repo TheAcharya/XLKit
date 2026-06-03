@@ -45,7 +45,7 @@ This codebase is developed using AI agents.
 - Type-Safe: Strong enums and structs for all data types
 - Excel Compliance: OpenXML `.xlsx` generation; the bundled test runner validates output with CoreXLSX
 - Minimal library dependencies: **ZIPFoundation** and **swift-textfile** ([CoreXLSX](https://github.com/CoreOffice/CoreXLSX) is only linked by `XLKitTestRunner` for validation, not by the `XLKit` library product)
-- Comprehensive Testing: 75 tests with 100% API coverage, including sheet visibility, sheet protection, all text alignment options (horizontal, vertical, combined), number formatting, border and merge functionality, column ordering validation, CSV/TSV edge cases, and automated validation
+- Comprehensive Testing: 80 tests with 100% API coverage, including sheet visibility, sheet protection (legacy and SHA-512 password helpers), all text alignment options (horizontal, vertical, combined), number formatting, border and merge functionality, column ordering validation, CSV/TSV edge cases, and automated validation
 - Security Features: Comprehensive security features for production use
 
 ## Requirements
@@ -143,7 +143,7 @@ try await workbook.save(to: URL(fileURLWithPath: "employees.xlsx"))
 ## Documentation
 
 - **[Documentation README](Documentation/README.md)** – How the docs folder is organised
-- **[Manual index](Documentation/Manual/README.md)** – Table of contents and links to all chapters (overview, architecture, core model, CSV/TSV, images, formatting, security, iOS, testing, examples, full API reference)
+- **[Manual index](Documentation/Manual/README.md)** – Table of contents and links to all chapters (overview, architecture, core model, CSV/TSV, images, formatting, security, CoreUtils/password helpers, testing, examples, full API reference)
 
 ## Credits
 

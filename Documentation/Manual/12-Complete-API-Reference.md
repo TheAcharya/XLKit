@@ -240,12 +240,12 @@ Static methods and constants (XLKitCore):
 | `excelLegacySheetPasswordHash(for password: String) -> String` | Legacy 16-bit hex for `SheetProtection.password`. |
 | `excelModernSheetPasswordHash(for:spinCount:salt:) throws -> ExcelModernSheetPasswordHash` | SHA-512 salt/hash/spinCount for Excel 2013+. |
 | `configureSheetPassword(_:plaintext:legacy:modern:spinCount:salt:) throws` | Fill `SheetProtection` from plaintext password. |
-| `comprehensiveDemoSheetPassword` | Demo password string (`"1234"`) for TestRunner. |
-| `comprehensiveDemoPasswordSheetSalt` / `comprehensiveDemoModernSheetSalt` | Fixed salts for reproducible comprehensive demo. |
 | `excelModernSheetPasswordDefaultSpinCount` | Default `100_000` spin count. |
 | `maxImageFileSize: Int` | 50 MB. |
 | `maxExcelFileSize: Int` | 100 MB. |
 | `allowedDirectories: [URL]` | Allowed base directories for path validation. |
+
+Demo password and salts for **`Comprehensive-Demo.xlsx`** live in **`Sources/XLKitTestRunner/ComprehensiveDemoProtection.swift`** (TestRunner only, not exported by the `XLKit` library). See [Chapter 10](10-Testing-Test-Runner-CI-and-Code-Style.md) and **`Test-Workflows/README.md`**.
 
 ### SecurityManager API
 

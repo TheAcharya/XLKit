@@ -1,7 +1,7 @@
 //
 //  SheetPasswordUtilities.swift
 //  XLKitTestRunner • https://github.com/TheAcharya/XLKit
-//  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
+//  © 2026 Vigneswaran Rajkumar • Licensed under MIT License
 //
 
 import Foundation
@@ -30,24 +30,24 @@ enum SheetPasswordUtilities {
         printModernFields(modern, title: "Modern SHA-512 (random salt):")
         printSwiftSnippet(password: password, legacy: legacy, modern: modern, legacyInSnippet: true)
         
-        if useComprehensiveDemoSalts && password == CoreUtils.comprehensiveDemoSheetPassword {
+        if useComprehensiveDemoSalts && password == ComprehensiveDemoProtection.password {
             print("")
             print("Comprehensive demo salts (reproducible Comprehensive-Demo.xlsx):")
             print("")
             
             let passwordSheetModern = try CoreUtils.excelModernSheetPasswordHash(
                 for: password,
-                salt: CoreUtils.comprehensiveDemoPasswordSheetSalt
+                salt: ComprehensiveDemoProtection.passwordSheetSalt
             )
             printModernFields(passwordSheetModern, title: "  Protected (Password) sheet:")
             
             let modernOnly = try CoreUtils.excelModernSheetPasswordHash(
                 for: password,
-                salt: CoreUtils.comprehensiveDemoModernSheetSalt
+                salt: ComprehensiveDemoProtection.modernSheetSalt
             )
             printModernFields(modernOnly, title: "  Protected (Modern Hash) sheet — legacy omitted:")
             print("")
-            print("  Use CoreUtils.comprehensiveDemoPasswordSheetSalt / comprehensiveDemoModernSheetSalt in code.")
+            print("  Salts are defined in ComprehensiveDemoProtection.swift (XLKitTestRunner only).")
         }
         
         print("")

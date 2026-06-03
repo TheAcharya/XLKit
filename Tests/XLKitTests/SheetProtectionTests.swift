@@ -8,6 +8,13 @@ import XCTest
 @testable import XLKit
 @testable import XLKitXLSX
 
+/// Must match `ComprehensiveDemoProtection` in XLKitTestRunner (reproducible comprehensive demo).
+private enum ComprehensiveDemoProtectionFixtures {
+    static let password = "1234"
+    static let passwordSheetSalt = Data("XLKitPassDemo1!!".utf8)
+    static let modernSheetSalt = Data("XLKitModHashDemo!".utf8)
+}
+
 @MainActor
 final class SheetProtectionTests: XLKitTestBase {
     
@@ -30,7 +37,7 @@ final class SheetProtectionTests: XLKitTestBase {
     func testModernPasswordHashFor1234ComprehensiveDemoPasswordSheet() throws {
         let modern = try CoreUtils.excelModernSheetPasswordHash(
             for: "1234",
-            salt: CoreUtils.comprehensiveDemoPasswordSheetSalt
+            salt: ComprehensiveDemoProtectionFixtures.passwordSheetSalt
         )
         XCTAssertEqual(modern.algorithmName, "SHA-512")
         XCTAssertEqual(modern.saltValue, "WExLaXRQYXNzRGVtbzEhIQ==")
@@ -44,7 +51,7 @@ final class SheetProtectionTests: XLKitTestBase {
     func testModernPasswordHashFor1234ComprehensiveDemoModernSheet() throws {
         let modern = try CoreUtils.excelModernSheetPasswordHash(
             for: "1234",
-            salt: CoreUtils.comprehensiveDemoModernSheetSalt
+            salt: ComprehensiveDemoProtectionFixtures.modernSheetSalt
         )
         XCTAssertEqual(modern.saltValue, "WExLaXRNb2RIYXNoRGVtbyE=")
         XCTAssertEqual(

@@ -1103,11 +1103,6 @@ public struct CoreUtils {
         }
     }
     
-    /// Fixed salts used by `XLKitTestRunner` comprehensive demo so `Comprehensive-Demo.xlsx` stays reproducible (password **1234**).
-    public static let comprehensiveDemoSheetPassword = "1234"
-    public static let comprehensiveDemoPasswordSheetSalt = Data("XLKitPassDemo1!!".utf8)
-    public static let comprehensiveDemoModernSheetSalt = Data("XLKitModHashDemo!".utf8)
-    
     /// Computes the legacy 16-bit worksheet protection password hash for Excel's `sheetProtection@password` attribute.
     ///
     /// The OOXML-documented algorithm is incorrect; this matches Excel, LibreOffice, and the

@@ -110,6 +110,22 @@ do {
 }
 ```
 
+### Worksheet protection passwords
+
+Do not invent `saltValue` or `hashValue` strings. Use the public helpers on `CoreUtils` (see [Chapter 12 — CoreUtils](12-Complete-API-Reference.md)):
+
+```swift
+var protection = SheetProtection()
+try CoreUtils.configureSheetPassword(&protection, plaintext: "mySecret")
+sheet.protection = protection
+```
+
+- **Legacy only (16-bit hex):** `protection.password = CoreUtils.excelLegacySheetPasswordHash(for: "mySecret")` — Excel still prompts for the **plaintext** when unprotecting.
+- **Modern (SHA-512, Excel 2013+):** `try CoreUtils.excelModernSheetPasswordHash(for: "mySecret")` returns `algorithmName`, `saltValue`, `hashValue`, and `spinCount` (default spin count `100_000`). Pass an optional `salt: Data` when you need a stable hash across runs.
+- **CLI helper (no `.xlsx` written):** `swift run XLKitTestRunner sheet-password mySecret` — see [Chapter 10 — `sheet-password`](10-Testing-Test-Runner-CI-and-Code-Style.md).
+
+Demo password **`1234`** and salts for **`Comprehensive-Demo.xlsx`** are defined in **`ComprehensiveDemoProtection.swift`** inside **XLKitTestRunner** only (not part of the library product).
+
 ### File paths (optional restrictions)
 
 When **`SecurityManager.enableFilePathRestrictions`** is **`true`**, **`CoreUtils.validateFilePath`** runs on save paths. On **iOS**, validation is relaxed when restrictions are on (sandbox enforces access); on **macOS**, paths must sit under allowed roots — see [Chapter 08](08-Security-and-Validation.md).
@@ -182,4 +198,5 @@ await MainActor.run {
 | Column index ↔ letters | `CoreUtils.columnLetter`, `columnNumber` |
 | Date ↔ Excel serial | `excelNumberFromDate`, `dateFromExcelNumber` |
 | Safe output URL on iOS | `CoreUtils.safeFileURL(for:)` |
+| Sheet protection from plaintext | `configureSheetPassword`, `excelLegacySheetPasswordHash`, `excelModernSheetPasswordHash` |
 | SHA-256 | `generateChecksum`, `generateFileChecksum` |

@@ -302,7 +302,7 @@ struct ExcelGenerators {
         protectedBasic.setCell("B2", number: 100)
         protectedBasic.protection = SheetProtection()
         
-        let demoPassword = CoreUtils.comprehensiveDemoSheetPassword
+        let demoPassword = ComprehensiveDemoProtection.password
         let protectedPassword = workbook.addSheet(name: "Protected (Password)")
         protectedPassword.setCell("A1", string: "Unprotect password: \(demoPassword)", format: CellFormat.header())
         protectedPassword.setCell("A2", string: "Legacy + SHA-512 (Excel 2013+)")
@@ -310,7 +310,7 @@ struct ExcelGenerators {
         try CoreUtils.configureSheetPassword(
             &passwordProtection,
             plaintext: demoPassword,
-            salt: CoreUtils.comprehensiveDemoPasswordSheetSalt
+            salt: ComprehensiveDemoProtection.passwordSheetSalt
         )
         passwordProtection.selectLockedCells = true
         protectedPassword.protection = passwordProtection
@@ -332,7 +332,7 @@ struct ExcelGenerators {
             &modernProtection,
             plaintext: demoPassword,
             legacy: false,
-            salt: CoreUtils.comprehensiveDemoModernSheetSalt
+            salt: ComprehensiveDemoProtection.modernSheetSalt
         )
         protectedModern.protection = modernProtection
         

@@ -10,6 +10,7 @@ Sources/XLKitTestRunner/
 ├── ExcelGenerators.swift         # Excel generation functions
 ├── ImageEmbedGenerators.swift    # Image embedding test functions
 ├── SheetPasswordUtilities.swift  # sheet-password command output
+├── ComprehensiveDemoProtection.swift  # Sheet protection constants for comprehensive demo
 ├── Templates/                    # Template files for new tests
 │   └── TestGeneratorTemplate.swift
 └── README.md                     # This file
@@ -79,7 +80,7 @@ swift run XLKitTestRunner sheet-password 1234 --demo-salts
 ```
 
 - First command: legacy hash + SHA-512 with a **random** salt (new salt each run).
-- `--demo-salts` with `1234`: also prints the **fixed** salts used in `Comprehensive-Demo.xlsx`.
+- `--demo-salts` with `1234`: also prints salts from `ComprehensiveDemoProtection.swift` (same as `Comprehensive-Demo.xlsx`).
 - Prefer `CoreUtils.configureSheetPassword(&protection, plaintext: "…")` in app code instead of hardcoding.
 
 ### comprehensive / demo

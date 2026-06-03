@@ -104,7 +104,7 @@ swift run XLKitTestRunner sheet-password 1234 --demo-salts
 | Flag / input | Behaviour |
 |--------------|-----------|
 | `<password>` argument | Required plaintext (e.g. `GreatDay`) |
-| `--demo-salts` | When password is **`1234`**, also prints fixed salts used in **`Comprehensive-Demo.xlsx`** |
+| `--demo-salts` | When password is **`1234`**, also prints salts from `ComprehensiveDemoProtection.swift` (same as **`Comprehensive-Demo.xlsx`**) |
 
 Modern `saltValue` / `hashValue` are **random each run** unless you supply a fixed `salt` in code. In apps, use:
 
@@ -138,6 +138,7 @@ See [Chapter 03 — Sheet visibility and protection](03-Core-Model-Workbook-Shee
 | `ExcelGenerators.swift` | CSV, comprehensive, security, iOS, number formats |
 | `ImageEmbedGenerators.swift` | Image embed workflow |
 | `SheetPasswordUtilities.swift` | `sheet-password` output |
+| `ComprehensiveDemoProtection.swift` | Sheet protection constants for the `comprehensive` CLI generator |
 | `Templates/TestGeneratorTemplate.swift` | Starter for new commands |
 
 ---

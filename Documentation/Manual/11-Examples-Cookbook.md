@@ -150,3 +150,13 @@ try workbook.save(to: CoreUtils.safeFileURL(for: "protected-report.xlsx"))
 
 Use `.veryHidden` when the sheet must not be unhidden from the Excel UI. Set individual `SheetProtection` flags to `false` to explicitly allow specific actions on a protected sheet (see [Chapter 03](03-Core-Model-Workbook-Sheet-and-Cells.md)).
 
+For a password-protected sheet:
+
+```swift
+var protection = SheetProtection()
+try CoreUtils.configureSheetPassword(&protection, plaintext: "mySecret")
+data.protection = protection
+```
+
+See [Chapter 09 — Worksheet protection passwords](09-Errors-CoreUtils-and-iOS.md) and `swift run XLKitTestRunner sheet-password mySecret`.
+

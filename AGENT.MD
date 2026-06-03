@@ -20,7 +20,7 @@
   - [CSV/TSV Operations](#csvtsv-operations)
   - [Image Operations](#image-operations)
 - [Recent Improvements](#recent-improvements)
-  - [Comprehensive Demo and Legacy Password Hash](#comprehensive-demo-and-legacy-password-hash-2026-06-03)
+  - [Comprehensive Demo and Sheet Password Utilities](#comprehensive-demo-and-sheet-password-utilities-2026-06-03-116)
   - [Sheet Visibility and Protection](#sheet-visibility-and-protection-2026-05-30-pr-23)
   - [iOS Compatibility Fix](#ios-compatibility-fix-2025-07-14)
   - [Perfect Aspect Ratio Preservation](#perfect-aspect-ratio-preservation-2025-07-07)
@@ -86,11 +86,14 @@ XLKit/
 │       ├── main.swift          # Command-line interface (91 lines)
 │       ├── ExcelGenerators.swift # Excel generation tests (590 lines)
 │       ├── ImageEmbedGenerators.swift # Image embedding tests (228 lines)
-│       ├── README.md           # Test runner documentation (199 lines)
+│       ├── SheetPasswordUtilities.swift # sheet-password CLI output
+│       ├── ComprehensiveDemoProtection.swift # Demo password/salts for comprehensive CLI
+│       ├── README.md           # Test runner documentation
 │       └── Templates/          # Test templates
 │           └── TestGeneratorTemplate.swift # Template for new tests (224 lines)
+├── Documentation/              # User manual (Documentation/Manual/)
 ├── Tests/                      # Unit tests
-│   ├── README.md               # Test documentation (371 lines)
+│   ├── README.md               # Test suite index (80 tests)
 │   └── XLKitTests/             # Test suite (15 focused test files)
 │       ├── XLKitTestBase.swift # Shared base class with common helpers (136 lines)
 │       ├── CoreTests.swift     # Workbook and sheet operations (5 tests)
@@ -118,7 +121,7 @@ XLKit/
 │       ├── Embed-Test_00-00-50-08.png # Test image 3 (779KB)
 │       └── Embed-Test_00-01-09-10.png # Test image 4 (703KB)
 ├── Test-Workflows/             # Generated Excel files
-│   └── README.md               # Output documentation
+│   └── README.md               # CLI outputs, comprehensive demo passwords
 └── .github/                    # GitHub configuration
     ├── FUNDING.yml             # Funding configuration
     └── workflows/              # CI/CD workflows
@@ -168,6 +171,8 @@ Sources/XLKitTestRunner/
 ├── main.swift                    # Entry point with CLI
 ├── ExcelGenerators.swift         # Excel generation functions
 ├── ImageEmbedGenerators.swift    # Image embedding tests
+├── SheetPasswordUtilities.swift  # sheet-password command
+├── ComprehensiveDemoProtection.swift # Demo constants for comprehensive CLI
 ├── Templates/                    # Template files
 │   └── TestGeneratorTemplate.swift
 └── README.md                     # Documentation
@@ -185,7 +190,7 @@ swift run XLKitTestRunner help
 Available Test Types:
 - `no-embeds` / `no-images`: Generate Excel from CSV without images
 - `embed` / `with-embeds` / `with-images`: Generate Excel with embedded images from CSV data
-- `comprehensive` / `demo`: Comprehensive API demonstration (11 sheets; demo password **1234** via `CoreUtils.configureSheetPassword`); see `Sources/XLKitTestRunner/README.md`
+- `comprehensive` / `demo`: Comprehensive API demonstration (11 sheets; demo password **1234** via `CoreUtils.configureSheetPassword` and salts in `ComprehensiveDemoProtection.swift`); see `Sources/XLKitTestRunner/README.md`
 - `sheet-password` / `password-hash`: Print legacy + SHA-512 `SheetProtection` fields for a plaintext password (optional `--demo-salts` with **1234**)
 - `security-demo` / `security`: Demonstrate file path security restrictions
 - `ios-test` / `ios`: Test iOS file system compatibility and platform-specific features
@@ -425,7 +430,7 @@ Test Coverage Requirements:
 - Test number formatting (currency, percentage, custom formats)
 - Test column ordering for sheets with more than 26 columns (A-Z, AA, AB, etc.)
 - Test sheet visibility state (`.visible`, `.hidden`, `.veryHidden`) and `activeTab` workbook XML
-- Test sheet protection (`SheetProtection`) including legacy/modern passwords, `CoreUtils.excelLegacySheetPasswordHash(for:)`, and granular permission flags
+- Test sheet protection (`SheetProtection`) including `configureSheetPassword`, legacy/modern hashes, and granular permission flags
 - Test platform compatibility and iOS-specific features
 
 Test Patterns:
@@ -496,7 +501,7 @@ Border and Merge Testing:
 
 ### Documentation
 
-User manual (structured chapters, full public API tables): **`Documentation/Manual/README.md`** (see also `Documentation/README.md`). Update or add a chapter when you add features; keep the [Chapter 12 API reference](Documentation/Manual/12-Complete-API-Reference.md) aligned with public APIs.
+User manual (structured chapters, full public API tables): **`Documentation/Manual/README.md`** (see also `Documentation/README.md`). Update or add a chapter when you add features; keep [Chapter 12](Documentation/Manual/12-Complete-API-Reference.md) aligned with public APIs. CLI outputs and demo passwords: **`Test-Workflows/README.md`**. Unit tests: **`Tests/README.md`** (80 tests).
 
 Code Documentation:
 - All public APIs must have doc comments
@@ -756,14 +761,15 @@ configSheet.state = .veryHidden  // not unhideable from Excel UI
 // Protect a sheet (locked cells become read-only in Excel)
 dataSheet.protection = SheetProtection()
 
-// Legacy password (16-bit hash — use CoreUtils, not the incorrect OOXML formula)
+// Password-protected sheet (legacy + SHA-512) — prefer configureSheetPassword
 var protection = SheetProtection()
-protection.password = CoreUtils.excelLegacySheetPasswordHash(for: "1234")  // emits CC3D in XML
+try CoreUtils.configureSheetPassword(&protection, plaintext: "mySecret")
 protection.selectLockedCells = true
 dataSheet.protection = protection
 
-// Excel 2013+: also set algorithmName, hashValue, saltValue, spinCount on SheetProtection
-// (precomputed values required; see XLKitTestRunner comprehensive demo)
+// Legacy-only: protection.password = CoreUtils.excelLegacySheetPasswordHash(for: "1234")  // CC3D
+// Dev helper: swift run XLKitTestRunner sheet-password mySecret
+// Comprehensive-Demo.xlsx salts: ComprehensiveDemoProtection.swift (TestRunner only)
 
 // Fine-grained protection with inverted lock semantics
 var granular = SheetProtection()
@@ -960,12 +966,12 @@ try await sheet.embedImageAutoSized(
 - Increased test count from 55 to 59 with 100% API coverage maintained
 - Test files: `CoreTests.swift` (5 tests), `CellValueTests.swift` (6 tests), `CoordinateTests.swift` (2 tests), `FormattingTests.swift` (8 tests), `NumberFormatTests.swift` (5 tests), `TextWrappingTests.swift` (2 tests), `BorderTests.swift` (3 tests), `MergeTests.swift` (4 tests), `CSVTests.swift` (12 tests), `FileOperationTests.swift` (2 tests), `ImageTests.swift` (2 tests), `ColumnOrderingTests.swift` (2 tests), `SheetUtilityTests.swift` (6 tests)
 
-### Comprehensive Demo and Sheet Password Utilities (2026-06-03)
-- Added `CoreUtils.excelLegacySheetPasswordHash(for:)` and `CoreUtils.excelModernSheetPasswordHash(for:spinCount:salt:)` plus `configureSheetPassword(_:plaintext:legacy:modern:spinCount:salt:)` for worksheet protection (legacy + SHA-512)
-- Added `XLKitTestRunner sheet-password <plaintext>` to print hash fields and a Swift snippet; `--demo-salts` with **1234** shows reproducible comprehensive-demo salts
-- Extended `comprehensive` / `demo` with sheet visibility and protection; **Comprehensive-Demo.xlsx** uses demo password **1234** via `configureSheetPassword` and fixed demo salts (not hardcoded hash strings)
-- Documented passwords in `Sources/XLKitTestRunner/README.md`; CoreXLSX validation resolves worksheets by name
-- Expanded `SheetProtectionTests` to 14 tests; increased test count from 75 to 80
+### Comprehensive Demo and Sheet Password Utilities (2026-06-03, 1.1.6)
+- Added `CoreUtils.excelLegacySheetPasswordHash(for:)`, `excelModernSheetPasswordHash(for:spinCount:salt:)`, and `configureSheetPassword(_:plaintext:legacy:modern:spinCount:salt:)` for worksheet protection (legacy + SHA-512)
+- Added `XLKitTestRunner sheet-password <plaintext>` (prints hash fields and Swift snippet); `--demo-salts` with **1234** uses salts from `ComprehensiveDemoProtection.swift`
+- Extended `comprehensive` / `demo` (11 sheets) to showcase sheet visibility and protection; **Comprehensive-Demo.xlsx** password **1234** via `configureSheetPassword` and demo constants in TestRunner only (not public XLKitCore API)
+- Documented in `Sources/XLKitTestRunner/README.md`, `Test-Workflows/README.md`, `Tests/README.md`, and `Documentation/Manual/` chapters 03, 09, 10, 12
+- Expanded `SheetProtectionTests` to 14 tests; test count 75 → 80
 
 ### Sheet Visibility and Protection (2026-05-30, PR #23)
 - Added `SheetState` enum (`.visible`, `.hidden`, `.veryHidden`) and `Sheet.state` property
@@ -974,9 +980,9 @@ try await sheet.embedImageAutoSized(
 - XLSX engine emits `state` on `<sheet>`, `activeTab` on `<workbookView>` when first sheet is hidden, and `<sheetProtection>` after `</sheetData>`
 - Visible/unprotected sheets emit no extra XML (backward-compatible byte-identical output)
 - Excel, LibreOffice, and Google Sheets respect both features; Apple Numbers ignores them
-- Added `SheetStateTests.swift` (7 tests) and `SheetProtectionTests.swift` (9 tests at merge; now 10 with `testLegacyPasswordHashFor1234`)
+- Added `SheetStateTests.swift` (7 tests) and `SheetProtectionTests.swift` (9 tests at merge; grew to 14 in 1.1.6 with password-hash coverage)
 - Increased test count from 59 to 75 with 100% API coverage maintained
-- Documented in `Documentation/Manual/` chapters 03, 11, and 12
+- Documented in `Documentation/Manual/` chapters 03, 11, and 12 (password helpers in chapter 09 as of 1.1.6)
 
 ### iOS Compatibility Fix (2025-07-14)
 - Fixed iOS build error: `'homeDirectoryForCurrentUser' is unavailable in iOS`
