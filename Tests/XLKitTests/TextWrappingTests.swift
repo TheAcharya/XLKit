@@ -4,14 +4,16 @@
 //  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
 //
 
-import XCTest
+import Foundation
+import Testing
 import XLKit
 @testable import XLKitXLSX
 
+@Suite
 @MainActor
-final class TextWrappingTests: XLKitTestBase {
+struct TextWrappingTests {
     
-    func testTextWrapping() {
+    @Test func testTextWrapping() throws {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Text Wrapping Test")
         
@@ -42,18 +44,14 @@ final class TextWrappingTests: XLKitTestBase {
         sheet.setColumnWidth(1, width: 200)
         
         // Save and verify
-        let tempURL = makeTempWorkbookURL(prefix: "text_wrapping_test")
+        let tempURL = XLKitTestSupport.makeTempWorkbookURL(prefix: "text_wrapping_test")
         
-        do {
-            try workbook.save(to: tempURL)
-            XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
-            try FileManager.default.removeItem(at: tempURL)
-        } catch {
-            XCTFail("Failed to save workbook with text wrapping: \(error)")
-        }
+        try workbook.save(to: tempURL)
+        #expect(FileManager.default.fileExists(atPath: tempURL.path))
+        try FileManager.default.removeItem(at: tempURL)
     }
     
-    func testTextWrappingInFormatToKey() {
+    @Test func testTextWrappingInFormatToKey() {
         var format1 = CellFormat()
         format1.textWrapping = true
         
@@ -66,8 +64,8 @@ final class TextWrappingTests: XLKitTestBase {
         let key2 = XLSXEngine.formatToKey(format2)
         let key3 = XLSXEngine.formatToKey(format3)
         
-        XCTAssertTrue(key1.contains("textWrapping:true"), "Text wrapping true should be in format key")
-        XCTAssertTrue(key2.contains("textWrapping:false"), "Text wrapping false should be in format key")
-        XCTAssertTrue(key3.contains("textWrapping:false"), "Nil text wrapping should default to false in format key")
+        #expect(key1.contains("textWrapping:true"), "Text wrapping true should be in format key")
+        #expect(key2.contains("textWrapping:false"), "Text wrapping false should be in format key")
+        #expect(key3.contains("textWrapping:false"), "Nil text wrapping should default to false in format key")
     }
 }

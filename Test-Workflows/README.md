@@ -148,7 +148,7 @@ GitHub Actions run selected CLI commands and upload artifacts:
 | `cli-numbers.yml` | `number-formats` | `Number-Format-Test.xlsx` |
 | `cli-ios.yml` | `ios-test` | `iOS-Example.xlsx` (root) |
 
-`build.yml` also smoke-runs `help` and `embed`. Details: **`Documentation/Manual/10-Testing-Test-Runner-CI-and-Code-Style.md`**.
+`build.yml` also smoke-runs `help` and `embed`, and includes a **macOS (strict concurrency)** build/test job (`SWIFT_STRICT_CONCURRENCY=complete`). Details: **`Documentation/Manual/10-Testing-Test-Runner-CI-and-Code-Style.md`**.
 
 ---
 

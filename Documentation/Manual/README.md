@@ -21,4 +21,4 @@ This manual is split into **chapters** for navigation and maintenance. It mirror
 
 **Coverage:** The manual is aligned with **all public APIs** in the library targets and documents every Swift source file in `Sources/` (see Chapter 2). The **XLKitTestRunner** executable and **unit tests** are described in Chapter 10.
 
-**Other docs:** [Documentation README](../README.md) · [Project README](../../README.md) · [AGENT.MD](../../AGENT.MD) (contributor/agent guide)
+**Other docs:** [Documentation README](../README.md) · [Project README](../../README.md) · [ARCHITECTURE.md](../../ARCHITECTURE.md) · [GUARDRAILS.md](../../GUARDRAILS.md) · [AGENT.MD](../../AGENT.MD) (contributor/agent guide)

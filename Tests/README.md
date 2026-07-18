@@ -27,7 +27,8 @@ This document provides an organized overview of all tests in the **`XLKitTests`*
 - [Coverage & Quality Assurance](#coverage--quality-assurance)
 
 ## Test Overview
-- Total Tests: **80** (15 test files + shared `XLKitTestBase`)
+- Total Tests: **80** (15 test suites + shared `XLKitTestSupport` in `XLKitTestBase.swift`)
+- Framework: **Swift Testing** (`import Testing`, `@Suite`, `@Test`, `#expect` / `#require`)
 - 100% coverage of public APIs
 - Save and file-operation tests write real `.xlsx` files via temp-workbook helpers
 - Security features integrated throughout save and validation paths
@@ -46,7 +47,7 @@ The test suite is organized into separate test files by functionality for better
 
 ```
 Tests/XLKitTests/
-├── XLKitTestBase.swift          # Shared base class with common helpers
+├── XLKitTestBase.swift          # Shared XLKitTestSupport helpers (Swift Testing)
 ├── CoreTests.swift               # Workbook and sheet operations (5 tests)
 ├── CellValueTests.swift          # Cell values and data types (6 tests)
 ├── CoordinateTests.swift          # Coordinates and ranges (2 tests)
@@ -64,24 +65,25 @@ Tests/XLKitTests/
 └── SheetProtectionTests.swift    # Sheet protection (14 tests)
 ```
 
-### Shared Test Base (`XLKitTestBase.swift`)
+### Shared Test Helpers (`XLKitTestSupport` in `XLKitTestBase.swift`)
 
-All test classes inherit from `XLKitTestBase`, which provides:
+All test suites are `@Suite` + `@MainActor` structs that call **`XLKitTestSupport`** static helpers:
+
 - **Date Helpers**: `makeUTCDate()` with comprehensive error handling and deterministic fallback, `fixedTestDate`, `epochDate` for deterministic date testing
 - **File Helpers**: 
   - `makeTempWorkbookURL()`: Generates UUID-based unique temporary file URLs to prevent concurrent test conflicts
   - `withSavedTempWorkbookSync()`: Creates a standard test workbook, saves it to disk, passes it to the test closure, and ensures cleanup with error logging
   - `withSavedTempWorkbookAsync()`: Async version with the same behavior and cleanup guarantees
-  - Internal shared helpers (`makeTestWorkbook()`, `cleanupTempFile(at:)`) centralize setup/cleanup logic to reduce duplication
-- **Format Helpers**: `makeThinBorderFormat()`, `makeMediumRedBorderFormat()`, `makeThickBlueBorderFormat()` for common border configurations, now built on a shared bordered-format helper for consistency
+  - Shared helpers (`makeTestWorkbook()`, `cleanupTempFile(at:)`) centralize setup/cleanup logic to reduce duplication
+- **Format Helpers**: `makeThinBorderFormat()`, `makeMediumRedBorderFormat()`, `makeThickBlueBorderFormat()` for common border configurations, built on a shared bordered-format helper
 - **Constants**: `standardFontSize` for consistent font size testing
 
 **Quality Features:**
 - **Deterministic Testing**: Fixed dates and UUID-based temp files ensure consistent, reproducible test results
-- **Error Visibility**: Cleanup failures are logged with `XCTFail` instead of being silently ignored
-- **Safe Error Handling**: Uses `XCTFail` with fallback dates instead of `fatalError` to prevent test suite crashes
+- **Error Visibility**: Cleanup failures are logged with `Issue.record` instead of being silently ignored
+- **Safe Error Handling**: Uses `Issue.record` with fallback dates instead of `fatalError` to prevent test suite crashes
 - **File Safety**: Workbooks are saved to disk before being passed to test closures, ensuring file operations work correctly
-- **Reduced Duplication**: Shared internal setup/cleanup and bordered-format builders keep test helpers concise and easier to maintain
+- **Reduced Duplication**: Shared setup/cleanup and bordered-format builders keep test helpers concise and easier to maintain
 
 This structure improves:
 - **Maintainability**: Smaller, focused files are easier to review and modify
@@ -122,10 +124,10 @@ This structure improves:
 
 **File**: `FileOperationTests.swift` (2 tests)
 
-- `testWorkbookSave()`: Synchronous workbook saving and file validation using `withSavedTempWorkbookSync()` helper (workbook is pre-saved before test execution)
-- `testWorkbookSaveAsync()`: Async workbook saving and file validation using `withSavedTempWorkbookAsync()` helper (workbook is pre-saved before test execution)
+- `testWorkbookSave()`: Synchronous workbook saving and file validation using `XLKitTestSupport.withSavedTempWorkbookSync()` (workbook is pre-saved before test execution)
+- `testWorkbookSaveAsync()`: Async workbook saving and file validation using `XLKitTestSupport.withSavedTempWorkbookAsync()` (workbook is pre-saved before test execution)
 
-Both tests use the shared test base helpers which ensure:
+Both tests use **`XLKitTestSupport`** helpers which ensure:
 - Workbooks are saved to disk before being passed to test closures
 - Automatic cleanup with error logging if cleanup fails
 - UUID-based temporary file names to prevent conflicts
@@ -334,10 +336,10 @@ swift test
 
 ### Running Specific Test Categories
 
-You can run tests by file/class or by test name pattern:
+You can run tests by suite name or by test name pattern:
 
 ```bash
-# Run tests from a specific file/class
+# Run tests from a specific suite
 swift test --filter CoreTests
 swift test --filter CSVTests
 swift test --filter BorderTests
@@ -417,7 +419,7 @@ swift run XLKitTestRunner help
 - All number formatting options are fully tested
 - Column ordering for sheets with more than 26 columns is fully tested
 - Sheet visibility and sheet protection (including password hash helpers) are fully tested
-- Automated CI on macOS and iOS (`build.yml` runs `swift test`; CLI workflows run XLKitTestRunner)
+- Automated CI on macOS and iOS (`build.yml`: unit tests, strict-concurrency job, TestRunner smoke; CLI workflows run XLKitTestRunner)
 - Security features integrated throughout all tests
 - XLKitTestRunner provides comprehensive demonstration capabilities
 
