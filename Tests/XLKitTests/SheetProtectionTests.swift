@@ -4,7 +4,8 @@
 //  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
 //
 
-import XCTest
+import Foundation
+import Testing
 @testable import XLKit
 @testable import XLKitXLSX
 
@@ -15,120 +16,120 @@ private enum ComprehensiveDemoProtectionFixtures {
     static let modernSheetSalt = Data("XLKitModHashDemo!".utf8)
 }
 
+@Suite
 @MainActor
-final class SheetProtectionTests: XLKitTestBase {
+struct SheetProtectionTests {
     
-    func testDefaultProtectionIsNil() {
+    @Test func testDefaultProtectionIsNil() {
         let sheet = Workbook().addSheet(name: "Sheet1")
-        XCTAssertNil(sheet.protection)
+        #expect(sheet.protection == nil)
     }
     
-    func testDefaultProtectionStructEnablesSheet() {
+    @Test func testDefaultProtectionStructEnablesSheet() {
         let protection = SheetProtection()
-        XCTAssertEqual(protection.sheet, true)
-        XCTAssertNil(protection.formatCells)
-        XCTAssertNil(protection.password)
+        #expect(protection.sheet == true)
+        #expect(protection.formatCells == nil)
+        #expect(protection.password == nil)
     }
     
-    func testLegacyPasswordHashFor1234() {
-        XCTAssertEqual(CoreUtils.excelLegacySheetPasswordHash(for: "1234"), "CC3D")
+    @Test func testLegacyPasswordHashFor1234() {
+        #expect(CoreUtils.excelLegacySheetPasswordHash(for: "1234") == "CC3D")
     }
     
-    func testModernPasswordHashFor1234ComprehensiveDemoPasswordSheet() throws {
+    @Test func testModernPasswordHashFor1234ComprehensiveDemoPasswordSheet() throws {
         let modern = try CoreUtils.excelModernSheetPasswordHash(
             for: "1234",
             salt: ComprehensiveDemoProtectionFixtures.passwordSheetSalt
         )
-        XCTAssertEqual(modern.algorithmName, "SHA-512")
-        XCTAssertEqual(modern.saltValue, "WExLaXRQYXNzRGVtbzEhIQ==")
-        XCTAssertEqual(
-            modern.hashValue,
-            "r5j81/AZyLlOvDcoZdtgz0KZV/LU28sGe5LjE5dbkmalhvrdLKmD7xSLn403UyjjZwyOqjApNK3taOIZ8qZIYQ=="
+        #expect(modern.algorithmName == "SHA-512")
+        #expect(modern.saltValue == "WExLaXRQYXNzRGVtbzEhIQ==")
+        #expect(
+            modern.hashValue == "r5j81/AZyLlOvDcoZdtgz0KZV/LU28sGe5LjE5dbkmalhvrdLKmD7xSLn403UyjjZwyOqjApNK3taOIZ8qZIYQ=="
         )
-        XCTAssertEqual(modern.spinCount, 100_000)
+        #expect(modern.spinCount == 100_000)
     }
     
-    func testModernPasswordHashFor1234ComprehensiveDemoModernSheet() throws {
+    @Test func testModernPasswordHashFor1234ComprehensiveDemoModernSheet() throws {
         let modern = try CoreUtils.excelModernSheetPasswordHash(
             for: "1234",
             salt: ComprehensiveDemoProtectionFixtures.modernSheetSalt
         )
-        XCTAssertEqual(modern.saltValue, "WExLaXRNb2RIYXNoRGVtbyE=")
-        XCTAssertEqual(
-            modern.hashValue,
-            "UUuu11+Bm0SBR7dA+v1Fl7xnQTS/EYuHV2QIjv45LWN3a3xxWaIDiu2/VdJz4h2nivwAeU5N8oZBe5ClFu/IaQ=="
+        #expect(modern.saltValue == "WExLaXRNb2RIYXNoRGVtbyE=")
+        #expect(
+            modern.hashValue == "UUuu11+Bm0SBR7dA+v1Fl7xnQTS/EYuHV2QIjv45LWN3a3xxWaIDiu2/VdJz4h2nivwAeU5N8oZBe5ClFu/IaQ=="
         )
     }
     
-    func testConfigureSheetPasswordAppliesLegacyAndModern() throws {
+    @Test func testConfigureSheetPasswordAppliesLegacyAndModern() throws {
         var protection = SheetProtection()
         try CoreUtils.configureSheetPassword(
             &protection,
             plaintext: "789648",
             salt: Data("XLKitTestSalt!!".utf8)
         )
-        XCTAssertEqual(protection.password, CoreUtils.excelLegacySheetPasswordHash(for: "789648"))
-        XCTAssertEqual(protection.algorithmName, "SHA-512")
-        XCTAssertNotNil(protection.saltValue)
-        XCTAssertNotNil(protection.hashValue)
-        XCTAssertEqual(protection.spinCount, 100_000)
+        #expect(protection.password == CoreUtils.excelLegacySheetPasswordHash(for: "789648"))
+        #expect(protection.algorithmName == "SHA-512")
+        #expect(protection.saltValue != nil)
+        #expect(protection.hashValue != nil)
+        #expect(protection.spinCount == 100_000)
     }
     
-    func testConfigureSheetPasswordRejectsEmptyPassword() {
+    @Test func testConfigureSheetPasswordRejectsEmptyPassword() {
         var protection = SheetProtection()
-        XCTAssertThrowsError(try CoreUtils.configureSheetPassword(&protection, plaintext: "")) { error in
+        #expect {
+            try CoreUtils.configureSheetPassword(&protection, plaintext: "")
+        } throws: { error in
             guard case .securityError(let message) = error as? XLKitError else {
-                return XCTFail("Expected XLKitError.securityError, got \(error)")
+                return false
             }
-            XCTAssertTrue(message.contains("must not be empty"))
+            return message.contains("must not be empty")
         }
     }
     
-    func testMinimalProtectionXML() {
+    @Test func testMinimalProtectionXML() {
         let protection = SheetProtection()
-        XCTAssertEqual(XLSXEngine.sheetProtectionXML(protection), "<sheetProtection sheet=\"1\"/>")
+        #expect(XLSXEngine.sheetProtectionXML(protection) == "<sheetProtection sheet=\"1\"/>")
     }
     
-    func testProtectionWithLegacyPassword() {
+    @Test func testProtectionWithLegacyPassword() {
         var protection = SheetProtection()
         protection.password = "CC3F"
         protection.selectLockedCells = true
-        XCTAssertEqual(
-            XLSXEngine.sheetProtectionXML(protection),
-            "<sheetProtection sheet=\"1\" password=\"CC3F\" selectLockedCells=\"1\"/>"
+        #expect(
+            XLSXEngine.sheetProtectionXML(protection) == "<sheetProtection sheet=\"1\" password=\"CC3F\" selectLockedCells=\"1\"/>"
         )
     }
     
-    func testProtectionWithModernHash() {
+    @Test func testProtectionWithModernHash() {
         var protection = SheetProtection()
         protection.algorithmName = "SHA-512"
         protection.hashValue = "abc=="
         protection.saltValue = "def=="
         protection.spinCount = 100_000
         let xml = XLSXEngine.sheetProtectionXML(protection)
-        XCTAssertTrue(xml.contains("algorithmName=\"SHA-512\""))
-        XCTAssertTrue(xml.contains("hashValue=\"abc==\""))
-        XCTAssertTrue(xml.contains("saltValue=\"def==\""))
-        XCTAssertTrue(xml.contains("spinCount=\"100000\""))
+        #expect(xml.contains("algorithmName=\"SHA-512\""))
+        #expect(xml.contains("hashValue=\"abc==\""))
+        #expect(xml.contains("saltValue=\"def==\""))
+        #expect(xml.contains("spinCount=\"100000\""))
     }
     
-    func testProtectionWithGranularPermissions() {
+    @Test func testProtectionWithGranularPermissions() {
         var protection = SheetProtection()
         protection.formatCells = false
         protection.insertRows = false
         protection.sort = true
         let xml = XLSXEngine.sheetProtectionXML(protection)
-        XCTAssertTrue(xml.contains("formatCells=\"0\""))
-        XCTAssertTrue(xml.contains("insertRows=\"0\""))
-        XCTAssertTrue(xml.contains("sort=\"1\""))
+        #expect(xml.contains("formatCells=\"0\""))
+        #expect(xml.contains("insertRows=\"0\""))
+        #expect(xml.contains("sort=\"1\""))
     }
     
-    func testProtectionOmittedWhenNotConfigured() {
+    @Test func testProtectionOmittedWhenNotConfigured() {
         let sheet = Workbook().addSheet(name: "Sheet1")
-        XCTAssertNil(sheet.protection)
+        #expect(sheet.protection == nil)
     }
     
-    func testProtectionAllAttributesEmitted() {
+    @Test func testProtectionAllAttributesEmitted() {
         var protection = SheetProtection()
         protection.password = "CC3F"
         protection.algorithmName = "SHA-512"
@@ -162,18 +163,18 @@ final class SheetProtectionTests: XLKitTestBase {
             "sort", "autoFilter", "pivotTables",
         ]
         for name in expectedAttributes {
-            XCTAssertTrue(xml.contains("\(name)=\""), "Missing attribute \(name) in: \(xml)")
+            #expect(xml.contains("\(name)=\""), "Missing attribute \(name) in: \(xml)")
         }
     }
     
-    func testSavingWorkbookWithProtectedSheetSucceeds() throws {
+    @Test func testSavingWorkbookWithProtectedSheetSucceeds() throws {
         let workbook = Workbook()
         _ = workbook.addSheet(name: "Main")
         let tech = workbook.addSheet(name: "Strings")
         tech.protection = SheetProtection()
-        let url = makeTempWorkbookURL(prefix: "protected_sheet")
-        defer { cleanupTempFile(at: url) }
+        let url = XLKitTestSupport.makeTempWorkbookURL(prefix: "protected_sheet")
+        defer { XLKitTestSupport.cleanupTempFile(at: url) }
         try workbook.save(to: url)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
+        #expect(FileManager.default.fileExists(atPath: url.path))
     }
 }

@@ -70,3 +70,5 @@ Non-Swift artefacts: `SECURITY.md`, `CHANGELOG.md`, `Assets/`, `Test-Data/`, CI 
 
 - Data model: [Chapter 03 — Core model](03-Core-Model-Workbook-Sheet-and-Cells.md)
 - Export details and public engine API: [Chapter 12 — API reference](12-Complete-API-Reference.md) (`XLSXEngine`, `formatToKey`)
+- Contributor architecture guide: [ARCHITECTURE.md](../../ARCHITECTURE.md)
+- Hard constraints: [GUARDRAILS.md](../../GUARDRAILS.md)

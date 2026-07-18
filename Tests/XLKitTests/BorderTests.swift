@@ -4,20 +4,22 @@
 //  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
 //
 
-import XCTest
+import Foundation
+import Testing
 import XLKit
 
+@Suite
 @MainActor
-final class BorderTests: XLKitTestBase {
+struct BorderTests {
     
-    func testBordersActuallyWork() {
+    @Test func testBordersActuallyWork() throws {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Border Test")
         
         // Test different border styles
-        let thinBorderFormat = Self.makeThinBorderFormat()
-        let mediumBorderFormat = Self.makeMediumRedBorderFormat()
-        let thickBorderFormat = Self.makeThickBlueBorderFormat()
+        let thinBorderFormat = XLKitTestSupport.makeThinBorderFormat()
+        let mediumBorderFormat = XLKitTestSupport.makeMediumRedBorderFormat()
+        let thickBorderFormat = XLKitTestSupport.makeThickBlueBorderFormat()
         
         // Set cells with different border styles
         sheet.setCell("A1", string: "Thin Borders", format: thinBorderFormat)
@@ -29,36 +31,32 @@ final class BorderTests: XLKitTestBase {
         let mediumCell = sheet.getCellWithFormat("A2")
         let thickCell = sheet.getCellWithFormat("A3")
         
-        XCTAssertNotNil(thinCell)
-        XCTAssertNotNil(mediumCell)
-        XCTAssertNotNil(thickCell)
+        #expect(thinCell != nil)
+        #expect(mediumCell != nil)
+        #expect(thickCell != nil)
         
-        XCTAssertEqual(thinCell?.format?.borderTop, .thin)
-        XCTAssertEqual(thinCell?.format?.borderBottom, .thin)
-        XCTAssertEqual(thinCell?.format?.borderLeft, .thin)
-        XCTAssertEqual(thinCell?.format?.borderRight, .thin)
+        #expect(thinCell?.format?.borderTop == .thin)
+        #expect(thinCell?.format?.borderBottom == .thin)
+        #expect(thinCell?.format?.borderLeft == .thin)
+        #expect(thinCell?.format?.borderRight == .thin)
         
-        XCTAssertEqual(mediumCell?.format?.borderTop, .medium)
-        XCTAssertEqual(mediumCell?.format?.borderBottom, .medium)
-        XCTAssertEqual(mediumCell?.format?.borderColor, "#FF0000")
+        #expect(mediumCell?.format?.borderTop == .medium)
+        #expect(mediumCell?.format?.borderBottom == .medium)
+        #expect(mediumCell?.format?.borderColor == "#FF0000")
         
-        XCTAssertEqual(thickCell?.format?.borderTop, .thick)
-        XCTAssertEqual(thickCell?.format?.borderBottom, .thick)
-        XCTAssertEqual(thickCell?.format?.borderColor, "#0000FF")
+        #expect(thickCell?.format?.borderTop == .thick)
+        #expect(thickCell?.format?.borderBottom == .thick)
+        #expect(thickCell?.format?.borderColor == "#0000FF")
         
         // Test Excel file generation with borders
-        let tempURL = makeTempWorkbookURL(prefix: "border_test")
+        let tempURL = XLKitTestSupport.makeTempWorkbookURL(prefix: "border_test")
         
-        do {
-            try workbook.save(to: tempURL)
-            XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
-            try FileManager.default.removeItem(at: tempURL)
-        } catch {
-            XCTFail("Failed to save workbook with borders: \(error)")
-        }
+        try workbook.save(to: tempURL)
+        #expect(FileManager.default.fileExists(atPath: tempURL.path))
+        try FileManager.default.removeItem(at: tempURL)
     }
     
-    func testDifferentBorderStyles() {
+    @Test func testDifferentBorderStyles() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Border Styles Test")
         
@@ -79,16 +77,16 @@ final class BorderTests: XLKitTestBase {
             
             // Verify border style is stored correctly
             let cell = sheet.getCellWithFormat(cellAddress)
-            XCTAssertNotNil(cell)
-            XCTAssertEqual(cell?.format?.borderTop, style)
-            XCTAssertEqual(cell?.format?.borderBottom, style)
-            XCTAssertEqual(cell?.format?.borderLeft, style)
-            XCTAssertEqual(cell?.format?.borderRight, style)
-            XCTAssertEqual(cell?.format?.borderColor, borderColors[index])
+            #expect(cell != nil)
+            #expect(cell?.format?.borderTop == style)
+            #expect(cell?.format?.borderBottom == style)
+            #expect(cell?.format?.borderLeft == style)
+            #expect(cell?.format?.borderRight == style)
+            #expect(cell?.format?.borderColor == borderColors[index])
         }
     }
     
-    func testBorderWithOtherFormatting() {
+    @Test func testBorderWithOtherFormatting() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Border with Formatting Test")
         
@@ -108,16 +106,16 @@ final class BorderTests: XLKitTestBase {
         
         // Verify all formatting is applied
         let cell = sheet.getCellWithFormat("A1")
-        XCTAssertNotNil(cell)
+        #expect(cell != nil)
         
-        XCTAssertEqual(cell?.format?.borderTop, .thick)
-        XCTAssertEqual(cell?.format?.borderBottom, .thick)
-        XCTAssertEqual(cell?.format?.borderColor, "#FF0000")
-        XCTAssertEqual(cell?.format?.fontWeight, .bold)
-        XCTAssertEqual(cell?.format?.fontSize, 14.0)
-        XCTAssertEqual(cell?.format?.fontColor, "#0000FF")
-        XCTAssertEqual(cell?.format?.backgroundColor, "#FFFF00")
-        XCTAssertEqual(cell?.format?.horizontalAlignment, .center)
-        XCTAssertEqual(cell?.format?.verticalAlignment, .center)
+        #expect(cell?.format?.borderTop == .thick)
+        #expect(cell?.format?.borderBottom == .thick)
+        #expect(cell?.format?.borderColor == "#FF0000")
+        #expect(cell?.format?.fontWeight == .bold)
+        #expect(cell?.format?.fontSize == 14.0)
+        #expect(cell?.format?.fontColor == "#0000FF")
+        #expect(cell?.format?.backgroundColor == "#FFFF00")
+        #expect(cell?.format?.horizontalAlignment == .center)
+        #expect(cell?.format?.verticalAlignment == .center)
     }
 }

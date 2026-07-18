@@ -4,13 +4,15 @@
 //  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
 //
 
-import XCTest
+import Foundation
+import Testing
 import XLKit
 
+@Suite
 @MainActor
-final class ColumnOrderingTests: XLKitTestBase {
+struct ColumnOrderingTests {
     
-    func testColumnOrderingBeyondZ() {
+    @Test func testColumnOrderingBeyondZ() throws {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Column Order Test")
         
@@ -20,30 +22,22 @@ final class ColumnOrderingTests: XLKitTestBase {
         }
         
         // Verify cells are set correctly
-        XCTAssertEqual(sheet.getCell("A1"), .string("1"))
-        XCTAssertEqual(sheet.getCell("Z1"), .string("26"))
-        XCTAssertEqual(sheet.getCell("AA1"), .string("27"))
+        #expect(sheet.getCell("A1") == .string("1"))
+        #expect(sheet.getCell("Z1") == .string("26"))
+        #expect(sheet.getCell("AA1") == .string("27"))
         
         // Test Excel file generation with proper column ordering
-        let tempURL = makeTempWorkbookURL(prefix: "column_order_test")
+        let tempURL = XLKitTestSupport.makeTempWorkbookURL(prefix: "column_order_test")
+        defer { XLKitTestSupport.cleanupTempFile(at: tempURL) }
         
-        do {
-            try workbook.save(to: tempURL)
-            XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
-            
-            // Verify the file can be read back and contains the expected data
-            // This test ensures the XML is generated with proper column ordering
-            let fileData = try Data(contentsOf: tempURL)
-            XCTAssertFalse(fileData.isEmpty)
-            
-            // Clean up
-            try FileManager.default.removeItem(at: tempURL)
-        } catch {
-            XCTFail("Failed to save workbook with >26 columns: \(error)")
-        }
+        try workbook.save(to: tempURL)
+        #expect(FileManager.default.fileExists(atPath: tempURL.path))
+        
+        let fileData = try Data(contentsOf: tempURL)
+        #expect(!(fileData.isEmpty))
     }
     
-    func testColumnOrderingWithGaps() {
+    @Test func testColumnOrderingWithGaps() throws {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Column Order Gap Test")
         
@@ -54,26 +48,19 @@ final class ColumnOrderingTests: XLKitTestBase {
         }
         
         // Verify cells are set correctly
-        XCTAssertEqual(sheet.getCell("A1"), .string("Value 1"))
-        XCTAssertEqual(sheet.getCell("Z1"), .string("Value 3"))
-        XCTAssertEqual(sheet.getCell("AA1"), .string("Value 4"))
-        XCTAssertEqual(sheet.getCell("BA1"), .string("Value 7"))
+        #expect(sheet.getCell("A1") == .string("Value 1"))
+        #expect(sheet.getCell("Z1") == .string("Value 3"))
+        #expect(sheet.getCell("AA1") == .string("Value 4"))
+        #expect(sheet.getCell("BA1") == .string("Value 7"))
         
         // Test Excel file generation
-        let tempURL = makeTempWorkbookURL(prefix: "column_order_gap_test")
+        let tempURL = XLKitTestSupport.makeTempWorkbookURL(prefix: "column_order_gap_test")
+        defer { XLKitTestSupport.cleanupTempFile(at: tempURL) }
         
-        do {
-            try workbook.save(to: tempURL)
-            XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
-            
-            // Verify the file can be read back
-            let fileData = try Data(contentsOf: tempURL)
-            XCTAssertFalse(fileData.isEmpty)
-            
-            // Clean up
-            try FileManager.default.removeItem(at: tempURL)
-        } catch {
-            XCTFail("Failed to save workbook with column gaps: \(error)")
-        }
+        try workbook.save(to: tempURL)
+        #expect(FileManager.default.fileExists(atPath: tempURL.path))
+        
+        let fileData = try Data(contentsOf: tempURL)
+        #expect(!(fileData.isEmpty))
     }
 }

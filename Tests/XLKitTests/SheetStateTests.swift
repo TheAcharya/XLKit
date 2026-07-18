@@ -4,62 +4,64 @@
 //  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
 //
 
-import XCTest
+import Foundation
+import Testing
 @testable import XLKit
 @testable import XLKitXLSX
 
+@Suite
 @MainActor
-final class SheetStateTests: XLKitTestBase {
+struct SheetStateTests {
     
-    func testDefaultStateIsVisible() {
+    @Test func testDefaultStateIsVisible() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Sheet1")
-        XCTAssertEqual(sheet.state, .visible)
+        #expect(sheet.state == .visible)
     }
     
-    func testVisibleSheetOmitsStateAttribute() {
+    @Test func testVisibleSheetOmitsStateAttribute() {
         let sheet = Workbook().addSheet(name: "Sheet1")
-        XCTAssertEqual(XLSXEngine.sheetStateAttribute(sheet), "")
+        #expect(XLSXEngine.sheetStateAttribute(sheet) == "")
     }
     
-    func testHiddenSheetEmitsStateAttribute() {
+    @Test func testHiddenSheetEmitsStateAttribute() {
         let sheet = Workbook().addSheet(name: "Strings")
         sheet.state = .hidden
-        XCTAssertEqual(XLSXEngine.sheetStateAttribute(sheet), " state=\"hidden\"")
+        #expect(XLSXEngine.sheetStateAttribute(sheet) == " state=\"hidden\"")
     }
     
-    func testVeryHiddenSheetEmitsStateAttribute() {
+    @Test func testVeryHiddenSheetEmitsStateAttribute() {
         let sheet = Workbook().addSheet(name: "Secret")
         sheet.state = .veryHidden
-        XCTAssertEqual(XLSXEngine.sheetStateAttribute(sheet), " state=\"veryHidden\"")
+        #expect(XLSXEngine.sheetStateAttribute(sheet) == " state=\"veryHidden\"")
     }
     
-    func testActiveTabOmittedWhenFirstSheetVisible() {
+    @Test func testActiveTabOmittedWhenFirstSheetVisible() {
         let workbook = Workbook()
         _ = workbook.addSheet(name: "Main")
         let tech = workbook.addSheet(name: "Strings")
         tech.state = .hidden
-        XCTAssertEqual(XLSXEngine.activeTabAttribute(for: workbook.getSheets()), "")
+        #expect(XLSXEngine.activeTabAttribute(for: workbook.getSheets()) == "")
     }
     
-    func testActiveTabPointsAtFirstVisibleSheet() {
+    @Test func testActiveTabPointsAtFirstVisibleSheet() {
         let workbook = Workbook()
         let first = workbook.addSheet(name: "Hidden1")
         let second = workbook.addSheet(name: "Hidden2")
         _ = workbook.addSheet(name: "Visible")
         first.state = .hidden
         second.state = .hidden
-        XCTAssertEqual(XLSXEngine.activeTabAttribute(for: workbook.getSheets()), " activeTab=\"2\"")
+        #expect(XLSXEngine.activeTabAttribute(for: workbook.getSheets()) == " activeTab=\"2\"")
     }
     
-    func testSavingWorkbookWithHiddenSheetSucceeds() throws {
+    @Test func testSavingWorkbookWithHiddenSheetSucceeds() throws {
         let workbook = Workbook()
         _ = workbook.addSheet(name: "Main")
         let tech = workbook.addSheet(name: "Strings")
         tech.state = .hidden
-        let url = makeTempWorkbookURL(prefix: "hidden_state")
-        defer { cleanupTempFile(at: url) }
+        let url = XLKitTestSupport.makeTempWorkbookURL(prefix: "hidden_state")
+        defer { XLKitTestSupport.cleanupTempFile(at: url) }
         try workbook.save(to: url)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
+        #expect(FileManager.default.fileExists(atPath: url.path))
     }
 }

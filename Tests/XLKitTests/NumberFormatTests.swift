@@ -4,14 +4,16 @@
 //  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
 //
 
-import XCTest
+import Foundation
+import Testing
 import XLKit
 @testable import XLKitXLSX
 
+@Suite
 @MainActor
-final class NumberFormatTests: XLKitTestBase {
+struct NumberFormatTests {
     
-    func testNumberFormatCurrency() {
+    @Test func testNumberFormatCurrency() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Number Format Test")
         
@@ -21,8 +23,8 @@ final class NumberFormatTests: XLKitTestBase {
         
         // Verify the format is stored correctly
         let storedFormat = sheet.getCellFormat("A1")
-        XCTAssertNotNil(storedFormat)
-        XCTAssertEqual(storedFormat?.numberFormat, .currencyWithDecimals)
+        #expect(storedFormat != nil)
+        #expect(storedFormat?.numberFormat == .currencyWithDecimals)
         
         // Test custom currency format
         var customCurrencyFormat = CellFormat.currency()
@@ -31,12 +33,12 @@ final class NumberFormatTests: XLKitTestBase {
         sheet.setCell("A2", number: 5678.90, format: customCurrencyFormat)
         
         let storedCustomFormat = sheet.getCellFormat("A2")
-        XCTAssertNotNil(storedCustomFormat)
-        XCTAssertEqual(storedCustomFormat?.numberFormat, .custom)
-        XCTAssertEqual(storedCustomFormat?.customNumberFormat, "$#,##0.00")
+        #expect(storedCustomFormat != nil)
+        #expect(storedCustomFormat?.numberFormat == .custom)
+        #expect(storedCustomFormat?.customNumberFormat == "$#,##0.00")
     }
     
-    func testNumberFormatPercentage() {
+    @Test func testNumberFormatPercentage() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Number Format Test")
         
@@ -46,11 +48,11 @@ final class NumberFormatTests: XLKitTestBase {
         
         // Verify the format is stored correctly
         let storedFormat = sheet.getCellFormat("A1")
-        XCTAssertNotNil(storedFormat)
-        XCTAssertEqual(storedFormat?.numberFormat, .percentageWithDecimals)
+        #expect(storedFormat != nil)
+        #expect(storedFormat?.numberFormat == .percentageWithDecimals)
     }
     
-    func testNumberFormatCustom() {
+    @Test func testNumberFormatCustom() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Number Format Test")
         
@@ -63,12 +65,12 @@ final class NumberFormatTests: XLKitTestBase {
         
         // Verify the format is stored correctly
         let storedFormat = sheet.getCellFormat("A1")
-        XCTAssertNotNil(storedFormat)
-        XCTAssertEqual(storedFormat?.numberFormat, .custom)
-        XCTAssertEqual(storedFormat?.customNumberFormat, "#,##0.00")
+        #expect(storedFormat != nil)
+        #expect(storedFormat?.numberFormat == .custom)
+        #expect(storedFormat?.customNumberFormat == "#,##0.00")
     }
     
-    func testNumberFormatInFormatToKey() {
+    @Test func testNumberFormatInFormatToKey() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Number Format Test")
         
@@ -89,17 +91,17 @@ final class NumberFormatTests: XLKitTestBase {
         let key2 = XLSXEngine.formatToKey(percentageFormat)
         let key3 = XLSXEngine.formatToKey(customFormat)
         
-        XCTAssertNotEqual(key1, key2, "Currency and percentage formats should have different keys")
-        XCTAssertNotEqual(key1, key3, "Currency and custom formats should have different keys")
-        XCTAssertNotEqual(key2, key3, "Percentage and custom formats should have different keys")
+        #expect(key1 != key2, "Currency and percentage formats should have different keys")
+        #expect(key1 != key3, "Currency and custom formats should have different keys")
+        #expect(key2 != key3, "Percentage and custom formats should have different keys")
         
         // Verify that number format information is included in the key
-        XCTAssertTrue(key1.contains("numberFormat:$#,##0.00"), "Currency format key should include number format")
-        XCTAssertTrue(key2.contains("numberFormat:0.00%"), "Percentage format key should include number format")
-        XCTAssertTrue(key3.contains("numberFormat:#,##0.00"), "Custom format key should include number format")
+        #expect(key1.contains("numberFormat:$#,##0.00"), "Currency format key should include number format")
+        #expect(key2.contains("numberFormat:0.00%"), "Percentage format key should include number format")
+        #expect(key3.contains("numberFormat:#,##0.00"), "Custom format key should include number format")
     }
     
-    func testNumberFormatExcelGeneration() {
+    @Test func testNumberFormatExcelGeneration() throws {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Number Format Test")
         
@@ -113,18 +115,10 @@ final class NumberFormatTests: XLKitTestBase {
         sheet.setCell("A3", number: 5678.90, format: customFormat)
         
         // Save the workbook to test XLSX generation
-        let tempURL = makeTempWorkbookURL(prefix: "number_format_test")
+        let tempURL = XLKitTestSupport.makeTempWorkbookURL(prefix: "number_format_test")
+        defer { XLKitTestSupport.cleanupTempFile(at: tempURL) }
         
-        do {
-            try workbook.save(to: tempURL)
-            
-            // Verify the file was created
-            XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
-            
-            // Clean up
-            try FileManager.default.removeItem(at: tempURL)
-        } catch {
-            XCTFail("Failed to save workbook with number formats: \(error)")
-        }
+        try workbook.save(to: tempURL)
+        #expect(FileManager.default.fileExists(atPath: tempURL.path))
     }
 }

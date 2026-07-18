@@ -11,6 +11,8 @@ This folder contains the **structured manual** (chapters under `Manual/`) and th
 ## Project links
 
 - **[Main README](../README.md)** — Badges, installation one-liner, quick start.
+- **[ARCHITECTURE.md](../ARCHITECTURE.md)** — Module stack, save pipeline, conventions, diagrams.
+- **[GUARDRAILS.md](../GUARDRAILS.md)** — Must / must-not constraints for contributors and agents.
 - **[AGENT.MD](../AGENT.MD)** — Maintainer and AI-agent development guide (architecture, testing expectations, security).
 - **[Tests README](../Tests/README.md)** — Unit test layout (`XLKitTests`, **80** tests).
 - **[Test-Workflows README](../Test-Workflows/README.md)** — CLI-generated `.xlsx` outputs; comprehensive demo sheets and unprotect passwords.

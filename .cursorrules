@@ -3,6 +3,8 @@
 ## Project Overview
 XLKit is a modern Swift library for creating and manipulating Excel (.xlsx) files on macOS and iOS. Built with Swift 6.0, targeting macOS 12+ and iOS 15+, using modular SPM architecture. iOS support is available and tested in CI/CD, with platform-specific code handling for iOS compatibility.
 
+**See also:** [ARCHITECTURE.md](ARCHITECTURE.md) (structure & conventions), [GUARDRAILS.md](GUARDRAILS.md) (must / must-not), [AGENT.MD](AGENT.MD).
+
 ## Architecture & Module Structure
 
 ### Core Modules
@@ -127,6 +129,8 @@ Security Features in Tests:
 ```
 XLKit/
 ├── AGENT.MD                     # AI agent development guide
+├── ARCHITECTURE.md              # Module stack, save pipeline, conventions
+├── GUARDRAILS.md                # Must / must-not for contributors and agents
 ├── .cursorrules                 # Cursor rules for AI agents
 ├── CHANGELOG.md                 # Version history and changes
 ├── LICENSE                      # MIT license
@@ -165,8 +169,8 @@ XLKit/
 ├── Documentation/              # User manual (Documentation/Manual/)
 ├── Tests/                      # Unit tests
 │   ├── README.md               # Test suite index (80 tests)
-│   └── XLKitTests/             # Test suite (15 focused test files)
-│       ├── XLKitTestBase.swift # Shared base class with common helpers (136 lines)
+│   └── XLKitTests/             # Test suite (15 focused Swift Testing suites)
+│       ├── XLKitTestBase.swift # Shared XLKitTestSupport helpers (Swift Testing)
 │       ├── CoreTests.swift     # Workbook and sheet operations (5 tests)
 │       ├── CellValueTests.swift # Cell values and data types (6 tests)
 │       ├── CoordinateTests.swift # Coordinates and ranges (2 tests)
@@ -182,7 +186,7 @@ XLKit/
 │       ├── SheetUtilityTests.swift # Sheet utilities (6 tests)
 │       ├── SheetStateTests.swift # Sheet visibility state (7 tests)
 │       └── SheetProtectionTests.swift # Sheet protection (14 tests)
-│       # Total: 80 tests across 15 focused test files
+│       # Total: 80 tests across 15 focused Swift Testing suites
 ├── Test-Data/                  # Test data files
 │   ├── README.md               # Test data documentation (44 lines)
 │   └── Embed-Test/             # Image embedding test data
@@ -196,12 +200,13 @@ XLKit/
 └── .github/                    # GitHub configuration
     ├── FUNDING.yml             # Funding configuration
     └── workflows/              # CI/CD workflows
-        ├── build.yml           # Main build and test workflow (85 lines)
-        ├── codeql.yml          # Security scanning workflow (116 lines)
-        ├── cli-embed.yml       # Image embedding test workflow (37 lines)
-        ├── cli-generic.yml     # Generic test workflow (41 lines)
-        ├── cli-no-embeds.yml   # No-embeds test workflow (37 lines)
-        └── cli-ios.yml         # iOS compatibility test workflow (37 lines)
+        ├── build.yml           # macOS + strict concurrency + iOS (93 lines)
+        ├── codeql.yml          # Security scanning workflow (115 lines)
+        ├── cli-embed.yml       # Image embedding test workflow (40 lines)
+        ├── cli-generic.yml     # Generic test workflow (44 lines)
+        ├── cli-no-embeds.yml   # No-embeds test workflow (40 lines)
+        ├── cli-ios.yml         # iOS CLI workflow (42 lines)
+        └── cli-numbers.yml     # Number-formats CLI (workflow_dispatch, 40 lines)
 ```
 
 ### Allowed Paths for Code Changes
@@ -214,6 +219,8 @@ allowed_paths = [
     "Tests/XLKitTests/",        # Unit tests
     ".github/workflows/",       # CI/CD workflows
     "README.md",                # Documentation
+    "ARCHITECTURE.md",          # Architecture guide
+    "GUARDRAILS.md",            # Contributor / agent constraints
     "AGENT.MD",                 # AI agent guide
     "Package.swift"             # Package configuration
 ]
@@ -385,17 +392,19 @@ import Foundation
 - Test platform compatibility and iOS-specific features
 
 ### Test Patterns
-- All test classes inherit from `XLKitTestBase` for shared helpers and utilities
+- Unit tests use **Swift Testing** (`import Testing`, `@Suite`, `@Test`, `#expect` / `#require`, `Issue.record`)
+- All test suites are `@Suite` + `@MainActor` structs that call `XLKitTestSupport` helpers
 - Tests are organized into focused files by functionality (e.g., `CoreTests.swift`, `CSVTests.swift`)
-- Use `XLKitTestBase` helpers: `makeUTCDate()`, `makeTempWorkbookURL()`, `withSavedTempWorkbookSync()`, `withSavedTempWorkbookAsync()`
+- Use `XLKitTestSupport` helpers: `makeUTCDate()`, `makeTempWorkbookURL()`, `withSavedTempWorkbookSync()`, `withSavedTempWorkbookAsync()`
 - Use deterministic dates (`fixedTestDate`, `epochDate`) instead of `Date()` for consistent test results
 - Use UUID-based temp file names to prevent concurrent test conflicts
-- Use proper guard statements with descriptive error messages instead of force unwraps
+- Prefer `try #require(...)` for unwraps that should fail the test; avoid force unwraps
 
 ```swift
+@Suite
 @MainActor
-final class FeatureTests: XLKitTestBase {
-    func testFeatureName() {
+struct FeatureTests {
+    @Test func testFeatureName() {
         // Arrange
         let workbook = Workbook()
         
@@ -403,20 +412,19 @@ final class FeatureTests: XLKitTestBase {
         let result = workbook.someOperation()
         
         // Assert
-        XCTAssertEqual(result, expectedValue)
+        #expect(result == expectedValue)
     }
     
-    func testFeatureNameWithInvalidInput() {
-        // Act & Assert
-        XCTAssertThrowsError(try someOperation(invalidInput)) { error in
-            XCTAssertEqual(error as? XLKitError, .expectedError)
+    @Test func testFeatureNameWithInvalidInput() {
+        #expect(throws: XLKitError.self) {
+            try someOperation(invalidInput)
         }
     }
     
-    func testFeatureWithFileOperation() throws {
-        try withSavedTempWorkbookSync(prefix: "test") { workbook, url in
+    @Test func testFeatureWithFileOperation() throws {
+        try XLKitTestSupport.withSavedTempWorkbookSync(prefix: "test") { workbook, url in
             // Workbook is already saved to disk at url
-            XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
+            #expect(FileManager.default.fileExists(atPath: url.path))
             // Test file operations...
         }
         // Automatic cleanup happens in defer block
@@ -621,7 +629,9 @@ Security operations are logged with structured data:
 - Document requirements
 
 ### CI/CD Integration
-- Automated testing on macOS
+- Automated testing on macOS (unit tests + TestRunner smoke) and iOS simulator
+- Optional macOS job with `SWIFT_STRICT_CONCURRENCY=complete`
+- CLI workflows for embed, no-embeds, comprehensive, iOS, and number-formats
 - Code formatting checks
 - Documentation generation
 - Release automation
@@ -741,6 +751,15 @@ Current External Dependencies:
 - Extended `comprehensive` / `demo` (11 sheets) with visibility and protection; **Comprehensive-Demo.xlsx** password **1234**; CoreXLSX validation by sheet name
 - Documented in `Sources/XLKitTestRunner/README.md`, `Test-Workflows/README.md`, `Tests/README.md`, `Documentation/Manual/` chapters 03, 09, 10, 12
 - `SheetProtectionTests` expanded to 14 tests; total unit tests 75 → 80
+
+## Swift Testing Migration and CI Updates (2026-07-18, 1.1.7)
+- Migrated all **80** unit tests from XCTest to **Swift Testing** (`import Testing`, `@Suite`, `@Test`, `#expect` / `#require`, `Issue.record`)
+- Replaced `XLKitTestBase` (`XCTestCase` subclass) with **`XLKitTestSupport`** static helpers in `XLKitTestBase.swift`
+- Suites are `@Suite` + `@MainActor` structs; temp-file and date helpers call `XLKitTestSupport` explicitly
+- Updated docs: `Tests/README.md`, `Test-Workflows/README.md`, `Documentation/Manual/` chapters 01 and 10, `CHANGELOG.md` (1.1.7)
+- Added root **`ARCHITECTURE.md`** and **`GUARDRAILS.md`** (OpenFCPXMLKit-style contributor / agent docs)
+- CI (`build.yml`): removed redundant `macOS-swift6` tools-version job; added **macOS (strict concurrency)** with `SWIFT_STRICT_CONCURRENCY=complete` (verified locally)
+- Documented `cli-numbers.yml` in Manual chapter 10; corrected iOS requirement note (iOS is tested in CI)
 
 ## Sheet Visibility and Protection (2026-05-30, PR #23)
 - Added `SheetState` enum (`.visible`, `.hidden`, `.veryHidden`) and `Sheet.state` property
@@ -987,7 +1006,7 @@ API Design
 
 ### Structured user manual
 
-The end-user manual is split into chapters under **`Documentation/Manual/`** (index: **`Documentation/Manual/README.md`**). When you add or change public APIs, update the relevant chapter and **`Documentation/Manual/12-Complete-API-Reference.md`**. CLI outputs and demo workbook details: **`Test-Workflows/README.md`**. Unit test index: **`Tests/README.md`** (80 tests). Demo protection constants belong in **`ComprehensiveDemoProtection.swift`** (XLKitTestRunner), not on public `CoreUtils`.
+The end-user manual is split into chapters under **`Documentation/Manual/`** (index: **`Documentation/Manual/README.md`**). When you add or change public APIs, update the relevant chapter and **`Documentation/Manual/12-Complete-API-Reference.md`**. CLI outputs and demo workbook details: **`Test-Workflows/README.md`**. Unit test index: **`Tests/README.md`** (80 tests). Demo protection constants belong in **`ComprehensiveDemoProtection.swift`** (XLKitTestRunner), not on public `CoreUtils`. Contributor structure and hard constraints: **`ARCHITECTURE.md`** and **`GUARDRAILS.md`** (keep in sync when module boundaries or must-not rules change).
 
 ### Critical Update Requirements
 
@@ -1067,6 +1086,7 @@ Ensure consistency between .cursorrules and AGENT.MD files:
 Keep track of major updates to this file:
 - Document the date of significant updates
 - Note the version of XLKit when changes were made
+- **1.1.7 (2026-07-18):** Migrated all unit tests from XCTest to Swift Testing (`XLKitTestSupport`, `@Suite`/`@Test`/`#expect`); removed redundant `macOS-swift6` CI job; added `macOS-strict-concurrency` (`SWIFT_STRICT_CONCURRENCY=complete`); added root `ARCHITECTURE.md` and `GUARDRAILS.md` (OpenFCPXMLKit-style); docs in Tests/README, Test-Workflows/README, Manual 01/10, AGENT.MD, CHANGELOG
 - **1.1.6 (2026-06-03):** Worksheet password helpers (`configureSheetPassword`, legacy/modern hashes), `sheet-password` CLI, `ComprehensiveDemoProtection.swift`, 11-sheet comprehensive demo, 80 unit tests; docs in Manual 03/09/10/12, Test-Workflows/README, Tests/README
 - Reference specific commits or issues that prompted updates
 - Maintain a changelog of rule updates

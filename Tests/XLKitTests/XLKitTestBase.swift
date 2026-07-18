@@ -4,16 +4,23 @@
 //  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
 //
 
-import XCTest
+import Foundation
+import Testing
 import XLKit
 
-/// Base test class providing shared helper methods for all XLKit tests.
+/// Shared helpers for XLKit Swift Testing suites.
 @MainActor
-class XLKitTestBase: XCTestCase {
+enum XLKitTestSupport {
     
     /// Helper to construct a UTC date from calendar components, avoiding magic Unix timestamps.
-    static func makeUTCDate(year: Int, month: Int, day: Int,
-                           hour: Int = 0, minute: Int = 0, second: Int = 0) -> Date {
+    static func makeUTCDate(
+        year: Int,
+        month: Int,
+        day: Int,
+        hour: Int = 0,
+        minute: Int = 0,
+        second: Int = 0
+    ) -> Date {
         var components = DateComponents()
         components.year = year
         components.month = month
@@ -31,7 +38,7 @@ class XLKitTestBase: XCTestCase {
             ?? TimeZone.current
         
         guard let date = calendar.date(from: components) else {
-            XCTFail("""
+            Issue.record("""
             Failed to create UTC date from components.
               Year:   \(components.year.map(String.init) ?? "nil")
               Month:  \(components.month.map(String.init) ?? "nil")
@@ -56,7 +63,7 @@ class XLKitTestBase: XCTestCase {
     
     /// Helper to generate a unique temporary URL for workbook files.
     /// - Parameter prefix: A prefix to distinguish different test cases.
-    func makeTempWorkbookURL(prefix: String) -> URL {
+    static func makeTempWorkbookURL(prefix: String) -> URL {
         FileManager.default.temporaryDirectory.appendingPathComponent("\(prefix)-\(UUID().uuidString).xlsx")
     }
 
@@ -69,9 +76,8 @@ class XLKitTestBase: XCTestCase {
     }
 
     /// Best-effort cleanup for temporary workbook files used in tests.
-    /// Logs any failure via `XCTFail` so file system issues are visible in test output.
-    /// Internal so test subclasses may override for specialized cleanup scenarios.
-    internal func cleanupTempFile(at url: URL) {
+    /// Logs any failure via `Issue.record` so file system issues are visible in test output.
+    static func cleanupTempFile(at url: URL) {
         let path = url.path
         guard FileManager.default.fileExists(atPath: path) else {
             return
@@ -80,14 +86,16 @@ class XLKitTestBase: XCTestCase {
         do {
             try FileManager.default.removeItem(at: url)
         } catch {
-            XCTFail("Failed to remove temporary workbook at \(path): \(error)")
+            Issue.record("Failed to remove temporary workbook at \(path): \(error)")
         }
     }
     
     /// Helper to save a workbook to a temporary URL synchronously and ensure cleanup.
-    func withSavedTempWorkbookSync(prefix: String,
-                                   _ body: (_ workbook: Workbook, _ url: URL) throws -> Void) throws {
-        let workbook = Self.makeTestWorkbook()
+    static func withSavedTempWorkbookSync(
+        prefix: String,
+        _ body: (_ workbook: Workbook, _ url: URL) throws -> Void
+    ) throws {
+        let workbook = makeTestWorkbook()
         
         let tempURL = makeTempWorkbookURL(prefix: prefix)
         // Save the workbook to disk so callers can rely on a real file at tempURL.
@@ -101,9 +109,11 @@ class XLKitTestBase: XCTestCase {
     }
     
     /// Helper to save a workbook to a temporary URL asynchronously and ensure cleanup.
-    func withSavedTempWorkbookAsync(prefix: String,
-                                    _ body: @MainActor (_ workbook: Workbook, _ url: URL) async throws -> Void) async throws {
-        let workbook = Self.makeTestWorkbook()
+    static func withSavedTempWorkbookAsync(
+        prefix: String,
+        _ body: @MainActor (_ workbook: Workbook, _ url: URL) async throws -> Void
+    ) async throws {
+        let workbook = makeTestWorkbook()
         
         let tempURL = makeTempWorkbookURL(prefix: prefix)
         // Save the workbook to disk before invoking the async body.
@@ -117,7 +127,7 @@ class XLKitTestBase: XCTestCase {
     }
     
     /// Helper to create a bordered `CellFormat` with configurable top/bottom borders and optional color.
-    internal static func makeBorderedFormat(top: BorderStyle, bottom: BorderStyle, color: String? = nil) -> CellFormat {
+    static func makeBorderedFormat(top: BorderStyle, bottom: BorderStyle, color: String? = nil) -> CellFormat {
         var format = CellFormat.bordered(style: .thin, color: color)
         format.borderTop = top
         format.borderBottom = bottom

@@ -20,7 +20,7 @@ Files produced are intended for apps that read standard Excel workbooks, for exa
 ## Requirements
 
 - macOS: 12.0+
-- iOS: 15.0+ (available but not tested)
+- iOS: 15.0+ (build and unit tests in CI)
 - Swift: 6.0+
 
 

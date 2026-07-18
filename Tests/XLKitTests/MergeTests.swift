@@ -4,24 +4,26 @@
 //  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
 //
 
-import XCTest
+import Foundation
+import Testing
 import XLKit
 
+@Suite
 @MainActor
-final class MergeTests: XLKitTestBase {
+struct MergeTests {
     
-    func testMergeCells() throws {
+    @Test func testMergeCells() throws {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         
         sheet.mergeCells("A1:C1")
         
         let mergedRanges = sheet.getMergedRanges()
-        XCTAssertEqual(mergedRanges.count, 1)
-        XCTAssertEqual(mergedRanges[0].excelRange, "A1:C1")
+        #expect(mergedRanges.count == 1)
+        #expect(mergedRanges[0].excelRange == "A1:C1")
     }
     
-    func testMergedCellsActuallyWork() {
+    @Test func testMergedCellsActuallyWork() throws {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Merge Test")
         
@@ -36,40 +38,36 @@ final class MergeTests: XLKitTestBase {
         
         // Verify merged ranges are stored correctly
         let mergedRanges = sheet.getMergedRanges()
-        XCTAssertEqual(mergedRanges.count, 2)
+        #expect(mergedRanges.count == 2)
         
         // Check first merge (A1:C1)
-        XCTAssertTrue(mergedRanges.contains { $0.excelRange == "A1:C1" })
+        #expect(mergedRanges.contains { $0.excelRange == "A1:C1" })
         let firstMerge = mergedRanges.first { $0.excelRange == "A1:C1" }
-        XCTAssertNotNil(firstMerge)
-        XCTAssertEqual(firstMerge?.start.excelAddress, "A1")
-        XCTAssertEqual(firstMerge?.end.excelAddress, "C1")
+        #expect(firstMerge != nil)
+        #expect(firstMerge?.start.excelAddress == "A1")
+        #expect(firstMerge?.end.excelAddress == "C1")
         
         // Check second merge (A2:B2)
-        XCTAssertTrue(mergedRanges.contains { $0.excelRange == "A2:B2" })
+        #expect(mergedRanges.contains { $0.excelRange == "A2:B2" })
         let secondMerge = mergedRanges.first { $0.excelRange == "A2:B2" }
-        XCTAssertNotNil(secondMerge)
-        XCTAssertEqual(secondMerge?.start.excelAddress, "A2")
-        XCTAssertEqual(secondMerge?.end.excelAddress, "B2")
+        #expect(secondMerge != nil)
+        #expect(secondMerge?.start.excelAddress == "A2")
+        #expect(secondMerge?.end.excelAddress == "B2")
         
         // Verify cell values are preserved
-        XCTAssertEqual(sheet.getCell("A1"), .string("Merged A1:C1"))
-        XCTAssertEqual(sheet.getCell("A2"), .string("Merged A2:B2"))
-        XCTAssertEqual(sheet.getCell("C2"), .string("Single Cell"))
+        #expect(sheet.getCell("A1") == .string("Merged A1:C1"))
+        #expect(sheet.getCell("A2") == .string("Merged A2:B2"))
+        #expect(sheet.getCell("C2") == .string("Single Cell"))
         
         // Test Excel file generation with merged cells
-        let tempURL = makeTempWorkbookURL(prefix: "merge_test")
+        let tempURL = XLKitTestSupport.makeTempWorkbookURL(prefix: "merge_test")
         
-        do {
-            try workbook.save(to: tempURL)
-            XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
-            try FileManager.default.removeItem(at: tempURL)
-        } catch {
-            XCTFail("Failed to save workbook with merged cells: \(error)")
-        }
+        try workbook.save(to: tempURL)
+        #expect(FileManager.default.fileExists(atPath: tempURL.path))
+        try FileManager.default.removeItem(at: tempURL)
     }
     
-    func testComplexMerging() {
+    @Test func testComplexMerging() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Complex Merge Test")
         
@@ -91,42 +89,42 @@ final class MergeTests: XLKitTestBase {
         
         // Verify all merges are stored correctly
         let mergedRanges = sheet.getMergedRanges()
-        XCTAssertEqual(mergedRanges.count, mergeRanges.count)
+        #expect(mergedRanges.count == mergeRanges.count)
         
         for range in mergeRanges {
-            XCTAssertTrue(mergedRanges.contains { $0.excelRange == range })
+            #expect(mergedRanges.contains { $0.excelRange == range })
         }
         
         // Test specific merge validations
         let horizontalMerge = mergedRanges.first { $0.excelRange == "A1:B1" }
-        XCTAssertNotNil(horizontalMerge)
-        XCTAssertEqual(horizontalMerge?.start.row, 1)
-        XCTAssertEqual(horizontalMerge?.start.column, 1)
-        XCTAssertEqual(horizontalMerge?.end.row, 1)
-        XCTAssertEqual(horizontalMerge?.end.column, 2)
+        #expect(horizontalMerge != nil)
+        #expect(horizontalMerge?.start.row == 1)
+        #expect(horizontalMerge?.start.column == 1)
+        #expect(horizontalMerge?.end.row == 1)
+        #expect(horizontalMerge?.end.column == 2)
         
         let verticalMerge = mergedRanges.first { $0.excelRange == "A2:A4" }
-        XCTAssertNotNil(verticalMerge)
-        XCTAssertEqual(verticalMerge?.start.row, 2)
-        XCTAssertEqual(verticalMerge?.start.column, 1)
-        XCTAssertEqual(verticalMerge?.end.row, 4)
-        XCTAssertEqual(verticalMerge?.end.column, 1)
+        #expect(verticalMerge != nil)
+        #expect(verticalMerge?.start.row == 2)
+        #expect(verticalMerge?.start.column == 1)
+        #expect(verticalMerge?.end.row == 4)
+        #expect(verticalMerge?.end.column == 1)
         
         let largeMerge = mergedRanges.first { $0.excelRange == "C1:D3" }
-        XCTAssertNotNil(largeMerge)
-        XCTAssertEqual(largeMerge?.start.row, 1)
-        XCTAssertEqual(largeMerge?.start.column, 3)
-        XCTAssertEqual(largeMerge?.end.row, 3)
-        XCTAssertEqual(largeMerge?.end.column, 4)
+        #expect(largeMerge != nil)
+        #expect(largeMerge?.start.row == 1)
+        #expect(largeMerge?.start.column == 3)
+        #expect(largeMerge?.end.row == 3)
+        #expect(largeMerge?.end.column == 4)
     }
     
-    func testComplexBorderAndMergeCombination() {
+    @Test func testComplexBorderAndMergeCombination() throws {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Border and Merge Test")
         
         // Test the exact scenario from the user's report
         var borderedFormat = CellFormat.bordered()
-        borderedFormat.fontSize = Self.standardFontSize
+        borderedFormat.fontSize = XLKitTestSupport.standardFontSize
         borderedFormat.fontWeight = .bold
         borderedFormat.horizontalAlignment = .center
         borderedFormat.verticalAlignment = .center
@@ -151,37 +149,33 @@ final class MergeTests: XLKitTestBase {
         
         // Verify everything is stored correctly
         let mergedRanges = sheet.getMergedRanges()
-        XCTAssertEqual(mergedRanges.count, 2)
-        XCTAssertTrue(mergedRanges.contains { $0.excelRange == "A1:B1" })
-        XCTAssertTrue(mergedRanges.contains { $0.excelRange == "A2:B2" })
+        #expect(mergedRanges.count == 2)
+        #expect(mergedRanges.contains { $0.excelRange == "A1:B1" })
+        #expect(mergedRanges.contains { $0.excelRange == "A2:B2" })
         
         // Verify border formatting
         let borderedCell = sheet.getCellWithFormat("A1")
-        XCTAssertNotNil(borderedCell)
-        XCTAssertEqual(borderedCell?.format?.fontSize, Self.standardFontSize)
-        XCTAssertEqual(borderedCell?.format?.fontWeight, .bold)
-        XCTAssertEqual(borderedCell?.format?.horizontalAlignment, .center)
-        XCTAssertEqual(borderedCell?.format?.verticalAlignment, .center)
-        XCTAssertEqual(borderedCell?.format?.fontName, "Calibri")
-        XCTAssertEqual(borderedCell?.format?.borderTop, .thin)
-        XCTAssertEqual(borderedCell?.format?.borderBottom, .thin)
-        XCTAssertEqual(borderedCell?.format?.borderLeft, .thin)
-        XCTAssertEqual(borderedCell?.format?.borderRight, .thin)
-        XCTAssertEqual(borderedCell?.format?.borderColor, "#000000")
+        #expect(borderedCell != nil)
+        #expect(borderedCell?.format?.fontSize == XLKitTestSupport.standardFontSize)
+        #expect(borderedCell?.format?.fontWeight == .bold)
+        #expect(borderedCell?.format?.horizontalAlignment == .center)
+        #expect(borderedCell?.format?.verticalAlignment == .center)
+        #expect(borderedCell?.format?.fontName == "Calibri")
+        #expect(borderedCell?.format?.borderTop == .thin)
+        #expect(borderedCell?.format?.borderBottom == .thin)
+        #expect(borderedCell?.format?.borderLeft == .thin)
+        #expect(borderedCell?.format?.borderRight == .thin)
+        #expect(borderedCell?.format?.borderColor == "#000000")
         
         // Verify column widths
-        XCTAssertEqual(sheet.getColumnWidth(1), 100.0)
-        XCTAssertEqual(sheet.getColumnWidth(2), 150.0)
+        #expect(sheet.getColumnWidth(1) == 100.0)
+        #expect(sheet.getColumnWidth(2) == 150.0)
         
         // Test Excel file generation
-        let tempURL = makeTempWorkbookURL(prefix: "border_merge_test")
+        let tempURL = XLKitTestSupport.makeTempWorkbookURL(prefix: "border_merge_test")
         
-        do {
-            try workbook.save(to: tempURL)
-            XCTAssertTrue(FileManager.default.fileExists(atPath: tempURL.path))
-            try FileManager.default.removeItem(at: tempURL)
-        } catch {
-            XCTFail("Failed to save workbook with borders and merges: \(error)")
-        }
+        try workbook.save(to: tempURL)
+        #expect(FileManager.default.fileExists(atPath: tempURL.path))
+        try FileManager.default.removeItem(at: tempURL)
     }
 }

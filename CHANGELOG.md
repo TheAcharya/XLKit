@@ -1,5 +1,17 @@
 # Changelog
 
+### 1.1.7
+
+**🎉 Released:**
+- 18th July 2026
+
+**🔧 Improvements:**
+- Migrated the full `XLKitTests` suite from XCTest to Swift Testing (`@Suite`, `@Test`, `#expect` / `#require`); shared helpers live on `XLKitTestSupport` in `XLKitTestBase.swift`
+- CI: removed redundant `macOS-swift6` tools-version job; added `macOS-strict-concurrency` (`SWIFT_STRICT_CONCURRENCY=complete`)
+- Added root `ARCHITECTURE.md` and `GUARDRAILS.md` (OpenFCPXMLKit-style structure and must/must-not guides for contributors and agents)
+
+---
+
 ### 1.1.6
 
 **🎉 Released:**

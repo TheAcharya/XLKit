@@ -4,13 +4,16 @@
 //  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
 //
 
-import XCTest
+import CoreGraphics
+import Foundation
+import Testing
 import XLKit
 
+@Suite
 @MainActor
-final class ImageTests: XLKitTestBase {
+struct ImageTests {
     
-    func testWorkbookImageManagement() {
+    @Test func testWorkbookImageManagement() {
         let workbook = Workbook()
         
         let imageData = Data()
@@ -22,17 +25,17 @@ final class ImageTests: XLKitTestBase {
         )
         
         workbook.addImage(image)
-        XCTAssertEqual(workbook.imageCount, 1)
+        #expect(workbook.imageCount == 1)
         
         let retrievedImage = workbook.getImage(withId: "test-image")
-        XCTAssertNotNil(retrievedImage)
-        XCTAssertEqual(retrievedImage?.id, "test-image")
+        #expect(retrievedImage != nil)
+        #expect(retrievedImage?.id == "test-image")
         
         workbook.removeImage(withId: "test-image")
-        XCTAssertEqual(workbook.imageCount, 0)
+        #expect(workbook.imageCount == 0)
     }
     
-    func testSheetImageManagement() {
+    @Test func testSheetImageManagement() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         
@@ -45,13 +48,13 @@ final class ImageTests: XLKitTestBase {
         )
         
         sheet.addImage(image, at: "A1")
-        XCTAssertTrue(sheet.hasImage(at: "A1"))
+        #expect(sheet.hasImage(at: "A1"))
         
         let retrievedImage = sheet.getImage(at: "A1")
-        XCTAssertNotNil(retrievedImage)
-        XCTAssertEqual(retrievedImage?.id, "test-image")
+        #expect(retrievedImage != nil)
+        #expect(retrievedImage?.id == "test-image")
         
         sheet.removeImage(at: "A1")
-        XCTAssertFalse(sheet.hasImage(at: "A1"))
+        #expect(!(sheet.hasImage(at: "A1")))
     }
 }

@@ -4,27 +4,30 @@
 //  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
 //
 
-import XCTest
+import Foundation
+import Testing
 import XLKit
 
+@Suite
 @MainActor
-final class FormattingTests: XLKitTestBase {
+struct FormattingTests {
     
-    func testCellFormatting() {
+    @Test func testCellFormatting() {
         let headerFormat = CellFormat.header()
         let currencyFormat = CellFormat.currency()
         let percentageFormat = CellFormat.percentage()
         let dateFormat = CellFormat.date()
         let borderedFormat = CellFormat.bordered()
         
-        XCTAssertNotNil(headerFormat)
-        XCTAssertNotNil(currencyFormat)
-        XCTAssertNotNil(percentageFormat)
-        XCTAssertNotNil(dateFormat)
-        XCTAssertNotNil(borderedFormat)
+        // Factory helpers return non-optional CellFormat values; verify they are usable.
+        #expect(headerFormat.fontWeight == .bold)
+        #expect(currencyFormat.numberFormat != nil)
+        #expect(percentageFormat.numberFormat != nil)
+        #expect(dateFormat.numberFormat != nil)
+        #expect(borderedFormat.borderTop != nil)
     }
     
-    func testFontColorFormatting() {
+    @Test func testFontColorFormatting() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Font Color Test")
         
@@ -46,18 +49,18 @@ final class FormattingTests: XLKitTestBase {
         let greenCell = sheet.getCellWithFormat("A3")
         let currencyCell = sheet.getCellWithFormat("A4")
         
-        XCTAssertNotNil(redCell)
-        XCTAssertNotNil(blueCell)
-        XCTAssertNotNil(greenCell)
-        XCTAssertNotNil(currencyCell)
+        #expect(redCell != nil)
+        #expect(blueCell != nil)
+        #expect(greenCell != nil)
+        #expect(currencyCell != nil)
         
-        XCTAssertEqual(redCell?.format?.fontColor, "#FF0000")
-        XCTAssertEqual(blueCell?.format?.fontColor, "#0000FF")
-        XCTAssertEqual(greenCell?.format?.fontColor, "#00FF00")
-        XCTAssertEqual(currencyCell?.format?.fontColor, "#FF0000")
+        #expect(redCell?.format?.fontColor == "#FF0000")
+        #expect(blueCell?.format?.fontColor == "#0000FF")
+        #expect(greenCell?.format?.fontColor == "#00FF00")
+        #expect(currencyCell?.format?.fontColor == "#FF0000")
     }
     
-    func testHorizontalAlignment() {
+    @Test func testHorizontalAlignment() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Horizontal Alignment Test")
         
@@ -91,20 +94,20 @@ final class FormattingTests: XLKitTestBase {
         let justifyCell = sheet.getCellWithFormat("A4")
         let distributedCell = sheet.getCellWithFormat("A5")
         
-        XCTAssertNotNil(leftCell)
-        XCTAssertNotNil(centerCell)
-        XCTAssertNotNil(rightCell)
-        XCTAssertNotNil(justifyCell)
-        XCTAssertNotNil(distributedCell)
+        #expect(leftCell != nil)
+        #expect(centerCell != nil)
+        #expect(rightCell != nil)
+        #expect(justifyCell != nil)
+        #expect(distributedCell != nil)
         
-        XCTAssertEqual(leftCell?.format?.horizontalAlignment, .left)
-        XCTAssertEqual(centerCell?.format?.horizontalAlignment, .center)
-        XCTAssertEqual(rightCell?.format?.horizontalAlignment, .right)
-        XCTAssertEqual(justifyCell?.format?.horizontalAlignment, .justify)
-        XCTAssertEqual(distributedCell?.format?.horizontalAlignment, .distributed)
+        #expect(leftCell?.format?.horizontalAlignment == .left)
+        #expect(centerCell?.format?.horizontalAlignment == .center)
+        #expect(rightCell?.format?.horizontalAlignment == .right)
+        #expect(justifyCell?.format?.horizontalAlignment == .justify)
+        #expect(distributedCell?.format?.horizontalAlignment == .distributed)
     }
     
-    func testVerticalAlignment() {
+    @Test func testVerticalAlignment() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Vertical Alignment Test")
         
@@ -138,20 +141,20 @@ final class FormattingTests: XLKitTestBase {
         let justifyCell = sheet.getCellWithFormat("A4")
         let distributedCell = sheet.getCellWithFormat("A5")
         
-        XCTAssertNotNil(topCell)
-        XCTAssertNotNil(centerCell)
-        XCTAssertNotNil(bottomCell)
-        XCTAssertNotNil(justifyCell)
-        XCTAssertNotNil(distributedCell)
+        #expect(topCell != nil)
+        #expect(centerCell != nil)
+        #expect(bottomCell != nil)
+        #expect(justifyCell != nil)
+        #expect(distributedCell != nil)
         
-        XCTAssertEqual(topCell?.format?.verticalAlignment, .top)
-        XCTAssertEqual(centerCell?.format?.verticalAlignment, .center)
-        XCTAssertEqual(bottomCell?.format?.verticalAlignment, .bottom)
-        XCTAssertEqual(justifyCell?.format?.verticalAlignment, .justify)
-        XCTAssertEqual(distributedCell?.format?.verticalAlignment, .distributed)
+        #expect(topCell?.format?.verticalAlignment == .top)
+        #expect(centerCell?.format?.verticalAlignment == .center)
+        #expect(bottomCell?.format?.verticalAlignment == .bottom)
+        #expect(justifyCell?.format?.verticalAlignment == .justify)
+        #expect(distributedCell?.format?.verticalAlignment == .distributed)
     }
     
-    func testCombinedAlignment() {
+    @Test func testCombinedAlignment() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Combined Alignment Test")
         
@@ -184,25 +187,25 @@ final class FormattingTests: XLKitTestBase {
         let bottomRightCell = sheet.getCellWithFormat("A3")
         let justifyDistributedCell = sheet.getCellWithFormat("A4")
         
-        XCTAssertNotNil(topLeftCell)
-        XCTAssertNotNil(centerCenterCell)
-        XCTAssertNotNil(bottomRightCell)
-        XCTAssertNotNil(justifyDistributedCell)
+        #expect(topLeftCell != nil)
+        #expect(centerCenterCell != nil)
+        #expect(bottomRightCell != nil)
+        #expect(justifyDistributedCell != nil)
         
         // Test horizontal alignments
-        XCTAssertEqual(topLeftCell?.format?.horizontalAlignment, .left)
-        XCTAssertEqual(centerCenterCell?.format?.horizontalAlignment, .center)
-        XCTAssertEqual(bottomRightCell?.format?.horizontalAlignment, .right)
-        XCTAssertEqual(justifyDistributedCell?.format?.horizontalAlignment, .justify)
+        #expect(topLeftCell?.format?.horizontalAlignment == .left)
+        #expect(centerCenterCell?.format?.horizontalAlignment == .center)
+        #expect(bottomRightCell?.format?.horizontalAlignment == .right)
+        #expect(justifyDistributedCell?.format?.horizontalAlignment == .justify)
         
         // Test vertical alignments
-        XCTAssertEqual(topLeftCell?.format?.verticalAlignment, .top)
-        XCTAssertEqual(centerCenterCell?.format?.verticalAlignment, .center)
-        XCTAssertEqual(bottomRightCell?.format?.verticalAlignment, .bottom)
-        XCTAssertEqual(justifyDistributedCell?.format?.verticalAlignment, .distributed)
+        #expect(topLeftCell?.format?.verticalAlignment == .top)
+        #expect(centerCenterCell?.format?.verticalAlignment == .center)
+        #expect(bottomRightCell?.format?.verticalAlignment == .bottom)
+        #expect(justifyDistributedCell?.format?.verticalAlignment == .distributed)
     }
     
-    func testAlignmentWithOtherFormatting() {
+    @Test func testAlignmentWithOtherFormatting() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Alignment with Formatting Test")
         
@@ -220,34 +223,34 @@ final class FormattingTests: XLKitTestBase {
         
         // Verify all formatting is applied
         let formattedCell = sheet.getCellWithFormat("A1")
-        XCTAssertNotNil(formattedCell)
+        #expect(formattedCell != nil)
         
-        XCTAssertEqual(formattedCell?.format?.horizontalAlignment, .center)
-        XCTAssertEqual(formattedCell?.format?.verticalAlignment, .center)
-        XCTAssertEqual(formattedCell?.format?.fontWeight, .bold)
-        XCTAssertEqual(formattedCell?.format?.fontSize, 14.0)
-        XCTAssertEqual(formattedCell?.format?.fontColor, "#FF0000")
-        XCTAssertEqual(formattedCell?.format?.backgroundColor, "#FFFF00")
+        #expect(formattedCell?.format?.horizontalAlignment == .center)
+        #expect(formattedCell?.format?.verticalAlignment == .center)
+        #expect(formattedCell?.format?.fontWeight == .bold)
+        #expect(formattedCell?.format?.fontSize == 14.0)
+        #expect(formattedCell?.format?.fontColor == "#FF0000")
+        #expect(formattedCell?.format?.backgroundColor == "#FFFF00")
         // Verify text wrapping remains at the expected default (nil, which defaults to false in format key)
-        XCTAssertNil(formattedCell?.format?.textWrapping)
+        #expect(formattedCell?.format?.textWrapping == nil)
     }
     
-    func testAlignmentEnumValues() {
+    @Test func testAlignmentEnumValues() {
         // Test that all alignment enum values are correct
-        XCTAssertEqual(HorizontalAlignment.left.rawValue, "left")
-        XCTAssertEqual(HorizontalAlignment.center.rawValue, "center")
-        XCTAssertEqual(HorizontalAlignment.right.rawValue, "right")
-        XCTAssertEqual(HorizontalAlignment.justify.rawValue, "justify")
-        XCTAssertEqual(HorizontalAlignment.distributed.rawValue, "distributed")
+        #expect(HorizontalAlignment.left.rawValue == "left")
+        #expect(HorizontalAlignment.center.rawValue == "center")
+        #expect(HorizontalAlignment.right.rawValue == "right")
+        #expect(HorizontalAlignment.justify.rawValue == "justify")
+        #expect(HorizontalAlignment.distributed.rawValue == "distributed")
         
-        XCTAssertEqual(VerticalAlignment.top.rawValue, "top")
-        XCTAssertEqual(VerticalAlignment.center.rawValue, "center")
-        XCTAssertEqual(VerticalAlignment.bottom.rawValue, "bottom")
-        XCTAssertEqual(VerticalAlignment.justify.rawValue, "justify")
-        XCTAssertEqual(VerticalAlignment.distributed.rawValue, "distributed")
+        #expect(VerticalAlignment.top.rawValue == "top")
+        #expect(VerticalAlignment.center.rawValue == "center")
+        #expect(VerticalAlignment.bottom.rawValue == "bottom")
+        #expect(VerticalAlignment.justify.rawValue == "justify")
+        #expect(VerticalAlignment.distributed.rawValue == "distributed")
     }
     
-    func testSetCellWithFormatting() {
+    @Test func testSetCellWithFormatting() {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         
@@ -260,9 +263,9 @@ final class FormattingTests: XLKitTestBase {
         let retrievedHeader = sheet.getCellWithFormat("A1")
         let retrievedCurrency = sheet.getCellWithFormat("B1")
         
-        XCTAssertNotNil(retrievedHeader)
-        XCTAssertNotNil(retrievedCurrency)
-        XCTAssertEqual(retrievedHeader?.value, .string("Header"))
-        XCTAssertEqual(retrievedCurrency?.value, .number(1234.56))
+        #expect(retrievedHeader != nil)
+        #expect(retrievedCurrency != nil)
+        #expect(retrievedHeader?.value == .string("Header"))
+        #expect(retrievedCurrency?.value == .number(1234.56))
     }
 }

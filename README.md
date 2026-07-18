@@ -142,8 +142,11 @@ try await workbook.save(to: URL(fileURLWithPath: "employees.xlsx"))
 
 ## Documentation
 
-- **[Documentation README](Documentation/README.md)** – How the docs folder is organised
-- **[Manual index](Documentation/Manual/README.md)** – Table of contents and links to all chapters (overview, architecture, core model, CSV/TSV, images, formatting, security, CoreUtils/password helpers, testing, examples, full API reference)
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** — Module stack, save pipeline, conventions, diagrams
+- **[GUARDRAILS.md](GUARDRAILS.md)** — Must / must-not constraints for contributors and agents
+- **[Documentation README](Documentation/README.md)** — How the docs folder is organised
+- **[Manual index](Documentation/Manual/README.md)** — Table of contents and links to all chapters (overview, architecture, core model, CSV/TSV, images, formatting, security, CoreUtils/password helpers, testing, examples, full API reference)
+- **[AGENT.MD](AGENT.MD)** — Maintainer and AI-agent development guide
 
 ## Credits
 

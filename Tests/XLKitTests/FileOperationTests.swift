@@ -4,29 +4,31 @@
 //  © 2025 Vigneswaran Rajkumar • Licensed under MIT License
 //
 
-import XCTest
+import Foundation
+import Testing
 import XLKit
 
+@Suite
 @MainActor
-final class FileOperationTests: XLKitTestBase {
+struct FileOperationTests {
     
-    func testWorkbookSave() throws {
-        try withSavedTempWorkbookSync(prefix: "test") { workbook, url in
+    @Test func testWorkbookSave() throws {
+        try XLKitTestSupport.withSavedTempWorkbookSync(prefix: "test") { workbook, url in
             // Test synchronous save
             try workbook.save(to: url)
             
             // Verify file exists
-            XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
+            #expect(FileManager.default.fileExists(atPath: url.path))
         }
     }
     
-    func testWorkbookSaveAsync() async throws {
-        try await withSavedTempWorkbookAsync(prefix: "test_async") { workbook, url in
+    @Test func testWorkbookSaveAsync() async throws {
+        try await XLKitTestSupport.withSavedTempWorkbookAsync(prefix: "test_async") { workbook, url in
             // Test asynchronous save
             try await workbook.save(to: url)
             
             // Verify file exists
-            XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
+            #expect(FileManager.default.fileExists(atPath: url.path))
         }
     }
 }

@@ -6,7 +6,7 @@ Navigation: [← Chapter 09](09-Errors-CoreUtils-and-iOS.md) · [Manual index](R
 
 ## Unit tests (`XLKitTests`)
 
-The package test target **`XLKitTests`** exercises public APIs (workbook/sheet, CSV, images, formatting, merges, borders, sheet state, sheet protection, file save, column ordering, etc.). Tests are **`@MainActor`** and inherit shared helpers from **`XLKitTestBase`**.
+The package test target **`XLKitTests`** exercises public APIs (workbook/sheet, CSV, images, formatting, merges, borders, sheet state, sheet protection, file save, column ordering, etc.). Tests use **Swift Testing** (`@Suite`, `@Test`, `#expect`) and are **`@MainActor`**, with shared helpers on **`XLKitTestSupport`**.
 
 ### Run everything locally
 
@@ -16,26 +16,28 @@ From the package root:
 swift test
 ```
 
-Run one test class (XCTest filter):
+Run one suite (Swift Testing filter):
 
 ```bash
-swift test --filter XLKitTests.SheetProtectionTests
+swift test --filter SheetProtectionTests
 ```
 
 ### Pattern: temporary workbook on disk
 
-Use **`withSavedTempWorkbookSync`** or **`withSavedTempWorkbookAsync`** when the test must read the generated **`.xlsx`** (or assert file existence). The helper saves first, runs your closure, then deletes the temp file.
+Use **`XLKitTestSupport.withSavedTempWorkbookSync`** or **`withSavedTempWorkbookAsync`** when the test must read the generated **`.xlsx`** (or assert file existence). The helper saves first, runs your closure, then deletes the temp file.
 
 ```swift
-import XCTest
+import Foundation
+import Testing
 import XLKit
 
+@Suite
 @MainActor
-final class MyFeatureTests: XLKitTestBase {
-    func testSaveProducesFile() throws {
-        try withSavedTempWorkbookSync(prefix: "my-case") { workbook, url in
-            XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
-            XCTAssertEqual(workbook.getSheets().count, 1)
+struct MyFeatureTests {
+    @Test func testSaveProducesFile() throws {
+        try XLKitTestSupport.withSavedTempWorkbookSync(prefix: "my-case") { workbook, url in
+            #expect(FileManager.default.fileExists(atPath: url.path))
+            #expect(workbook.getSheets().count == 1)
         }
     }
 }
@@ -43,7 +45,7 @@ final class MyFeatureTests: XLKitTestBase {
 
 ### Deterministic dates
 
-Use **`XLKitTestBase.makeUTCDate`** (or **`fixedTestDate`** / **`epochDate`**) instead of **`Date()`** when assertions depend on serialised values.
+Use **`XLKitTestSupport.makeUTCDate`** (or **`fixedTestDate`** / **`epochDate`**) instead of **`Date()`** when assertions depend on serialised values.
 
 ### Sheet state and protection tests
 
@@ -149,11 +151,12 @@ Workflows live in **`.github/workflows/`**:
 
 | Workflow | Role |
 |----------|------|
-| **`build.yml`** | macOS build + unit tests + **`swift run XLKitTestRunner`** smoke (`help`, `embed`); **iOS** simulator build + tests |
+| **`build.yml`** | **macOS** build + unit tests + **`swift run XLKitTestRunner`** smoke (`help`, `embed`); **macOS (strict concurrency)** build + tests with `SWIFT_STRICT_CONCURRENCY=complete`; **iOS** simulator build + tests |
 | **`codeql.yml`** | CodeQL security analysis |
 | **`cli-generic.yml`** | `comprehensive`, `security-demo`; uploads **`Comprehensive-Demo.xlsx`** |
 | **`cli-embed.yml`** / **`cli-no-embeds.yml`** | Image embed and CSV-only workflows |
 | **`cli-ios.yml`** | iOS-oriented CLI run |
+| **`cli-numbers.yml`** | Manual (`workflow_dispatch`) number-formats CLI; uploads **`Test-Workflows/`** artifacts |
 
 Pushes that touch only docs/assets may skip builds — see each workflow’s **`paths-ignore`**.
 
