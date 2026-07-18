@@ -985,7 +985,7 @@ try await sheet.embedImageAutoSized(
 - Replaced `XLKitTestBase` (`XCTestCase` subclass) with **`XLKitTestSupport`** static helpers in `XLKitTestBase.swift`
 - Suites are `@Suite` + `@MainActor` structs; temp-file and date helpers call `XLKitTestSupport` explicitly
 - Updated docs: `Tests/README.md`, `Test-Workflows/README.md`, `Documentation/Manual/` chapters 01 and 10, `CHANGELOG.md` (1.1.7)
-- Added root **`ARCHITECTURE.md`** and **`GUARDRAILS.md`** (OpenFCPXMLKit-style contributor / agent docs)
+- Added root **`ARCHITECTURE.md`** and **`GUARDRAILS.md`** (contributor / agent docs)
 - CI (`build.yml`): removed redundant `macOS-swift6` tools-version job; added **macOS (strict concurrency)** with `SWIFT_STRICT_CONCURRENCY=complete` (verified locally)
 - Documented `cli-numbers.yml` in Manual chapter 10; corrected iOS requirement note (iOS is tested in CI)
 

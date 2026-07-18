@@ -8,7 +8,7 @@
 **🔧 Improvements:**
 - Migrated the full `XLKitTests` suite from XCTest to Swift Testing (`@Suite`, `@Test`, `#expect` / `#require`); shared helpers live on `XLKitTestSupport` in `XLKitTestBase.swift`
 - CI: removed redundant `macOS-swift6` tools-version job; added `macOS-strict-concurrency` (`SWIFT_STRICT_CONCURRENCY=complete`)
-- Added root `ARCHITECTURE.md` and `GUARDRAILS.md` (OpenFCPXMLKit-style structure and must/must-not guides for contributors and agents)
+- Added root `ARCHITECTURE.md` and `GUARDRAILS.md` (structure and must/must-not guides for contributors and agents)
 
 ---
 
