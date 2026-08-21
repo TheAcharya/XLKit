@@ -6,7 +6,7 @@ Navigation: [← Chapter 09](09-Errors-CoreUtils-and-iOS.md) · [Manual index](R
 
 ## Unit tests (`XLKitTests`)
 
-The package test target **`XLKitTests`** exercises public APIs (workbook/sheet, CSV, images, formatting, merges, borders, sheet state, sheet protection, file save, column ordering, etc.). Tests use **Swift Testing** (`@Suite`, `@Test`, `#expect`) and are **`@MainActor`**, with shared helpers on **`XLKitTestSupport`**.
+The package test target **`XLKitTests`** exercises public APIs (workbook/sheet, CSV, images, formatting, interned cell formats, merges, borders, sheet state, sheet protection, file save, column ordering, etc.). Tests use **Swift Testing** (`@Suite`, `@Test`, `#expect`) and are **`@MainActor`**, with shared helpers on **`XLKitTestSupport`**.
 
 ### Run everything locally
 
@@ -47,6 +47,12 @@ struct MyFeatureTests {
 
 Use **`XLKitTestSupport.makeUTCDate`** (or **`fixedTestDate`** / **`epochDate`**) instead of **`Date()`** when assertions depend on serialised values.
 
+### Interned cell format tests
+
+| File | Tests | Coverage |
+|------|-------|----------|
+| **`CellFormatInterningTests.swift`** | 7 | Interned `CellFormat` storage, `setCellFormat` / `removeCellFormat`, `cellFormats` get/set, shared-format save |
+
 ### Sheet state and protection tests
 
 | File | Tests | Coverage |
@@ -54,7 +60,7 @@ Use **`XLKitTestSupport.makeUTCDate`** (or **`fixedTestDate`** / **`epochDate`**
 | **`SheetStateTests.swift`** | 7 | `.visible` / `.hidden` / `.veryHidden`, workbook `state` and `activeTab` XML, save round-trip |
 | **`SheetProtectionTests.swift`** | 14 | Legacy/modern password hashes, `configureSheetPassword`, `<sheetProtection>` XML, save round-trip |
 
-The suite currently has **80 tests** across **15** focused files (see **`Tests/README.md`**).
+The suite currently has **87 tests** across **16** focused files (see **`Tests/README.md`**).
 
 ---
 

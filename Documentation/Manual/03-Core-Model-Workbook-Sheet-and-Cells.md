@@ -47,7 +47,7 @@ sheet.setCell("F1", value: .formula("=A1+B1"))
 // Set cell values with convenience methods (recommended)
 sheet.setCell("A1", string: "Hello", format: CellFormat.header())
 sheet.setCell("B1", number: 42.5, format: CellFormat.currency())
-sheet.setCell("C1", integer: 100, format: CellFormat.number())
+sheet.setCell("C1", integer: 100, format: CellFormat.text())
 sheet.setCell("D1", boolean: true, format: CellFormat.text())
 sheet.setCell("E1", date: Date(), format: CellFormat.date())
 sheet.setCell("F1", formula: "=A1+B1", format: CellFormat.text())
@@ -55,18 +55,18 @@ sheet.setCell("F1", formula: "=A1+B1", format: CellFormat.text())
 // Get cell values
 let value = sheet.getCell("A1")
 let cellWithFormat = sheet.getCellWithFormat("A1")
+let format = sheet.getCellFormat("A1")
+sheet.setCellFormat(CellFormat.header(), at: "A1")
+sheet.removeCellFormat(at: "A1")  // value remains; format is cleared
 
 // Set cells by row/column
 sheet.setCell(row: 1, column: 1, value: .string("A1"))
 sheet.setCell(row: 1, column: 1, cell: Cell.string("A1", format: CellFormat.header()))
 
-// Set ranges (basic method)
-sheet.setRange("A1:C3", value: .string("Range"))
-
-// Set ranges with convenience methods (recommended)
+// Set ranges with convenience methods
 sheet.setRange("A1:C3", string: "Range", format: CellFormat.bordered())
 sheet.setRange("D1:F3", number: 42.5, format: CellFormat.currency())
-sheet.setRange("G1:I3", integer: 100, format: CellFormat.number())
+sheet.setRange("G1:I3", integer: 100)
 sheet.setRange("J1:L3", boolean: true, format: CellFormat.text())
 sheet.setRange("M1:O3", date: Date(), format: CellFormat.date())
 sheet.setRange("P1:R3", formula: "=A1+B1", format: CellFormat.text())
@@ -109,6 +109,16 @@ let isEmpty = sheet.isEmpty                      // Bool
 let cellCount = sheet.cellCount                  // Int
 let imageCount = sheet.imageCount                // Int
 ```
+
+### Interned cell formats
+
+Sheets typically reuse a small number of styles across many cells. XLKit **interns** `CellFormat` values: each distinct format is stored once, and coordinates hold an index into that table. `CellFormat` is `Hashable` so equal styles share storage.
+
+- Prefer `getCellFormat(_:)` / `setCellFormat(_:at:)` / `removeCellFormat(at:)` when working with individual cells.
+- Reading `sheet.cellFormats` rebuilds a full `[String: CellFormat]` dictionary — avoid that in a loop.
+- Assigning `sheet.cellFormats = ...` replaces the intern pool.
+
+See [Chapter 07](07-Formatting-Numbers-Alignment-and-Borders.md) for formatting examples.
 
 ### Cell Values
 

@@ -51,7 +51,17 @@ sheet.setCell("L1", string: "Bordered Cell", format: borderedFormat)
 // Get cell with formatting
 let cellWithFormat = sheet.getCellWithFormat("A1")
 let cellFormat = sheet.getCellFormat("A1")
+
+// Set or remove a format without changing the cell value
+sheet.setCellFormat(CellFormat.header(), at: "A1")
+sheet.removeCellFormat(at: "A1")
 ```
+
+### Interned format storage
+
+Equal `CellFormat` values are stored once per sheet (`CellFormat` is `Hashable`). Many cells can share the same header or currency style without duplicating the struct. Prefer `getCellFormat(_:)` over `cellFormats` when reading cells in a loop — the `cellFormats` property rebuilds a full dictionary on every get.
+
+See [Chapter 03 — Interned cell formats](03-Core-Model-Workbook-Sheet-and-Cells.md#interned-cell-formats).
 
 ### Font Colour Support
 

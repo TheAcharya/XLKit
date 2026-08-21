@@ -57,15 +57,18 @@ struct CoreTests {
         let workbook = Workbook()
         let sheet = workbook.addSheet(name: "Test")
         
-        sheet.setCell("A1", value: .string("Test"))
+        sheet.setCell("A1", string: "Test", format: CellFormat.header())
         sheet.mergeCells("B1:C1")
         
         #expect(sheet.getUsedCells().count == 1)
         #expect(sheet.getMergedRanges().count == 1)
+        #expect(sheet.getCellFormat("A1") != nil)
         
         sheet.clear()
         
         #expect(sheet.getUsedCells().count == 0)
         #expect(sheet.getMergedRanges().count == 0)
+        #expect(sheet.getCellFormat("A1") == nil)
+        #expect(sheet.cellFormats.isEmpty)
     }
 }

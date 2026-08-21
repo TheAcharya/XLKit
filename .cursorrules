@@ -144,37 +144,38 @@ XLKit/
 │   └── XLKit_Icon.png          # Project icon
 ├── Sources/                     # Source code modules
 │   ├── XLKit/                  # Main API module
-│   │   ├── XLKit.swift         # Main API exports (155 lines)
-│   │   ├── Sheet+API.swift     # Sheet operations API (190 lines)
-│   │   └── Workbook+API.swift  # Workbook operations API (53 lines)
+│   │   ├── XLKit.swift         # Main API exports
+│   │   ├── Sheet+API.swift     # Sheet operations API
+│   │   └── Workbook+API.swift  # Workbook operations API
 │   ├── XLKitCore/              # Core types and utilities
-│   │   ├── CoreTypes.swift     # Core data structures (1253 lines)
-│   │   └── SecurityManager.swift # Security features (282 lines)
+│   │   ├── CoreTypes.swift     # Core data structures (interned CellFormat)
+│   │   └── SecurityManager.swift # Security features
 │   ├── XLKitFormatters/        # CSV/TSV functionality
-│   │   └── CSVUtils.swift      # CSV import/export utilities (294 lines, uses swift-textfile)
+│   │   └── CSVUtils.swift      # CSV import/export utilities (swift-textfile)
 │   ├── XLKitImages/            # Image processing
-│   │   ├── ImageUtils.swift    # Image utilities (155 lines)
-│   │   └── ImageSizingUtils.swift # Image sizing logic (191 lines)
+│   │   ├── ImageUtils.swift    # Image utilities
+│   │   └── ImageSizingUtils.swift # Image sizing logic
 │   ├── XLKitXLSX/              # XLSX generation engine
-│   │   └── XLSXEngine.swift    # XLSX file generation (897 lines)
+│   │   └── XLSXEngine.swift    # XLSX file generation (streamed worksheet XML)
 │   └── XLKitTestRunner/        # Test runner executable
-│       ├── main.swift          # Command-line interface (91 lines)
-│       ├── ExcelGenerators.swift # Excel generation tests (590 lines)
-│       ├── ImageEmbedGenerators.swift # Image embedding tests (228 lines)
+│       ├── main.swift          # Command-line interface
+│       ├── ExcelGenerators.swift # Excel generation tests
+│       ├── ImageEmbedGenerators.swift # Image embedding tests
 │       ├── SheetPasswordUtilities.swift # sheet-password CLI
 │       ├── ComprehensiveDemoProtection.swift # comprehensive demo password/salts
 │       ├── README.md           # Test runner documentation
-│       └── Templates/          # Test templates
-│           └── TestGeneratorTemplate.swift # Template for new tests (224 lines)
+│       └── Templates/          # Template files
+│           └── TestGeneratorTemplate.swift # Template for new tests
 ├── Documentation/              # User manual (Documentation/Manual/)
 ├── Tests/                      # Unit tests
-│   ├── README.md               # Test suite index (80 tests)
-│   └── XLKitTests/             # Test suite (15 focused Swift Testing suites)
+│   ├── README.md               # Test suite index (87 tests)
+│   └── XLKitTests/             # Test suite (16 focused Swift Testing suites)
 │       ├── XLKitTestBase.swift # Shared XLKitTestSupport helpers (Swift Testing)
 │       ├── CoreTests.swift     # Workbook and sheet operations (5 tests)
 │       ├── CellValueTests.swift # Cell values and data types (6 tests)
 │       ├── CoordinateTests.swift # Coordinates and ranges (2 tests)
 │       ├── FormattingTests.swift # Cell formatting (8 tests)
+│       ├── CellFormatInterningTests.swift # Interned cell formats (7 tests)
 │       ├── NumberFormatTests.swift # Number formatting (5 tests)
 │       ├── TextWrappingTests.swift # Text wrapping (2 tests)
 │       ├── BorderTests.swift   # Border functionality (3 tests)
@@ -186,7 +187,7 @@ XLKit/
 │       ├── SheetUtilityTests.swift # Sheet utilities (6 tests)
 │       ├── SheetStateTests.swift # Sheet visibility state (7 tests)
 │       └── SheetProtectionTests.swift # Sheet protection (14 tests)
-│       # Total: 80 tests across 15 focused Swift Testing suites
+│       # Total: 87 tests across 16 focused Swift Testing suites
 ├── Test-Data/                  # Test data files
 │   ├── README.md               # Test data documentation (44 lines)
 │   └── Embed-Test/             # Image embedding test data
@@ -338,7 +339,7 @@ import Foundation
 
 ### Core Types (XLKitCore Module)
 - Workbook: Final class, manages sheets and images (not Sendable due to mutable state)
-- Sheet: Final class, handles cells, formatting, images, visibility, and protection (not Sendable due to mutable state)
+- Sheet: Final class, handles cells, interned formatting, images, visibility, and protection (not Sendable due to mutable state)
 - SheetState: Enum for tab-bar visibility (`.visible`, `.hidden`, `.veryHidden`)
 - SheetProtection: Struct for per-sheet protection settings (maps to `<sheetProtection>` XLSX element)
 - CoreUtils: `excelLegacySheetPasswordHash(for:)`, `excelModernSheetPasswordHash(for:spinCount:salt:)`, `configureSheetPassword` for worksheet passwords (do not use the incorrect OOXML-documented legacy formula); column/date/XML/checksum helpers
@@ -346,7 +347,7 @@ import Foundation
 - CellCoordinate: Struct for Excel-style coordinates
 - CellRange: Struct for cell ranges
 - Cell: Struct combining value and format
-- CellFormat: Struct for comprehensive formatting including font colours and text alignment
+- CellFormat: `Hashable` struct for formatting; interned on `Sheet` via `setCellFormat` / `getCellFormat` / `removeCellFormat`
 
 ### CSV/TSV Operations (XLKitFormatters Module)
 - Use instance methods on Workbook and Sheet classes
@@ -370,6 +371,8 @@ import Foundation
 - Generate proper font colour XML with theme colour support
 - Emit sheet `state` attributes and `activeTab` for hidden sheets in workbook XML
 - Emit `<sheetProtection>` in worksheet XML when `Sheet.protection` is set
+- Stream worksheet XML (`writeWorksheetXML` / `XMLPartWriter`); single-pass grouping; numeric column order
+- Look up cell formats via `getCellFormat` (interned); do not rebuild `cellFormats` during generation
 
 ## Testing Standards
 
@@ -389,6 +392,7 @@ import Foundation
 - Test column ordering for sheets with more than 26 columns (A-Z, AA, AB, etc.)
 - Test sheet visibility state (`.visible`, `.hidden`, `.veryHidden`) and `activeTab` workbook XML
 - Test sheet protection (`SheetProtection`) including `configureSheetPassword`, legacy/modern password hashes, and granular permission flags
+- Test interned cell formats (`setCellFormat`, `removeCellFormat`, shared format retrieval, `cellFormats` get/set)
 - Test platform compatibility and iOS-specific features
 
 ### Test Patterns
@@ -505,6 +509,7 @@ struct FeatureTests {
 ## Performance Considerations
 
 ### Memory Management
+- Large worksheets intern `CellFormat` (one copy per distinct style) and stream worksheet XML to disk
 - Optimize for large datasets
 - Use efficient data structures
 - Minimize memory allocations
@@ -519,8 +524,9 @@ struct FeatureTests {
 
 ### Optimization Guidelines
 - Use batch operations for multiple cells
+- Prefer `getCellFormat(_:)` over `cellFormats` in loops
 - Optimize range operations
-- Minimize XML generation overhead
+- Minimize XML generation overhead (worksheet parts are streamed)
 - Efficient image processing
 
 ## Security & Safety
@@ -724,7 +730,7 @@ Current External Dependencies:
 ## Column Ordering Fix (2025-10-18)
 - Fixed critical column ordering bug for sheets with more than 26 columns (A-Z, AA, AB, etc.)
 - Resolved Excel compatibility issue where generated files were rejected or repaired due to invalid column ordering
-- Implemented proper numeric column sorting in XLSXEngine.generateWorksheetXML() to ensure Excel-compliant column order
+- Implemented proper numeric column sorting in `XLSXEngine.writeWorksheetXML()` (formerly `generateWorksheetXML`) to ensure Excel-compliant column order
 - Fixed lexicographic string sorting that caused "AA1" to appear before "B1" in generated XML
 - Added comprehensive test coverage with testColumnOrderingBeyondZ() and testColumnOrderingWithGaps() test functions
 - Increased test count from 53 to 55 tests with 100% API coverage including column ordering validation
@@ -744,6 +750,13 @@ Current External Dependencies:
 - Added new CSV edge-case unit tests (quoted commas, escaped quotes, empty fields, export/import round-trip) validating swift-textfile integration
 - Increased test count from 55 to 59 with 100% API coverage maintained
 - Test files: `CoreTests.swift` (5 tests), `CellValueTests.swift` (6 tests), `CoordinateTests.swift` (2 tests), `FormattingTests.swift` (8 tests), `NumberFormatTests.swift` (5 tests), `TextWrappingTests.swift` (2 tests), `BorderTests.swift` (3 tests), `MergeTests.swift` (4 tests), `CSVTests.swift` (12 tests), `FileOperationTests.swift` (2 tests), `ImageTests.swift` (2 tests), `ColumnOrderingTests.swift` (2 tests), `SheetUtilityTests.swift` (6 tests)
+
+## Interned Cell Formats and Streamed Worksheet XML (2026-08-21, 1.1.8)
+- Interned `CellFormat` on `Sheet` (one distinct style stored, coordinates hold an index); `setCellFormat` / `removeCellFormat`; `CellFormat` is `Hashable`
+- Streamed worksheet XML via `writeWorksheetXML` / `XMLPartWriter`; single-pass coordinate grouping; numeric column order unchanged
+- Large worksheets are much lighter on memory
+- Added `CellFormatInterningTests`; unit test count 80 → 87 (16 suites)
+- Documented in Manual 01/02/03/07/10/12, ARCHITECTURE.md, GUARDRAILS.md, Tests/README.md, CHANGELOG
 
 ## Comprehensive Demo and Sheet Password Utilities (2026-06-03, 1.1.6)
 - Added `CoreUtils.excelLegacySheetPasswordHash(for:)`, `excelModernSheetPasswordHash(for:spinCount:salt:)`, and `configureSheetPassword` for worksheet protection (legacy + SHA-512; OOXML legacy formula is incorrect)
@@ -1006,7 +1019,7 @@ API Design
 
 ### Structured user manual
 
-The end-user manual is split into chapters under **`Documentation/Manual/`** (index: **`Documentation/Manual/README.md`**). When you add or change public APIs, update the relevant chapter and **`Documentation/Manual/12-Complete-API-Reference.md`**. CLI outputs and demo workbook details: **`Test-Workflows/README.md`**. Unit test index: **`Tests/README.md`** (80 tests). Demo protection constants belong in **`ComprehensiveDemoProtection.swift`** (XLKitTestRunner), not on public `CoreUtils`. Contributor structure and hard constraints: **`ARCHITECTURE.md`** and **`GUARDRAILS.md`** (keep in sync when module boundaries or must-not rules change).
+The end-user manual is split into chapters under **`Documentation/Manual/`** (index: **`Documentation/Manual/README.md`**). When you add or change public APIs, update the relevant chapter and **`Documentation/Manual/12-Complete-API-Reference.md`**. CLI outputs and demo workbook details: **`Test-Workflows/README.md`**. Unit test index: **`Tests/README.md`** (87 tests). Demo protection constants belong in **`ComprehensiveDemoProtection.swift`** (XLKitTestRunner), not on public `CoreUtils`. Contributor structure and hard constraints: **`ARCHITECTURE.md`** and **`GUARDRAILS.md`** (keep in sync when module boundaries or must-not rules change).
 
 ### Critical Update Requirements
 
@@ -1086,6 +1099,7 @@ Ensure consistency between .cursorrules and AGENT.MD files:
 Keep track of major updates to this file:
 - Document the date of significant updates
 - Note the version of XLKit when changes were made
+- **1.1.8 (2026-08-21):** Interned cell formats and streamed worksheet XML; `setCellFormat` / `removeCellFormat`; `CellFormatInterningTests`; 87 unit tests; docs in Manual 01/02/03/07/10/12, ARCHITECTURE, GUARDRAILS, Tests/README, CHANGELOG
 - **1.1.7 (2026-07-18):** Migrated all unit tests from XCTest to Swift Testing (`XLKitTestSupport`, `@Suite`/`@Test`/`#expect`); removed redundant `macOS-swift6` CI job; added `macOS-strict-concurrency` (`SWIFT_STRICT_CONCURRENCY=complete`); added root `ARCHITECTURE.md` and `GUARDRAILS.md`; docs in Tests/README, Test-Workflows/README, Manual 01/10, AGENT.MD, CHANGELOG
 - **1.1.6 (2026-06-03):** Worksheet password helpers (`configureSheetPassword`, legacy/modern hashes), `sheet-password` CLI, `ComprehensiveDemoProtection.swift`, 11-sheet comprehensive demo, 80 unit tests; docs in Manual 03/09/10/12, Test-Workflows/README, Tests/README
 - Reference specific commits or issues that prompted updates

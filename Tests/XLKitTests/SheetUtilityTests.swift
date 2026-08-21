@@ -112,7 +112,8 @@ struct SheetUtilityTests {
         #expect(sheet.imageCount == 0)
         
         // Add some data
-        sheet.setCell("A1", value: .string("Test"))
+        let headerFormat = CellFormat.header()
+        sheet.setCell("A1", string: "Test", format: headerFormat)
         sheet.setCell("B2", value: .number(42.5))
         
         #expect(!(sheet.isEmpty))
@@ -128,7 +129,9 @@ struct SheetUtilityTests {
         let allFormattedCells = sheet.allFormattedCells
         #expect(allFormattedCells.count == 2)
         #expect(allFormattedCells["A1"]?.value == .string("Test"))
+        #expect(allFormattedCells["A1"]?.format == headerFormat)
         #expect(allFormattedCells["B2"]?.value == .number(42.5))
+        #expect(allFormattedCells["B2"]?.format == nil)
     }
     
     @Test func testSheetConvenienceInitializer() {

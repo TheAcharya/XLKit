@@ -4,7 +4,7 @@ Hard constraints for contributors and AI agents. Prefer this file when deciding 
 
 **See also:** [ARCHITECTURE.md](ARCHITECTURE.md), [.cursorrules](.cursorrules), [AGENT.MD](AGENT.MD), [Tests/README.md](Tests/README.md), [SECURITY.md](SECURITY.md).
 
-**Current suite (keep in sync):** **80** Swift Testing tests in `XLKitTests` (15 `@Suite`s + `XLKitTestSupport`); CLI demos via `XLKitTestRunner`.
+**Current suite (keep in sync):** **87** Swift Testing tests in `XLKitTests` (16 `@Suite`s + `XLKitTestSupport`); CLI demos via `XLKitTestRunner`.
 
 ---
 
@@ -65,6 +65,8 @@ See ARCHITECTURE.md §2.2 for the full “where to put a change” table.
 | **Sheet protection** | Emit `<sheetProtection>` only when `Sheet.protection != nil`, and **after** `</sheetData>`. |
 | **Password hashes** | Use `CoreUtils.excelLegacySheetPasswordHash` / `excelModernSheetPasswordHash` / `configureSheetPassword`. Do **not** use the incorrect OOXML-documented legacy formula. |
 | **XML escaping** | All user strings in XML go through `CoreUtils.escapeXML`. |
+| **Stream worksheets** | Write `sheetN.xml` incrementally (`writeWorksheetXML` / `XMLPartWriter`). Never accumulate the whole part as one `String` for large sheets. |
+| **Interned formats** | Store formats via `setCellFormat`; look up with `getCellFormat`. Do not rebuild `cellFormats` in save/engine loops. |
 | **Validate demos** | TestRunner generators that write `.xlsx` should validate with CoreXLSX where applicable. |
 
 ---
@@ -101,7 +103,7 @@ See ARCHITECTURE.md §2.2 for the full “where to put a change” table.
 | **Swift Testing** | Unit tests use **Swift Testing** (`@Suite`, `@Test`, `#expect` / `#require`). Do not reintroduce XCTest for new unit tests. |
 | **Helpers** | Use **`XLKitTestSupport`** for dates, temp workbooks, and border helpers — do not subclass XCTestCase. |
 | **Behaviour needs tests** | Public API and XLSX emission changes need unit tests (and CLI/CoreXLSX checks when demos are affected). |
-| **Update counts** | Keep **80** (or the new total) aligned in `Tests/README.md`, Manual 10, AGENT.MD, `.cursorrules`, and this file when adding/removing tests. |
+| **Update counts** | Keep **87** (or the new total) aligned in `Tests/README.md`, Manual 10, AGENT.MD, `.cursorrules`, and this file when adding/removing tests. |
 | **TestRunner ≠ unit tests** | CLI demos are not a substitute for `swift test`. |
 | **Demo password** | Comprehensive demo password **1234** and salts stay in `ComprehensiveDemoProtection.swift` (TestRunner). |
 
@@ -185,6 +187,18 @@ Append new signs when a failure repeats or a design decision must not drift. Kee
 - **Reason:** Full suite migrated; hybrid XCTest would confuse CI and docs.
 - **Provenance:** 2026-07 — XCTest → Swift Testing migration.
 
+### Sign: intern-cell-formats
+- **Trigger:** Storing or reading `CellFormat` on a sheet, or looping formats during XLSX generation.
+- **Instruction:** Use `setCellFormat` / `getCellFormat`; never copy a full format per cell or rebuild `cellFormats` in a hot loop.
+- **Reason:** Large worksheets intern a small set of styles; the computed `cellFormats` dictionary reallocates on every get.
+- **Provenance:** 2026-08 — interned cell formats (1.1.8).
+
+### Sign: stream-worksheet-xml
+- **Trigger:** Changing how `sheetN.xml` is generated.
+- **Instruction:** Stream through `writeWorksheetXML` / `XMLPartWriter`; group coordinates in one pass; keep numeric column sort.
+- **Reason:** Holding the whole worksheet as a `String` spikes memory on large sheets.
+- **Provenance:** 2026-08 — streamed worksheet XML (1.1.8).
+
 ---
 
 ## 10. Quick checklist before merge
@@ -192,6 +206,7 @@ Append new signs when a failure repeats or a design decision must not drift. Kee
 - [ ] Change sits in the correct module (ARCHITECTURE §2.2 / Guardrails §2).
 - [ ] Public behaviour has Swift Testing coverage; TestRunner/CoreXLSX updated if demos change.
 - [ ] Image sizing uses ImageSizingUtils; column order is numeric.
+- [ ] Worksheet XML is streamed; formats go through `getCellFormat` (intern pool).
 - [ ] Sheet protection / visibility XML rules respected; password helpers are CoreUtils.
 - [ ] Concurrency: no false Sendable; strict-concurrency CI still green.
 - [ ] Docs: AGENT.MD ↔ .cursorrules if agent briefing changed; Manual / ARCHITECTURE / GUARDRAILS / CHANGELOG as needed.

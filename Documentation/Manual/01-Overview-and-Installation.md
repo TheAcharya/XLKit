@@ -6,7 +6,7 @@ XLKit is a Swift library for creating Excel `.xlsx` workbooks on **macOS 12+** a
 
 ## Performance Considerations
 
-- Memory Usage: XLKit is optimized for large datasets with efficient memory management
+- Memory Usage: Large worksheets are much lighter on memory — cell formats are interned (one `CellFormat` per distinct style, not per cell) and worksheet XML is streamed to disk instead of held as one string
 - Async Operations: Use async/await for file operations to avoid blocking the main thread
 - Batch Operations: Set multiple cells in batches for better performance
 - Range Operations: Use `setRange()` for setting multiple cells with the same value
@@ -41,7 +41,7 @@ Add XLKit to your `Package.swift` dependencies:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/TheAcharya/XLKit.git", from: "1.1.7")
+    .package(url: "https://github.com/TheAcharya/XLKit.git", from: "1.1.8")
 ]
 ```
 

@@ -173,7 +173,7 @@ public extension Sheet {
     var allFormattedCells: [String: Cell] {
         var result: [String: Cell] = [:]
         for (coordinate, value) in cells {
-            let format = cellFormats[coordinate]
+            let format = getCellFormat(coordinate)
             result[coordinate] = Cell(value, format: format)
         }
         return result

@@ -22,14 +22,16 @@
   - [CSV/TSV Operations](#csvtsv-operations)
   - [Image Operations](#image-operations)
 - [Recent Improvements](#recent-improvements)
+  - [Interned Cell Formats and Streamed Worksheet XML](#interned-cell-formats-and-streamed-worksheet-xml-2026-08-21-118)
   - [Comprehensive Demo and Sheet Password Utilities](#comprehensive-demo-and-sheet-password-utilities-2026-06-03-116)
-  - [Swift Testing Migration and CI Updates](#swift-testing-migration-and-ci-updates-2026-07-18-unreleased-117)
+  - [Swift Testing Migration and CI Updates](#swift-testing-migration-and-ci-updates-2026-07-18-117)
   - [Sheet Visibility and Protection](#sheet-visibility-and-protection-2026-05-30-pr-23)
   - [iOS Compatibility Fix](#ios-compatibility-fix-2025-07-14)
   - [Perfect Aspect Ratio Preservation](#perfect-aspect-ratio-preservation-2025-07-07)
   - [Scaling API Investigation and Fixes](#scaling-api-investigation-and-fixes-2025-07-12)
 - [Implementation Details](#implementation-details)
   - [XLSX Generation](#xlsx-generation)
+  - [Interned Cell Formats](#interned-cell-formats)
   - [Image Embedding Scaling API](#image-embedding-scaling-api)
   - [Image Embedding](#image-embedding)
   - [Error Handling](#error-handling)
@@ -78,33 +80,34 @@ XLKit/
 │   │   ├── Sheet+API.swift     # Sheet operations API
 │   │   └── Workbook+API.swift  # Workbook operations API
 │   ├── XLKitCore/              # Core types and utilities
-│   │   ├── CoreTypes.swift     # Core data structures (1253 lines)
-│   │   └── SecurityManager.swift # Security features (282 lines)
+│   │   ├── CoreTypes.swift     # Core data structures (interned CellFormat)
+│   │   └── SecurityManager.swift # Security features
 │   ├── XLKitFormatters/        # CSV/TSV functionality
-│   │   └── CSVUtils.swift      # CSV import/export utilities (294 lines, uses swift-textfile)
+│   │   └── CSVUtils.swift      # CSV import/export utilities (swift-textfile)
 │   ├── XLKitImages/            # Image processing
-│   │   ├── ImageUtils.swift    # Image utilities (155 lines)
-│   │   └── ImageSizingUtils.swift # Image sizing logic (191 lines)
+│   │   ├── ImageUtils.swift    # Image utilities
+│   │   └── ImageSizingUtils.swift # Image sizing logic
 │   ├── XLKitXLSX/              # XLSX generation engine
-│   │   └── XLSXEngine.swift    # XLSX file generation (897 lines)
+│   │   └── XLSXEngine.swift    # XLSX file generation (streamed worksheet XML)
 │   └── XLKitTestRunner/        # Test runner executable
-│       ├── main.swift          # Command-line interface (91 lines)
-│       ├── ExcelGenerators.swift # Excel generation tests (590 lines)
-│       ├── ImageEmbedGenerators.swift # Image embedding tests (228 lines)
+│       ├── main.swift          # Command-line interface
+│       ├── ExcelGenerators.swift # Excel generation tests
+│       ├── ImageEmbedGenerators.swift # Image embedding tests
 │       ├── SheetPasswordUtilities.swift # sheet-password CLI output
 │       ├── ComprehensiveDemoProtection.swift # Demo password/salts for comprehensive CLI
 │       ├── README.md           # Test runner documentation
-│       └── Templates/          # Test templates
-│           └── TestGeneratorTemplate.swift # Template for new tests (224 lines)
+│       └── Templates/          # Template files
+│           └── TestGeneratorTemplate.swift # Template for new tests
 ├── Documentation/              # User manual (Documentation/Manual/)
 ├── Tests/                      # Unit tests
-│   ├── README.md               # Test suite index (80 tests)
-│   └── XLKitTests/             # Test suite (15 focused Swift Testing suites)
+│   ├── README.md               # Test suite index (87 tests)
+│   └── XLKitTests/             # Test suite (16 focused Swift Testing suites)
 │       ├── XLKitTestBase.swift # Shared XLKitTestSupport helpers (Swift Testing)
 │       ├── CoreTests.swift     # Workbook and sheet operations (5 tests)
 │       ├── CellValueTests.swift # Cell values and data types (6 tests)
 │       ├── CoordinateTests.swift # Coordinates and ranges (2 tests)
 │       ├── FormattingTests.swift # Cell formatting (8 tests)
+│       ├── CellFormatInterningTests.swift # Interned cell formats (7 tests)
 │       ├── NumberFormatTests.swift # Number formatting (5 tests)
 │       ├── TextWrappingTests.swift # Text wrapping (2 tests)
 │       ├── BorderTests.swift   # Border functionality (3 tests)
@@ -116,7 +119,7 @@ XLKit/
 │       ├── SheetUtilityTests.swift # Sheet utilities (6 tests)
 │       ├── SheetStateTests.swift # Sheet visibility state (7 tests)
 │       └── SheetProtectionTests.swift # Sheet protection (14 tests)
-│       # Total: 80 tests across 15 focused Swift Testing suites
+│       # Total: 87 tests across 16 focused Swift Testing suites
 ├── Test-Data/                  # Test data files
 │   ├── README.md               # Test data documentation (44 lines)
 │   └── Embed-Test/             # Image embedding test data
@@ -437,6 +440,7 @@ Test Coverage Requirements:
 - Test column ordering for sheets with more than 26 columns (A-Z, AA, AB, etc.)
 - Test sheet visibility state (`.visible`, `.hidden`, `.veryHidden`) and `activeTab` workbook XML
 - Test sheet protection (`SheetProtection`) including `configureSheetPassword`, legacy/modern hashes, and granular permission flags
+- Test interned cell formats (`setCellFormat`, `removeCellFormat`, shared format retrieval, `cellFormats` get/set)
 - Test platform compatibility and iOS-specific features
 
 Test Patterns:
@@ -508,7 +512,7 @@ Border and Merge Testing:
 
 ### Documentation
 
-User manual (structured chapters, full public API tables): **`Documentation/Manual/README.md`** (see also `Documentation/README.md`). Contributor structure: **`ARCHITECTURE.md`**. Hard constraints: **`GUARDRAILS.md`**. Update or add a chapter when you add features; keep [Chapter 12](Documentation/Manual/12-Complete-API-Reference.md) aligned with public APIs. CLI outputs and demo passwords: **`Test-Workflows/README.md`**. Unit tests: **`Tests/README.md`** (80 tests).
+User manual (structured chapters, full public API tables): **`Documentation/Manual/README.md`** (see also `Documentation/README.md`). Contributor structure: **`ARCHITECTURE.md`**. Hard constraints: **`GUARDRAILS.md`**. Update or add a chapter when you add features; keep [Chapter 12](Documentation/Manual/12-Complete-API-Reference.md) aligned with public APIs. CLI outputs and demo passwords: **`Test-Workflows/README.md`**. Unit tests: **`Tests/README.md`** (87 tests).
 
 Code Documentation:
 - All public APIs must have doc comments
@@ -535,7 +539,7 @@ Workbook Class:
 ```swift
 public final class Workbook {
     private var sheets: [Sheet] = []
-    private let nextSheetId: Int
+    private var nextSheetId: Int
     private var images: [ExcelImage] = []
 }
 ```
@@ -550,15 +554,17 @@ public final class Sheet: Equatable {
     public let id: Int
     public var state: SheetState = .visible
     public var protection: SheetProtection?
-    private var cells: [String: CellValue] = [:]
-    private var mergedRanges: [CellRange] = []
-    private var columnWidths: [Int: Double] = [:]
-    private var rowHeights: [Int: Double] = [:]
-    private var images: [String: ExcelImage] = [:]
-    private var cellFormats: [String: CellFormat] = [:]
+    public var cells: [String: CellValue] = [:]
+    public var mergedRanges: [CellRange] = []
+    public var columnWidths: [Int: Double] = [:]
+    public var rowHeights: [Int: Double] = [:]
+    public var images: [String: ExcelImage] = [:]
+    public var cellFormats: [String: CellFormat] // computed; interned storage
 }
 ```
-- Represents a worksheet with cells, formatting, images, visibility, and protection
+- Represents a worksheet with cells, interned formatting, images, visibility, and protection
+- Formats are interned: coordinates store an index into a shared `CellFormat` table (`setCellFormat` / `getCellFormat` / `removeCellFormat`)
+- Prefer `getCellFormat(_:)` over reading `cellFormats` in a loop
 - Supports cell operations, range operations, and image embedding
 - `state` controls tab-bar visibility (`.visible`, `.hidden`, `.veryHidden`)
 - `protection` enables Excel "Protect Sheet" when set to non-nil `SheetProtection`
@@ -640,7 +646,7 @@ public struct Cell {
 
 CellFormat Struct:
 ```swift
-public struct CellFormat {
+public struct CellFormat: Hashable {
     public var fontName: String?
     public var fontSize: Double?
     public var fontWeight: FontWeight?
@@ -702,9 +708,7 @@ public enum ImageFormat: String, CaseIterable {
     case png = "png"
     case jpeg = "jpeg"
     case jpg = "jpg"
-    case bmp = "bmp"
-    case tiff = "tiff"
-    
+
     public var mimeType: String
     public var excelContentType: String
 }
@@ -718,6 +722,10 @@ public enum XLKitError: Error, LocalizedError {
     case fileWriteError(String)
     case zipCreationError(String)
     case xmlGenerationError(String)
+    case securityError(String)
+    case rateLimitExceeded(String)
+    case fileSizeLimitExceeded(String)
+    case suspiciousFileDetected(String)
 }
 ```
 
@@ -755,8 +763,13 @@ sheet.setCell("A1", cell: Cell.string("Header", format: CellFormat.header()))
 // Set cell with font colour
 sheet.setCell("A1", cell: Cell.string("Red Text", format: CellFormat.text(color: "#FF0000")))
 
+// Interned formats (prefer these over rebuilding cellFormats)
+sheet.setCellFormat(CellFormat.header(), at: "A1")
+let format = sheet.getCellFormat("A1")
+sheet.removeCellFormat(at: "A1")
+
 // Set range of cells
-sheet.setRange("A1:A10", value: .string("Batch"))
+sheet.setRange("A1:A10", string: "Batch")
 ```
 
 Sheet Visibility and Protection:
@@ -792,9 +805,6 @@ sheet.mergeCells("A1:B2")
 
 // Get merged ranges
 let ranges = sheet.getMergedRanges()
-
-// Check if cell is in merged range
-let isMerged = sheet.isCellMerged("A1")
 
 // Border formatting
 var borderedFormat = CellFormat.bordered()
@@ -932,6 +942,13 @@ try await sheet.embedImageAutoSized(
 
 ## Recent Improvements
 
+### Interned Cell Formats and Streamed Worksheet XML (2026-08-21, 1.1.8)
+- Interned `CellFormat` on `Sheet` (one distinct style stored, coordinates hold an index); `setCellFormat` / `removeCellFormat`; `CellFormat` is `Hashable`
+- Streamed worksheet XML via `writeWorksheetXML` / `XMLPartWriter`; single-pass coordinate grouping; numeric column order unchanged
+- Large worksheets are much lighter on memory
+- Added `CellFormatInterningTests`; unit test count 80 → 87 (16 suites)
+- Documented in Manual 01/02/03/07/10/12, ARCHITECTURE.md, GUARDRAILS.md, Tests/README.md, CHANGELOG
+
 ### Border and Merge Functionality (2025-08-04)
 - Comprehensive border and merge functionality implemented and tested
 - Border support with thin, medium, and thick styles with custom colors
@@ -952,7 +969,7 @@ try await sheet.embedImageAutoSized(
 ### Column Ordering Fix (2025-10-18)
 - Fixed critical column ordering bug for sheets with more than 26 columns (A-Z, AA, AB, etc.)
 - Resolved Excel compatibility issue where generated files were rejected or repaired due to invalid column ordering
-- Implemented proper numeric column sorting in XLSXEngine.generateWorksheetXML() to ensure Excel-compliant column order
+- Implemented proper numeric column sorting in `XLSXEngine.writeWorksheetXML()` (formerly `generateWorksheetXML`) to ensure Excel-compliant column order
 - Fixed lexicographic string sorting that caused "AA1" to appear before "B1" in generated XML
 - Added comprehensive test coverage with testColumnOrderingBeyondZ() and testColumnOrderingWithGaps() test functions
 - Increased test count from 53 to 55 tests with 100% API coverage including column ordering validation
@@ -1044,12 +1061,24 @@ The XLSX engine generates all required files for Excel compliance:
 
 Key Features:
 - Uses ZIPFoundation for cross-platform ZIP creation
+- Streams worksheet XML (`writeWorksheetXML` / `XMLPartWriter`) so large sheets are not held as one string
+- Groups cells in a single pass and emits them in numeric column order (A…Z, AA…)
+- Looks up formats via `getCellFormat` (interned table); do not rebuild `cellFormats` during generation
 - Generates Excel-compliant XML with proper escaping
 - Validates files using CoreXLSX
 - Supports all Excel data types and formatting
 - Generates proper font colour XML with theme colour support
 - Emits sheet `state` attributes and `activeTab` for hidden sheets in workbook XML
 - Emits `<sheetProtection>` in worksheet XML when `Sheet.protection` is set
+
+### Interned Cell Formats
+
+`Sheet` interned `CellFormat` values so many cells can share one style:
+
+- `setCellFormat(_:at:)` stores or reuses an interned entry (`CellFormat` is `Hashable`)
+- `getCellFormat(_:)` is an index lookup; prefer it over `cellFormats` in loops
+- `removeCellFormat(at:)` drops the coordinate mapping; the intern table is not compacted until `clear()`
+- `cellFormats` get rebuilds `[String: CellFormat]`; set replaces the intern pool
 
 ### Image Embedding Scaling API
 
@@ -1163,6 +1192,7 @@ do {
 ## Performance & Optimization
 
 Memory Management:
+- Large worksheets intern `CellFormat` (one copy per distinct style) and stream worksheet XML to disk
 - Optimize for large datasets
 - Use efficient data structures
 - Minimize memory allocations
@@ -1177,8 +1207,9 @@ Async Operations:
 
 Optimization Guidelines:
 - Use batch operations for multiple cells
+- Prefer `getCellFormat(_:)` over `cellFormats` in loops
 - Optimize range operations
-- Minimize XML generation overhead
+- Minimize XML generation overhead (worksheet parts are streamed)
 - Efficient image processing
 
 ## Maintenance & Updates
