@@ -13,6 +13,7 @@ This document provides an organized overview of all tests in the **`XLKitTests`*
 - [File Operations](#file-operations)
 - [Image & Aspect Ratio Tests](#image--aspect-ratio-tests)
 - [Cell Formatting](#cell-formatting)
+- [Cell Format Interning Tests](#cell-format-interning-tests)
 - [Border & Merge Tests](#border--merge-tests)
 - [Number Format Tests](#number-format-tests)
 - [Text Wrapping Tests](#text-wrapping-tests)
@@ -27,7 +28,7 @@ This document provides an organized overview of all tests in the **`XLKitTests`*
 - [Coverage & Quality Assurance](#coverage--quality-assurance)
 
 ## Test Overview
-- Total Tests: **80** (15 test suites + shared `XLKitTestSupport` in `XLKitTestBase.swift`)
+- Total Tests: **87** (16 test suites + shared `XLKitTestSupport` in `XLKitTestBase.swift`)
 - Framework: **Swift Testing** (`import Testing`, `@Suite`, `@Test`, `#expect` / `#require`)
 - 100% coverage of public APIs
 - Save and file-operation tests write real `.xlsx` files via temp-workbook helpers
@@ -39,6 +40,7 @@ This document provides an organized overview of all tests in the **`XLKitTests`*
 - CSV/TSV edge cases (quoted fields, escaped quotes, empty fields) are fully tested
 - Sheet visibility (`.visible`, `.hidden`, `.veryHidden`) and `activeTab` workbook XML are fully tested
 - Sheet protection (`SheetProtection`) including `CoreUtils.configureSheetPassword`, legacy/modern password hashes, and granular permission XML is fully tested
+- Interned cell formats (`setCellFormat`, `removeCellFormat`, shared `CellFormat` storage, `cellFormats` get/set) are fully tested
 - CLI-generated workbooks from **XLKitTestRunner** are validated with CoreXLSX (see [Test-Workflows/README.md](../Test-Workflows/README.md))
 
 ## Test File Structure
@@ -52,6 +54,7 @@ Tests/XLKitTests/
 ├── CellValueTests.swift          # Cell values and data types (6 tests)
 ├── CoordinateTests.swift          # Coordinates and ranges (2 tests)
 ├── FormattingTests.swift         # Cell formatting (8 tests)
+├── CellFormatInterningTests.swift # Interned cell formats (7 tests)
 ├── NumberFormatTests.swift       # Number formatting (5 tests)
 ├── TextWrappingTests.swift       # Text wrapping (2 tests)
 ├── BorderTests.swift             # Border functionality (3 tests)
@@ -176,6 +179,18 @@ All tests verify pixel-perfect scaling, Excel cell dimension matching, and zero 
 - `testAlignmentWithOtherFormatting()`: Alignment with other formatting (font, background, etc.)
 - `testAlignmentEnumValues()`: Enum value correctness for all alignment options
 
+## Cell Format Interning Tests
+
+**File**: `CellFormatInterningTests.swift` (7 tests)
+
+- `testSetAndGetCellFormatRoundTrip()`: `setCellFormat` / `getCellFormat` round-trip, including lowercase addresses
+- `testSharedFormatAcrossManyCells()`: The same `CellFormat` applied to many cells is retrieved equally from each (interned storage)
+- `testRemoveCellFormatLeavesValue()`: `removeCellFormat` drops the format and leaves the cell value
+- `testCellFormatsGetterRebuildsDictionary()`: `cellFormats` rebuilds from the intern pool; unformatted cells are absent
+- `testCellFormatsSetterReinterns()`: Assigning `cellFormats` replaces interned entries and uppercases keys
+- `testCellFormatEqualityAndHashable()`: Independently constructed identical formats are equal and share a `Set` slot
+- `testSavingSheetWithSharedFormatsSucceeds()`: Save a sheet whose cells share one format (intern + streamed worksheet XML)
+
 ## Border & Merge Tests
 
 **File**: `BorderTests.swift` (3 tests)
@@ -249,7 +264,7 @@ Column width and row height APIs are tested in **`SheetUtilityTests.swift`** (`t
 - `testFluentAPI()`: Fluent API with method chaining
 - `testSheetConvenienceMethods()`: Sheet convenience methods for different data types
 - `testSheetRowAndColumnMethods()`: Row and column methods for bulk operations
-- `testSheetUtilityProperties()`: Sheet utility properties and cell counting
+- `testSheetUtilityProperties()`: Sheet utility properties, cell counting, and `allFormattedCells` format lookup via interned storage
 - `testSheetConvenienceInitializer()`: Sheet convenience initializer with data
 
 ## Sheet State Tests
@@ -392,6 +407,7 @@ swift run XLKitTestRunner help
 | File Operations    | FileOperationTests.swift | 2        | 100%            |
 | Image Support      | ImageTests.swift        | 2          | 100%            |
 | Cell Formatting    | FormattingTests.swift   | 8          | 100%            |
+| Format Interning   | CellFormatInterningTests.swift | 7    | 100%            |
 | Border Tests       | BorderTests.swift       | 3          | 100%            |
 | Merge Tests        | MergeTests.swift        | 4          | 100%            |
 | Number Formats     | NumberFormatTests.swift | 5          | 100%            |
@@ -401,7 +417,7 @@ swift run XLKitTestRunner help
 | Sheet Utilities    | SheetUtilityTests.swift | 6          | 100%            |
 | Sheet State        | SheetStateTests.swift   | 7          | 100%            |
 | Sheet Protection   | SheetProtectionTests.swift | 14      | 100%            |
-| **Total**          | **15 test files**      | **80**     | **100%**        |
+| **Total**          | **16 test files**      | **87**     | **100%**        |
 
 ### Quality Standards
 - All generated files pass CoreXLSX validation
@@ -416,6 +432,7 @@ swift run XLKitTestRunner help
 - All text alignment options (horizontal, vertical, combined) are fully tested
 - All text wrapping functionality is fully tested
 - All border and merge functionality is fully tested
+- Interned cell format storage and `setCellFormat` / `removeCellFormat` are fully tested
 - All number formatting options are fully tested
 - Column ordering for sheets with more than 26 columns is fully tested
 - Sheet visibility and sheet protection (including password hash helpers) are fully tested

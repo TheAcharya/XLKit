@@ -1,5 +1,17 @@
 # Changelog
 
+### 1.1.8
+
+**🎉 Released:**
+- 21st August 2026
+
+**🔧 Improvements:**
+- Large worksheets are much lighter on memory: cell formats are interned (`Sheet` stores one `CellFormat` per distinct style instead of a copy per cell), and worksheet XML is streamed to disk instead of held as one in-memory string
+- Added `setCellFormat` / `removeCellFormat`; `CellFormat` is `Hashable`
+- Added `CellFormatInterningTests`; unit test count from 80 to 87
+
+---
+
 ### 1.1.7
 
 **🎉 Released:**

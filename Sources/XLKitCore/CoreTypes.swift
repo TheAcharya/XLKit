@@ -198,12 +198,57 @@ public final class Sheet: Equatable {
     public var rowHeights: [Int: Double] = [:]
     /// Dictionary mapping cell coordinates to embedded images
     public var images: [String: ExcelImage] = [:]
+    
     /// Dictionary mapping cell coordinates to their formatting
-    public var cellFormats: [String: CellFormat] = [:]
+    ///
+    /// Formats are interned: sheets typically reuse a small number of distinct formats across
+    /// very many cells, so each coordinate stores an index into a shared table instead of its
+    /// own copy of the struct. Reading this property rebuilds the whole dictionary, so prefer
+    /// ``getCellFormat(_:)`` when reading individual cells in a loop.
+    public var cellFormats: [String: CellFormat] {
+        get {
+            formatIDsByCoordinate.mapValues { internedFormats[$0] }
+        }
+        set {
+            formatIDsByCoordinate.removeAll(keepingCapacity: true)
+            internedFormats.removeAll(keepingCapacity: true)
+            internedFormatIDs.removeAll(keepingCapacity: true)
+            for (coordinate, format) in newValue {
+                setCellFormat(format, at: coordinate)
+            }
+        }
+    }
+    
+    /// Index into ``internedFormats`` for each formatted coordinate.
+    private var formatIDsByCoordinate: [String: Int] = [:]
+    /// Distinct formats used by this sheet, addressed by index.
+    private var internedFormats: [CellFormat] = []
+    /// Reverse lookup used to reuse an existing index for an equal format.
+    private var internedFormatIDs: [CellFormat: Int] = [:]
     
     public init(name: String, id: Int) {
         self.name = name
         self.id = id
+    }
+    
+    /// Stores `format` for `coordinate`, reusing an existing interned entry when one matches.
+    public func setCellFormat(_ format: CellFormat, at coordinate: String) {
+        let key = coordinate.uppercased()
+        
+        if let existing = internedFormatIDs[format] {
+            formatIDsByCoordinate[key] = existing
+            return
+        }
+        
+        let id = internedFormats.count
+        internedFormats.append(format)
+        internedFormatIDs[format] = id
+        formatIDsByCoordinate[key] = id
+    }
+    
+    /// Removes any stored format for `coordinate`.
+    public func removeCellFormat(at coordinate: String) {
+        formatIDsByCoordinate[coordinate.uppercased()] = nil
     }
     
     // MARK: - Cell Operations
@@ -231,7 +276,7 @@ public final class Sheet: Equatable {
     /// - Returns: A Cell object containing both value and format, nil if cell doesn't exist
     public func getCellWithFormat(_ coordinate: String) -> Cell? {
         guard let value = cells[coordinate.uppercased()] else { return nil }
-        let format = cellFormats[coordinate.uppercased()]
+        let format = getCellFormat(coordinate)
         return Cell(value, format: format)
     }
     
@@ -239,7 +284,8 @@ public final class Sheet: Equatable {
     /// - Parameter coordinate: Excel-style coordinate (e.g., "A1", "B2")
     /// - Returns: The cell formatting if it exists, nil otherwise
     public func getCellFormat(_ coordinate: String) -> CellFormat? {
-        cellFormats[coordinate.uppercased()]
+        guard let id = formatIDsByCoordinate[coordinate.uppercased()] else { return nil }
+        return internedFormats[id]
     }
     
     /// Sets a cell value by row and column
@@ -255,7 +301,7 @@ public final class Sheet: Equatable {
     public func setCell(_ coordinate: String, cell: Cell) -> Self {
         cells[coordinate.uppercased()] = cell.value
         if let format = cell.format {
-            cellFormats[coordinate.uppercased()] = format
+            setCellFormat(format, at: coordinate)
         }
         return self
     }
@@ -611,7 +657,9 @@ public final class Sheet: Equatable {
         columnWidths.removeAll()
         rowHeights.removeAll()
         images.removeAll()
-        cellFormats.removeAll()
+        formatIDsByCoordinate.removeAll()
+        internedFormats.removeAll()
+        internedFormatIDs.removeAll()
     }
     
     /// Equality comparison for Sheet objects (reference equality)
@@ -872,7 +920,7 @@ public enum NumberFormat: String {
 }
 
 /// Represents cell formatting options
-public struct CellFormat {
+public struct CellFormat: Hashable {
     public var fontName: String?
     public var fontSize: Double?
     public var fontWeight: FontWeight?

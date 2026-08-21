@@ -36,6 +36,7 @@ This codebase is developed using AI agents.
 - Professional Video Support: All 17 video and cinema aspect ratios with zero distortion
 - Auto Cell Sizing: Automatic column width and row height calculation to perfectly fit images
 - Cell Formatting: Comprehensive formatting including font colours, backgrounds, borders, and text alignment (all 5 alignment options each for horizontal and vertical) with proper XML generation
+- Interned Formats: Distinct `CellFormat` values are stored once per sheet; large worksheets stream XML to disk instead of holding one in-memory string
 - Border Support: Full border functionality with thin, medium, and thick styles, custom colours, and combined formatting
 - Merge Support: Cell merging functionality with complex range support and proper Excel compliance
 - Sheet Visibility: Mark sheets as visible, hidden, or very hidden via `Sheet.state`
@@ -45,7 +46,7 @@ This codebase is developed using AI agents.
 - Type-Safe: Strong enums and structs for all data types
 - Excel Compliance: OpenXML `.xlsx` generation; the bundled test runner validates output with CoreXLSX
 - Minimal library dependencies: **ZIPFoundation** and **swift-textfile** ([CoreXLSX](https://github.com/CoreOffice/CoreXLSX) is only linked by `XLKitTestRunner` for validation, not by the `XLKit` library product)
-- Comprehensive Testing: 80 tests with 100% API coverage, including sheet visibility, sheet protection (legacy and SHA-512 password helpers), all text alignment options (horizontal, vertical, combined), number formatting, border and merge functionality, column ordering validation, CSV/TSV edge cases, and automated validation
+- Comprehensive Testing: 87 tests with 100% API coverage, including sheet visibility, sheet protection (legacy and SHA-512 password helpers), interned cell formats, all text alignment options (horizontal, vertical, combined), number formatting, border and merge functionality, column ordering validation, CSV/TSV edge cases, and automated validation
 - Security Features: Comprehensive security features for production use
 
 ## Requirements

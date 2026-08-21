@@ -441,8 +441,12 @@ public struct XLSXEngine {
     
     private static func generateWorksheets(worksheetsDir: URL, workbook: Workbook, formatMapping: [String: Int], sharedStrings: [String: Int]) throws {
         for sheet in workbook.getSheets() {
-            let content = generateWorksheetXML(sheet: sheet, formatMapping: formatMapping, sharedStrings: sharedStrings)
-            try content.write(to: worksheetsDir.appendingPathComponent("sheet\(sheet.id).xml"), atomically: true, encoding: .utf8)
+            try writeWorksheetXML(
+                sheet: sheet,
+                to: worksheetsDir.appendingPathComponent("sheet\(sheet.id).xml"),
+                formatMapping: formatMapping,
+                sharedStrings: sharedStrings
+            )
             
             // Generate worksheet relationships if there are images
             if !sheet.getImages().isEmpty {
@@ -474,103 +478,166 @@ public struct XLSXEngine {
         try content.write(to: worksheetRelsDir.appendingPathComponent("sheet\(sheet.id).xml.rels"), atomically: true, encoding: .utf8)
     }
     
-    private static func generateWorksheetXML(sheet: Sheet, formatMapping: [String: Int], sharedStrings: [String: Int]) -> String {
-        var content = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-        content += "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
+    /// Streams a worksheet's XML directly to `url`.
+    ///
+    /// Worksheet XML is written incrementally rather than accumulated into one `String`, and the
+    /// sheet's coordinates are grouped in a single pass. On sheets with millions of cells the
+    /// previous approach held the whole part in memory and re-derived the coordinate list several
+    /// times (each `getUsedCells()` call allocates and sorts the full key array).
+    private static func writeWorksheetXML(
+        sheet: Sheet,
+        to url: URL,
+        formatMapping: [String: Int],
+        sharedStrings: [String: Int]
+    ) throws {
+        // Single pass: group coordinates by row and derive the used dimensions together.
+        var rowColumns: [Int: [(column: Int, coordinate: String)]] = [:]
+        var highestRow: Int?
+        var highestColumn: Int?
+        
+        for coordinate in sheet.cells.keys {
+            guard let cellCoord = CellCoordinate(excelAddress: coordinate) else { continue }
+            rowColumns[cellCoord.row, default: []].append((cellCoord.column, coordinate))
+            if highestRow == nil || cellCoord.row > highestRow! {
+                highestRow = cellCoord.row
+            }
+            if highestColumn == nil || cellCoord.column > highestColumn! {
+                highestColumn = cellCoord.column
+            }
+        }
+        
+        let writer = try XMLPartWriter(url: url)
+        
+        try writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>")
+        try writer.write("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">")
         
         // Add dimension
-        let maxRow = sheet.getUsedCells().compactMap { CellCoordinate(excelAddress: $0) }.map { $0.row }.max() ?? 1
-        let maxCol = sheet.getUsedCells().compactMap { CellCoordinate(excelAddress: $0) }.map { $0.column }.max() ?? 1
+        let maxRow = highestRow ?? 1
+        let maxCol = highestColumn ?? 1
         let maxColLetter = CoreUtils.columnLetter(from: maxCol)
-        content += "<dimension ref=\"A1:\(maxColLetter)\(maxRow)\"/>"
+        try writer.write("<dimension ref=\"A1:\(maxColLetter)\(maxRow)\"/>")
         
         // Add sheet views
-        content += "<sheetViews>"
-        content += "<sheetView tabSelected=\"1\" workbookViewId=\"0\"/>"
-        content += "</sheetViews>"
+        try writer.write("<sheetViews>")
+        try writer.write("<sheetView tabSelected=\"1\" workbookViewId=\"0\"/>")
+        try writer.write("</sheetViews>")
         
         // Add sheet format properties
-        content += "<sheetFormatPr defaultRowHeight=\"15\"/>"
+        try writer.write("<sheetFormatPr defaultRowHeight=\"15\"/>")
         
         // Add column widths if any
         if !sheet.getColumnWidths().isEmpty {
-            content += generateColumnWidthsXML(sheet: sheet)
+            try writer.write(generateColumnWidthsXML(sheet: sheet))
         }
         
         // Add row heights if any
         if !sheet.getRowHeights().isEmpty {
-            content += generateRowHeightsXML(sheet: sheet)
+            try writer.write(generateRowHeightsXML(sheet: sheet))
         }
         
-        content += "<sheetData>"
-        
-        // Group cells by row
-        var rows: [Int: [String: CellValue]] = [:]
-        for (coordinate, value) in sheet.getUsedCells().compactMap({ ($0, sheet.getCell($0)) }) {
-            guard let cellCoord = CellCoordinate(excelAddress: coordinate) else { continue }
-            if rows[cellCoord.row] == nil {
-                rows[cellCoord.row] = [:]
-            }
-            rows[cellCoord.row]?[coordinate] = value
-        }
+        try writer.write("<sheetData>")
         
         // Generate row XML
-        for rowNum in rows.keys.sorted() {
-            let rowCells = rows[rowNum] ?? [:]
-            let minCol = rowCells.keys.compactMap { CellCoordinate(excelAddress: $0) }.map { $0.column }.min() ?? 1
-            let maxCol = rowCells.keys.compactMap { CellCoordinate(excelAddress: $0) }.map { $0.column }.max() ?? 1
+        for rowNum in rowColumns.keys.sorted() {
+            guard var rowCells = rowColumns[rowNum] else { continue }
+            
+            var minCol: Int?
+            var maxRowCol: Int?
+            for cell in rowCells {
+                if minCol == nil || cell.column < minCol! { minCol = cell.column }
+                if maxRowCol == nil || cell.column > maxRowCol! { maxRowCol = cell.column }
+            }
+            let spanStart = minCol ?? 1
+            let spanEnd = maxRowCol ?? 1
             
             // Check for custom row height
             if let customHeight = sheet.getRowHeight(rowNum) {
-                content += "<row r=\"\(rowNum)\" spans=\"\(minCol):\(maxCol)\" ht=\"\(customHeight)\" customHeight=\"1\">"
+                try writer.write("<row r=\"\(rowNum)\" spans=\"\(spanStart):\(spanEnd)\" ht=\"\(customHeight)\" customHeight=\"1\">")
             } else {
-                content += "<row r=\"\(rowNum)\" spans=\"\(minCol):\(maxCol)\">"
+                try writer.write("<row r=\"\(rowNum)\" spans=\"\(spanStart):\(spanEnd)\">")
             }
             
             // Sort coordinates by column number to ensure proper Excel column order (A, B, ..., Z, AA, AB, ...)
-            let sortedCoordinates = rowCells.keys.compactMap { coordinate -> (String, Int)? in
-                guard let cellCoord = CellCoordinate(excelAddress: coordinate) else { return nil }
-                return (coordinate, cellCoord.column)
-            }.sorted { $0.1 < $1.1 }.map { $0.0 }
+            rowCells.sort { $0.column < $1.column }
             
-            for coordinate in sortedCoordinates {
-                guard let value = rowCells[coordinate] else { continue }
-                let format = sheet.getCellFormat(coordinate)
-                content += generateCellXML(coordinate: coordinate, value: value, format: format, formatMapping: formatMapping, sharedStrings: sharedStrings)
+            for cell in rowCells {
+                guard let value = sheet.getCell(cell.coordinate) else { continue }
+                let format = sheet.getCellFormat(cell.coordinate)
+                try writer.write(generateCellXML(coordinate: cell.coordinate, value: value, format: format, formatMapping: formatMapping, sharedStrings: sharedStrings))
             }
             
-            content += "</row>"
+            try writer.write("</row>")
+            
+            // The row's coordinates are no longer needed once emitted.
+            rowColumns[rowNum] = nil
         }
         
-        content += "</sheetData>"
+        try writer.write("</sheetData>")
         
         // Add sheet protection if configured; must come after </sheetData> per ECMA-376
         if let protection = sheet.protection {
-            content += sheetProtectionXML(protection)
+            try writer.write(sheetProtectionXML(protection))
         }
         
         // Add merged cells if any
         let mergedRanges = sheet.getMergedRanges()
         if !mergedRanges.isEmpty {
-            content += "<mergeCells count=\"\(mergedRanges.count)\">"
+            try writer.write("<mergeCells count=\"\(mergedRanges.count)\">")
             for range in mergedRanges {
-                content += "<mergeCell ref=\"\(range.excelRange)\"/>"
+                try writer.write("<mergeCell ref=\"\(range.excelRange)\"/>")
             }
-            content += "</mergeCells>"
+            try writer.write("</mergeCells>")
         }
         
         // Add page margins
-        content += "<pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/>"
+        try writer.write("<pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/>")
         
         // Add drawing reference if sheet has images
         let sheetImages = sheet.getImages()
         if !sheetImages.isEmpty {
-            content += "<drawing r:id=\"rId1\"/>"
+            try writer.write("<drawing r:id=\"rId1\"/>")
         }
         
-        content += "</worksheet>"
+        try writer.write("</worksheet>")
+        try writer.close()
+    }
+    
+    /// Buffered writer for a single XML part, so large parts never exist wholly in memory.
+    private final class XMLPartWriter {
+        private let handle: FileHandle
+        private var buffer: String = ""
+        private var bufferedBytes = 0
+        private let flushThreshold: Int
         
-        return content
+        init(url: URL, flushThreshold: Int = 1 << 20) throws {
+            if !FileManager.default.fileExists(atPath: url.path) {
+                FileManager.default.createFile(atPath: url.path, contents: nil)
+            }
+            handle = try FileHandle(forWritingTo: url)
+            try handle.truncate(atOffset: 0)
+            self.flushThreshold = flushThreshold
+            buffer.reserveCapacity(flushThreshold + 4096)
+        }
+        
+        func write(_ text: String) throws {
+            buffer += text
+            bufferedBytes += text.utf8.count
+            if bufferedBytes >= flushThreshold {
+                try flush()
+            }
+        }
+        
+        func close() throws {
+            try flush()
+            try handle.close()
+        }
+        
+        private func flush() throws {
+            guard !buffer.isEmpty else { return }
+            try handle.write(contentsOf: Data(buffer.utf8))
+            buffer.removeAll(keepingCapacity: true)
+            bufferedBytes = 0
+        }
     }
     
     private static func generateColumnWidthsXML(sheet: Sheet) -> String {

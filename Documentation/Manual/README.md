@@ -8,7 +8,7 @@ This manual is split into **chapters** for navigation and maintenance. It mirror
 |----|---------|----------|
 | [01](01-Overview-and-Installation.md) | Overview & installation | Performance, compatibility, requirements, SPM, quick start |
 | [02](02-Architecture-Modules-and-Source-Map.md) | Architecture & source map | Modules, dependencies, save pipeline, every Swift source file |
-| [03](03-Core-Model-Workbook-Sheet-and-Cells.md) | Core model | `Workbook`, `Sheet`, `SheetState`, `SheetProtection`, `CellValue`, `Cell`, coordinates |
+| [03](03-Core-Model-Workbook-Sheet-and-Cells.md) | Core model | `Workbook`, `Sheet`, interned formats, `SheetState`, `SheetProtection`, `CellValue`, `Cell`, coordinates |
 | [04](04-Bulk-Operations-Ranges-Formulas-and-Merges.md) | Bulk ops & ranges | `setRow`/`setColumn`, formulas, `setRange`, merges |
 | [05](05-CSV-and-TSV.md) | CSV & TSV | Import/export, `CSVUtils`, swift-textfile |
 | [06](06-Images-Embedding-and-Sizing.md) | Images | Formats, embedding, aspect ratio, EMU sizing |

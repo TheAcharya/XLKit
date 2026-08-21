@@ -47,7 +47,9 @@ This chapter lists the full public API of XLKit. All types and members are avail
 | `setCell(row: Int, column: Int, cell: Cell) -> Self` | Set cell by row/column with `Cell`. |
 | `getCell(_ coordinate: String) -> CellValue?` | Get cell value. |
 | `getCellWithFormat(_ coordinate: String) -> Cell?` | Get cell value and format. |
-| `getCellFormat(_ coordinate: String) -> CellFormat?` | Get cell format only. |
+| `getCellFormat(_ coordinate: String) -> CellFormat?` | Get cell format only. Prefer this over `cellFormats` when reading individual cells. |
+| `setCellFormat(_ format: CellFormat, at coordinate: String)` | Store a format for a coordinate, reusing an interned copy when an equal format already exists on the sheet. |
+| `removeCellFormat(at coordinate: String)` | Remove the stored format for a coordinate; the cell value is unchanged. |
 | `setRange(_ range: String, cell: Cell) -> Self` | Set a range with a `Cell`. |
 | `setRange(_ range: String, string: String, format: CellFormat? = nil) -> Self` | Set range with string. |
 | `setRange(_ range: String, number: Double, format: CellFormat? = nil) -> Self` | Set range with number. |
@@ -115,7 +117,8 @@ This chapter lists the full public API of XLKit. All types and members are avail
 | `imageCount: Int` | Number of images in the sheet. |
 | `name: String` | Sheet name. |
 | `id: Int` | Sheet id. |
-| `cells`, `mergedRanges`, `columnWidths`, `rowHeights`, `images`, `cellFormats` | Internal storage (public for access). |
+| `cells`, `mergedRanges`, `columnWidths`, `rowHeights`, `images` | Internal storage (public for access). |
+| `cellFormats: [String: CellFormat]` | Formats by coordinate. Implemented as an interned table: reading rebuilds the dictionary, so prefer `getCellFormat(_:)` in loops. |
 
 ### SheetState (enum)
 
@@ -194,7 +197,7 @@ Properties: `stringValue: String`, `type: String`.
 | `static func date(_ value: Date, format: CellFormat? = nil) -> Cell` | Factory for date cell. |
 | `static func formula(_ value: String, format: CellFormat? = nil) -> Cell` | Factory for formula cell. |
 
-**CellFormat** (struct)
+**CellFormat** (struct, `Hashable`)
 
 Properties: `fontName`, `fontSize`, `fontWeight`, `fontStyle`, `textDecoration`, `fontColor`, `backgroundColor`, `horizontalAlignment`, `verticalAlignment`, `textWrapping`, `textRotation`, `numberFormat`, `customNumberFormat`, `borderTop`, `borderBottom`, `borderLeft`, `borderRight`, `borderColor` (all optional where applicable).
 
@@ -310,7 +313,7 @@ Conforms to `Error` and `LocalizedError`; `errorDescription: String?`.
 
 | Member | Description |
 |--------|-------------|
-| `generateXLSX(workbook: Workbook, to url: URL) throws` | Generate and write the .xlsx file (`@MainActor`). |
+| `generateXLSX(workbook: Workbook, to url: URL) throws` | Generate and write the .xlsx file (`@MainActor`). Worksheet XML is streamed to disk. |
 | `formatToKey(_ format: CellFormat) -> String` | Serialize format to a key (for internal/style mapping). |
 
 Typically you call `workbook.save(to: url)` rather than `XLSXEngine.generateXLSX` directly.

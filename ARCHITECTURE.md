@@ -16,7 +16,7 @@ XLKit is a **Swift 6** library for creating Excel **`.xlsx`** workbooks (Office 
 - **Platforms:** macOS 12+, iOS 15+
 - **Repository:** https://github.com/TheAcharya/XLKit
 - **Library dependencies:** ZIPFoundation (XLSX zip), swift-textfile / TextFile (CSV/TSV). **CoreXLSX** is linked only by `XLKitTestRunner` for validation.
-- **Tests:** **80** Swift Testing tests in `XLKitTests` (15 `@Suite`s + `XLKitTestSupport` helpers). See [Tests/README.md](Tests/README.md).
+- **Tests:** **87** Swift Testing tests in `XLKitTests` (16 `@Suite`s + `XLKitTestSupport` helpers). See [Tests/README.md](Tests/README.md).
 
 ---
 
@@ -44,7 +44,7 @@ flowchart TB
     CORE["XLKitCore\nmodel · CoreUtils · SecurityManager"]
     FMT["XLKitFormatters\nCSV / TSV"]
     IMG["XLKitImages\ndetect · size · EMUs"]
-    ENG["XLKitXLSX\nOOXML parts · ZIP"]
+    ENG["XLKitXLSX\nstreamed OOXML · ZIP"]
 
     API --> CORE
     API --> FMT
@@ -62,7 +62,7 @@ flowchart TB
 | **XLKitCore** | Domain model: `Workbook`, `Sheet`, `CellValue`, `Cell`, `CellFormat`, `SheetState`, `SheetProtection`, coordinates, `ExcelImage`, `XLKitError`, `CoreUtils`, `SecurityManager`. |
 | **XLKitFormatters** | `CSVUtils` — CSV and TSV only (no custom delimiters), via swift-textfile. |
 | **XLKitImages** | Format detection, dimensions, `ExcelImage` construction; **ImageSizingUtils** (aspect fit, EMUs, Excel col/row formulas). |
-| **XLKitXLSX** | `XLSXEngine` — styles, shared strings, worksheets, drawings, relationships, ZIP. |
+| **XLKitXLSX** | `XLSXEngine` — styles, shared strings, streamed worksheets, drawings, relationships, ZIP. |
 | **XLKit** | Re-exports; `Workbook+API` / `Sheet+API` (save, CSV, image embed). |
 
 The `XLKit` **struct** in `XLKit.swift` is an empty namespace; behaviour lives on `Workbook` / `Sheet` or static helpers.
@@ -74,6 +74,7 @@ Extend **bottom-up**. Do not invent OOXML or sizing rules only in the TestRunner
 | Change type | Put it in |
 |-------------|-----------|
 | New cell / sheet / workbook model field | **XLKitCore** |
+| Interned format table / `setCellFormat` | **XLKitCore** (`Sheet`) |
 | Password / date / column-letter helpers | **CoreUtils** (`XLKitCore`) |
 | CSV/TSV parsing behaviour | **XLKitFormatters** |
 | Image format / pixel size / display size | **XLKitImages** |
@@ -90,10 +91,25 @@ In-memory Workbook
     → SecurityManager (rate limit, optional path rules)
     → XLSXEngine.generateXLSX
         → temp OOXML tree (content types, docProps, theme, styles, sharedStrings,
-           workbook, worksheets, media, drawings, relationships)
+           workbook, streamed worksheets, media, drawings, relationships)
         → ZIPFoundation archive → .xlsx
     → optional SHA-256 checksum sidecar
 ```
+
+```mermaid
+flowchart LR
+    WB["Workbook / Sheet\ninterned CellFormat"]
+    SAVE["save(to:)\n@MainActor"]
+    SEC["SecurityManager"]
+    ENG["XLSXEngine"]
+    WS["writeWorksheetXML\nXMLPartWriter stream"]
+    ZIP["ZIPFoundation\n.xlsx"]
+
+    WB --> SAVE --> SEC --> ENG
+    ENG --> WS --> ZIP
+```
+
+Worksheet XML is **streamed** (`writeWorksheetXML` / `XMLPartWriter`, ~1 MB flush) so large sheets are not held as one `String`. Cells are grouped in a **single pass** over `sheet.cells` and emitted in **numeric column order**. Prefer `getCellFormat(_:)` in engine loops — do not rebuild `cellFormats`.
 
 Workbook XML may emit sheet `state` and `activeTab` when needed. Worksheet XML may emit `<sheetProtection>` after `</sheetData>`. Visible / unprotected sheets stay free of extra attributes (backward-compatible).
 
@@ -172,8 +188,8 @@ flowchart LR
 ### 3.2 Public surface (mental model)
 
 - **Workbook** — sheets + workbook-level images; `save`, CSV/TSV convenience.
-- **Sheet** — cells, formats, merges, sizes, per-sheet images, `state`, `protection`.
-- **CellValue / Cell / CellFormat** — values and styling.
+- **Sheet** — cells, interned formats (`setCellFormat` / `getCellFormat` / `removeCellFormat`), merges, sizes, per-sheet images, `state`, `protection`.
+- **CellValue / Cell / CellFormat** — values and styling (`CellFormat` is `Hashable` so equal styles share interned storage).
 - **SheetState / SheetProtection** — tab visibility and Protect Sheet.
 - **CoreUtils** — column letters, Excel dates, XML escape, sheet password hashes, path/size validation.
 - **CSVUtils / ImageUtils / ImageSizingUtils / XLSXEngine** — module-level utilities (re-exported via XLKit).
@@ -243,6 +259,8 @@ import Foundation
 - **CSV/TSV only** — no custom delimiters; avoids delimiter-vs-content collisions.
 - **Image formats** — GIF, PNG, JPEG/JPG (BMP/TIFF removed for compatibility).
 - **Column order** — worksheet cells sorted by numeric column index (A…Z, AA…) so Excel does not repair files.
+- **Interned cell formats** — `Sheet` stores one `CellFormat` per distinct style; coordinates hold an index. Prefer `getCellFormat(_:)` over reading `cellFormats` in a loop.
+- **Streamed worksheet XML** — `writeWorksheetXML` writes incrementally; do not reintroduce a whole-part `String` for `sheetN.xml`.
 - **Sheet protection passwords** — use `CoreUtils.excelLegacySheetPasswordHash` / `excelModernSheetPasswordHash` / `configureSheetPassword`. The OOXML-documented legacy formula is **incorrect**; XLKit matches Excel / LibreOffice / Excelize.
 - **Demo constants** — comprehensive-demo password **1234** and salts live only in TestRunner (`ComprehensiveDemoProtection.swift`).
 - **CoreXLSX** — validation dependency for TestRunner/CI demos, not the library product.
@@ -264,7 +282,7 @@ Adding a command: copy `Templates/TestGeneratorTemplate.swift`, register in `mai
 
 | Layer | Role |
 |-------|------|
-| **`swift test` / `XLKitTests`** | Swift Testing — public API coverage (80 tests) |
+| **`swift test` / `XLKitTests`** | Swift Testing — public API coverage (87 tests) |
 | **`XLKitTestRunner`** | Generated workbooks + CoreXLSX smoke |
 | **`build.yml`** | macOS build/test + TestRunner smoke; **strict concurrency** job; iOS simulator build/test |
 | **CLI workflows** | embed, no-embeds, comprehensive, ios, numbers |

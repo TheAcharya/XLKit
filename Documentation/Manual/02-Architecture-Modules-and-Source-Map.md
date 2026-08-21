@@ -24,23 +24,36 @@ XLKitXLSX → XLKitCore, XLKitFormatters, XLKitImages, ZIPFoundation
 
 | Module | Responsibility |
 |--------|----------------|
-| **XLKitCore** | Domain model: `Workbook`, `Sheet`, `CellValue`, `Cell`, `CellFormat`, `SheetState`, `SheetProtection`, coordinates, `ExcelImage`, `XLKitError`, `CoreUtils`, `SecurityManager`. |
+| **XLKitCore** | Domain model: `Workbook`, `Sheet` (interned `CellFormat` storage), `CellValue`, `Cell`, `CellFormat`, `SheetState`, `SheetProtection`, coordinates, `ExcelImage`, `XLKitError`, `CoreUtils`, `SecurityManager`. |
 | **XLKitFormatters** | `CSVUtils` — RFC-style CSV and TSV import/export via [swift-textfile](https://github.com/orchetect/swift-textfile). |
 | **XLKitImages** | `ImageUtils` (format detection, dimensions, `ExcelImage` construction), `ImageSizingUtils` (aspect fit, EMUs, Excel column/row width formulas). |
-| **XLKitXLSX** | `XLSXEngine` — builds the Open XML package (styles, shared strings, worksheets, drawings, relationships) and zips it with ZIPFoundation. |
+| **XLKitXLSX** | `XLSXEngine` — builds the Open XML package (styles, shared strings, streamed worksheets, drawings, relationships) and zips it with ZIPFoundation. |
 | **XLKit** | `@_exported import` of the four modules above; `Workbook+API` and `Sheet+API` convenience extensions (save, CSV, image embed). |
 
 The `XLKit` **struct** in `XLKit.swift` is an empty namespace; all behaviour lives on `Workbook` and `Sheet` or static helpers.
 
 ## Save pipeline (end-to-end)
 
-1. You build a `Workbook` in memory (sheets, cells, formats, images).
+```mermaid
+flowchart LR
+    WB["Workbook / Sheet\ninterned CellFormat"]
+    SAVE["save(to:)\n@MainActor"]
+    SEC["SecurityManager"]
+    ENG["XLSXEngine"]
+    WS["Streamed sheet XML\nXMLPartWriter"]
+    ZIP["ZIPFoundation .xlsx"]
+
+    WB --> SAVE --> SEC --> ENG
+    ENG --> WS --> ZIP
+```
+
+1. You build a `Workbook` in memory (sheets, cells, interned formats, images).
 2. `workbook.save(to: url)` (sync or async) calls `XLSXEngine.generateXLSX(workbook:to:)`.
-3. The engine applies **SecurityManager** (rate limit, optional path rules), writes OOXML parts under a temporary directory, then creates a **ZIP** archive as `.xlsx`.
+3. The engine applies **SecurityManager** (rate limit, optional path rules), writes OOXML parts under a temporary directory, then creates a **ZIP** archive as `.xlsx`. Worksheet XML is **streamed** to disk (`writeWorksheetXML`) so large sheets are not held as one string; cells are grouped in a single pass and emitted in numeric column order.
 4. Workbook XML includes per-sheet `state` attributes (`.hidden` / `.veryHidden`) and `activeTab` on `<workbookView>` when the first sheet is hidden. Worksheet XML includes `<sheetProtection>` after `</sheetData>` when `Sheet.protection` is set.
 5. Optional **SHA-256** checksum sidecar if `SecurityManager.enableChecksumStorage` is `true`.
 
-For low-level or test use, you may call `XLSXEngine.generateXLSX` directly; app code should normally use `save(to:)`. `XLSXEngine.formatToKey(_:)` is public for hashing/deduplicating `CellFormat` instances (styles XML uses the same keying).
+For low-level or test use, you may call `XLSXEngine.generateXLSX` directly; app code should normally use `save(to:)`. `XLSXEngine.formatToKey(_:)` is public for hashing/deduplicating `CellFormat` instances (styles XML uses the same keying). Prefer `sheet.getCellFormat(_:)` when reading formats in a loop — `cellFormats` rebuilds the whole dictionary.
 
 ## Source file map (100% of Swift sources)
 
@@ -50,12 +63,12 @@ For low-level or test use, you may call `XLSXEngine.generateXLSX` directly; app 
 | `Sources/XLKit/XLKit.swift` | Re-exports. |
 | `Sources/XLKit/Workbook+API.swift` | CSV/TSV convenience inits, `save`, import/export. |
 | `Sources/XLKit/Sheet+API.swift` | `setRow`/`setColumn`, CSV export, `embedImage*` APIs. |
-| `Sources/XLKitCore/CoreTypes.swift` | Core types and `CoreUtils`. |
+| `Sources/XLKitCore/CoreTypes.swift` | Core types, interned cell formats, and `CoreUtils`. |
 | `Sources/XLKitCore/SecurityManager.swift` | Rate limiting, logging, quarantine, checksum hooks. |
 | `Sources/XLKitFormatters/CSVUtils.swift` | CSV/TSV. |
 | `Sources/XLKitImages/ImageUtils.swift` | Image detection and `ExcelImage` creation. |
 | `Sources/XLKitImages/ImageSizingUtils.swift` | Sizing and EMU math. |
-| `Sources/XLKitXLSX/XLSXEngine.swift` | Full XLSX generation. |
+| `Sources/XLKitXLSX/XLSXEngine.swift` | Full XLSX generation (streamed worksheet XML). |
 | `Sources/XLKitTestRunner/main.swift` | CLI entry. |
 | `Sources/XLKitTestRunner/ExcelGenerators.swift` | Demo generators + CoreXLSX checks. |
 | `Sources/XLKitTestRunner/ImageEmbedGenerators.swift` | Image embedding scenarios. |

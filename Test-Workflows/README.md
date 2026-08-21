@@ -163,4 +163,4 @@ Generators call **CoreXLSX** to confirm workbooks parse (worksheets, shared stri
 - **`Sources/XLKitTestRunner/README.md`** — Full CLI reference and adding new commands  
 - **`Documentation/Manual/10-Testing-Test-Runner-CI-and-Code-Style.md`** — Unit tests, CI, code style  
 - **`Documentation/Manual/03-Core-Model-Workbook-Sheet-and-Cells.md`** — `SheetState`, `SheetProtection`  
-- **`Tests/README.md`** — `XLKitTests` (80 unit tests)
+- **`Tests/README.md`** — `XLKitTests` (87 unit tests)
